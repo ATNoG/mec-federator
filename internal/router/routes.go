@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mankings/mec-federator/handler/federationmanagement"
+	"github.com/mankings/mec-federator/internal/handler/federationmanagement"
 )
 
 func initRoutes(router *gin.Engine) {

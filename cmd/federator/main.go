@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/mankings/mec-federator/config"
-	"github.com/mankings/mec-federator/router"
+	"github.com/mankings/mec-federator/internal/config"
+	"github.com/mankings/mec-federator/internal/router"
 )
 
 var (
