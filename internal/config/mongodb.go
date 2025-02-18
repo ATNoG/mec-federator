@@ -13,14 +13,9 @@ func InitMongoDB() (*mongo.Client, error) {
 
 	// Create database and connect
 	uri := os.Getenv("MONGO_URI")
-	clientOptions := options.Client().ApplyURI(uri)
-	username := os.Getenv("MONGO_USERNAME")
-	password := os.Getenv("MONGO_USERNAME")
+	logger.Infof("Connecting to MongoDB at %s", uri)
 
-	clientOptions.Auth = &options.Credential{
-		Username: username,
-		Password: password,
-	}
+	clientOptions := options.Client().ApplyURI(uri)
 
 	client, err := mongo.Connect(clientOptions)
 	if err != nil {
@@ -30,10 +25,16 @@ func InitMongoDB() (*mongo.Client, error) {
 
 	defer func() {
 		if err := client.Disconnect(context.TODO()); err != nil {
-			logger.Error("Disconected from MongoDB (deferred)", err)
+			logger.Error("Disconected from MongoDB (defer).", err)
 			panic(err)
 		}
 	}()
 
+	if err := client.Ping(context.Background(), nil); err != nil {
+		logger.Error("Error pinging MongoDB: ", err)
+		return nil, err
+	}
+
+	logger.Info("Connected to MongoDB successfully.")
 	return client, nil
 }

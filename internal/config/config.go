@@ -26,6 +26,7 @@ func Init() error {
 		return err
 	}
 
+	logger.Info("Configuration initialized successfully.")
 	return nil
 }
 
