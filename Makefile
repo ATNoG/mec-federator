@@ -9,4 +9,6 @@ build:
 start:
 	./bin/$(APP_NAME)
 
-restart: build start
+
+docker:
+	docker build -t $(APP_NAME) . -f deployment/docker/Dockerfile
