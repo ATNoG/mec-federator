@@ -1,41 +1,50 @@
 package config
 
 import (
+	"log"
+	"log/slog"
+	"os"
+
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 )
+
+type Config struct {
+	ApiPort        string
+	BaseUrl        string
+	DbUsername     string
+	DbPassword     string
+	DbHost         string
+	DbPort         string
+	OAuth2ClientId string
+	OAuth2Secret   string
+}
 
 var (
-	client *mongo.Client
-	logger *Logger
+	AppConfig *Config
+	err       error
 )
 
-func Init() error {
-	var err error
-	logger := GetLogger("config")
+func InitAppConfig() error {
 
+	// Initialize environment variables
 	if err = godotenv.Load(); err != nil {
-		logger.Error("Error loading .env file: ", err)
+		log.Fatal("Error loading environment variables from .env file")
 		return err
 	}
 
-	// Initialize MongoDB
-	client, err = InitMongoDB()
-	if err != nil {
-		logger.Error("Error initializing MongoDB: ", err)
-		return err
+	// Initialize AppConfig
+	AppConfig = &Config{
+		ApiPort:        os.Getenv("API_PORT"),
+		BaseUrl:        os.Getenv("BASE_URL"),
+		DbUsername:     os.Getenv("MONGODB_USERNAME"),
+		DbPassword:     os.Getenv("MONGODB_PASSWORD"),
+		DbHost:         os.Getenv("MONGODB_HOST"),
+		DbPort:         os.Getenv("MONGODB_PORT"),
+		OAuth2ClientId: os.Getenv("OAUTH2_CLIENT_ID"),
+		OAuth2Secret:   os.Getenv("OAUTH2_SECRET"),
 	}
 
-	logger.Info("Configuration initialized successfully.")
+	slog.Info("Environment Variables", "AppConfig", AppConfig)
+
 	return nil
-}
-
-func GetMongoClient() *mongo.Client {
-	return client
-}
-
-func GetLogger(p string) *Logger {
-	// Initialize Logger
-	logger := NewLogger(p)
-	return logger
 }

@@ -5,20 +5,26 @@ import (
 	"github.com/mankings/mec-federator/internal/router"
 )
 
-var (
-	logger *config.Logger
-)
+var err error
 
-func main() {
-	logger = config.GetLogger("main")
-	logger.Info("MEC Federator is starting...")
-
-	err := config.Init()
+func init() {
+	err = config.InitAppConfig()
 	if err != nil {
-		logger.Error("MEC Federator aborted when initializing configurations!")
-		return
+		panic(err)
 	}
 
+	err = config.InitMongoDB()
+	if err != nil {
+		panic(err)
+	}
+
+	err = config.InitOrchestrators()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func main() {
 	// Initialize the router
 	router.Init()
 }
