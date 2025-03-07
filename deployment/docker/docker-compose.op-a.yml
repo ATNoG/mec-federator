@@ -1,13 +1,27 @@
 services:
+  federator:
+    container_name: federator-a
+    build:
+      context: .
+      dockerfile: ./deployment/docker/Dockerfile
+    env_file:
+      - ./.env.a
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+
   mongodb:
-    image: mongo:latest
-    container_name: ${APP_NAME}-db
+    container_name: ${MONGO_HOST}
+    image: mongo:6.0
     ports:
       - "27017:27017"
-    env_file:
-      - ../../.env.a
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
       - mongo-data:/data/db
 
 volumes:
   mongo-data:
+    driver: local

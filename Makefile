@@ -4,11 +4,35 @@ tidy:
 	go mod tidy
 
 build: 
+	mkdir -p bin
 	go build -o bin/$(APP_NAME) cmd/$(APP_NAME)/main.go
 
-start:
+start: build
 	./bin/$(APP_NAME)
 
-
-docker:
+docker-build:
 	docker build -t $(APP_NAME) . -f deployment/docker/Dockerfile
+
+docker-start: docker-build
+	docker run -p $(API_PORT):$(API_PORT) $(APP_NAME)
+
+docker-compose-up:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.op-a.yml \
+		up -d \
+		$(if $(BUILD),--build)
+
+docker-compose-down:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.op-a.yml \
+		down -v
+
+clean:
+	rm -rf bin/*
+	docker rmi $(APP_NAME) -f
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.op-a.yml \
+		down -v

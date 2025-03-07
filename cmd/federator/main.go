@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/router"
 )
@@ -22,6 +24,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Print("Initialized all configurations successfully.")
 }
 
 func main() {

@@ -36,10 +36,10 @@ func InitAppConfig() error {
 	AppConfig = &Config{
 		ApiPort:        os.Getenv("API_PORT"),
 		BaseUrl:        os.Getenv("BASE_URL"),
-		DbUsername:     os.Getenv("MONGODB_USERNAME"),
-		DbPassword:     os.Getenv("MONGODB_PASSWORD"),
-		DbHost:         os.Getenv("MONGODB_HOST"),
-		DbPort:         os.Getenv("MONGODB_PORT"),
+		DbUsername:     os.Getenv("MONGO_USERNAME"),
+		DbPassword:     os.Getenv("MONGO_PASSWORD"),
+		DbHost:         os.Getenv("MONGO_HOST"),
+		DbPort:         os.Getenv("MONGO_PORT"),
 		OAuth2ClientId: os.Getenv("OAUTH2_CLIENT_ID"),
 		OAuth2Secret:   os.Getenv("OAUTH2_SECRET"),
 	}
