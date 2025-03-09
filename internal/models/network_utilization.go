@@ -1,6 +1,7 @@
 package models
 
 type NetworkUtilization struct {
+	// Number of samples used for calculating metrics.
 	NoOfSamples string `json:"noOfSamples"`
 
 	IngressUsage *UtilizationValue `json:"ingressUsage"`

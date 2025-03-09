@@ -4,5 +4,6 @@ type UpdatedParam struct {
 	AlarmUpdateOps *AlarmUpdateOps `json:"alarmUpdateOps"`
 
 	PatchableParam *PatchableParams `json:"patchableParam"`
-	PatchValue     string           `json:"patchValue"`
+	// Value to be replaced for the alarm parameter being updated
+	PatchValue string `json:"patchValue"`
 }

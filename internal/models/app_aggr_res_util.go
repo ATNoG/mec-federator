@@ -3,8 +3,9 @@ package models
 type AppAggrResUtil struct {
 	AppId string `json:"appId"`
 
-	AppProvId        string `json:"appProvId"`
-	NoOfAppInstances int32  `json:"noOfAppInstances"`
+	AppProvId string `json:"appProvId"`
+	// No of application instances of appId in a zone
+	NoOfAppInstances int32 `json:"noOfAppInstances"`
 
 	AppInstances []string `json:"appInstances"`
 

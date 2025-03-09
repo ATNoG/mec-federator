@@ -1,8 +1,9 @@
 package models
 
 type CpuUtilization struct {
-	CpuType     *MonitoringSubsType `json:"cpuType"`
-	NoOfSamples string              `json:"noOfSamples"`
+	CpuType *MonitoringSubsType `json:"cpuType"`
+	// Number of samples used for calculating metrics.
+	NoOfSamples string `json:"noOfSamples"`
 
 	AverageUtilization *UtilizationValue `json:"averageUtilization"`
 

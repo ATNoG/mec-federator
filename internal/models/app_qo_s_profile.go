@@ -1,5 +1,6 @@
 package models
 
+// Parameters corresponding to the performance constraints, tenancy details etc.
 type AppQoSProfile struct {
 	LatencyConstraints *LatencyConstraints `json:"latencyConstraints"`
 

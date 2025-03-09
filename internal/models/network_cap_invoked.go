@@ -5,6 +5,7 @@ import (
 )
 
 type NetworkCapInvoked struct {
+	// Unique identifier allocated for a network event
 	NetworkEventId string `json:"networkEventId"`
 
 	CapabilityId *CapabilityId `json:"capabilityId"`

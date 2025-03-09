@@ -17,10 +17,13 @@ type FederationResponseData struct {
 
 	PartnerOPMobileNetworkCodes *MobileNetworkIds `json:"partnerOPMobileNetworkCodes,omitempty"`
 
-	PartnerOPFixedNetworkCodes *[]string     `json:"partnerOPFixedNetworkCodes,omitempty"`
-	OfferedAvailabilityZones   []ZoneDetails `json:"offeredAvailabilityZones,omitempty"`
+	PartnerOPFixedNetworkCodes *[]string `json:"partnerOPFixedNetworkCodes,omitempty"`
+	// List of zones, which the operator platform wishes to make available to developers/ISVs of requesting operator platform.
+	OfferedAvailabilityZones []ZoneDetails `json:"offeredAvailabilityZones,omitempty"`
 
-	PlatformCaps          *[]string `json:"platformCaps"`
-	FederationExpiryDate  time.Time `json:"federationExpiryDate,omitempty"`
+	PlatformCaps *[]string `json:"platformCaps"`
+	// Date and Time zone info of the existing federation expiry
+	FederationExpiryDate time.Time `json:"federationExpiryDate,omitempty"`
+	// Date and Time zone info of the existing federation renewal. Shall be less than federationExpiryDate
 	FederationRenewalDate time.Time `json:"federationRenewalDate,omitempty"`
 }

@@ -1,6 +1,7 @@
 package models
 
 type FlavourMetrics struct {
+	// Number of samples used for calculating metrics.
 	NoOfSamples string `json:"noOfSamples"`
 
 	FlavourId string `json:"flavourId"`

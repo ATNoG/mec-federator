@@ -1,6 +1,8 @@
 package models
 
 type HugePage struct {
+	// Size of hugepage
 	PageSize string `json:"pageSize"`
-	Number   int32  `json:"number"`
+	// Total number of huge pages
+	Number int32 `json:"number"`
 }

@@ -2,6 +2,7 @@ package models
 
 type FederationApiNames string
 
+// List of FederationAPINames
 const (
 	FEDERATION FederationApiNames = "FEDERATION"
 	AVAILZONE  FederationApiNames = "AVAILZONE"

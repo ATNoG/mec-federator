@@ -2,6 +2,7 @@ package models
 
 type Status string
 
+// List of Status
 const (
 	FAILED            Status = "FAILED"
 	TEMPORARY_FAILURE Status = "TEMPORARY_FAILURE"

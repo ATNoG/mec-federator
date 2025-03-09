@@ -2,6 +2,7 @@ package models
 
 type PatchableParams string
 
+// List of PatchableParams
 const (
 	PERCEIVED_SEVERITY PatchableParams = "/perceivedSeverity"
 	PROBABLE_CAUSE     PatchableParams = "/probableCause"

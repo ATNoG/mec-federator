@@ -1,7 +1,9 @@
 package models
 
+// ServiceApiNameVal : Name of the Service API
 type ServiceApiNameVal string
 
+// List of serviceAPINameVal
 const (
 	QUALITY_ON_DEMAND   ServiceApiNameVal = "QualityOnDemand"
 	DEVICE_LOCATION     ServiceApiNameVal = "DeviceLocation"
