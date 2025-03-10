@@ -6,9 +6,10 @@ import (
 )
 
 func initRoutes(router *gin.Engine) {
-	initFederationManagementRoutes(router)
+	initTestRoutes(router)
 	initAuthRoutes(router)
 	initFederationAPIManagementRoutes(router)
+	initFederationManagementRoutes(router)
 }
 
 func initTestRoutes(router *gin.Engine) {
@@ -20,10 +21,10 @@ func initTestRoutes(router *gin.Engine) {
 
 func initAuthRoutes(router *gin.Engine) {
 	// AuthAPIManagement - Authentication and authorization of the partner OP
-	// AuthAPIManagement := router.Group("/auth")
-	// AuthAPIManagement.GET("/", controller.BeginAuthController)
+	AuthAPIManagement := router.Group("/auth")
+	AuthAPIManagement.GET("/", controller.BeginAuthController)
 	// AuthAPIManagement.GET("/token", controller.CompleteAuthController)
-	// AuthAPIManagement.GET("/logout", controller.LogoutController)
+	// AuthAPIManagement.GET("/logout", controller.LogoutAuthController)
 }
 
 func initFederationAPIManagementRoutes(router *gin.Engine) {

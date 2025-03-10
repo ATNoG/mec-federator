@@ -1,0 +1,18 @@
+@startuml Authentication Flow
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+participant "Federator A" as A
+participant "Federator B" as B
+participant "Identity Provider" as IDP
+
+A -> B: Request Authorization
+B -> IDP: Redirect Request to \n External Authentication Provider
+B <- IDP: Grant Authorization
+B -> IDP: Request Access Token
+B <- IDP: Access Token
+A <- B: Forward Access Token
+A -> B: Access Resources \n using Token
+
+
+@enduml
