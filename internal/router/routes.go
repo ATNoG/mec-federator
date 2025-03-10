@@ -2,14 +2,15 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/controller"
 )
 
-func initRoutes(router *gin.Engine) {
+func initRoutes(router *gin.Engine, svcs *Services) {
 	initTestRoutes(router)
-	initAuthRoutes(router)
-	initFederationAPIManagementRoutes(router)
-	initFederationManagementRoutes(router)
+	initAuthRoutes(router, svcs)
+	initFederationAPIManagementRoutes(router, svcs)
+	initFederationManagementRoutes(router, svcs)
 }
 
 func initTestRoutes(router *gin.Engine) {
@@ -19,21 +20,22 @@ func initTestRoutes(router *gin.Engine) {
 	TestAPIManagement.GET("/health", controller.HealthController)
 }
 
-func initAuthRoutes(router *gin.Engine) {
+func initAuthRoutes(router *gin.Engine, svcs *Services) {
+	authController := controller.NewAuthController(svcs.AuthService, config.GetMongoClient())
 	// AuthAPIManagement - Authentication and authorization of the partner OP
 	AuthAPIManagement := router.Group("/auth")
-	AuthAPIManagement.GET("/", controller.BeginAuthController)
+	AuthAPIManagement.GET("/", authController.BeginAuthController)
 	// AuthAPIManagement.GET("/token", controller.CompleteAuthController)
 	// AuthAPIManagement.GET("/logout", controller.LogoutAuthController)
 }
 
-func initFederationAPIManagementRoutes(router *gin.Engine) {
+func initFederationAPIManagementRoutes(router *gin.Engine, svcs *Services) {
 	// FederationAPIManagement - Retrieves federation resources and methods a partner OP support on E/WBI
 	// FederationAPIManagement := router.Group("/federation/v1")
 	// FederationAPIManagement.GET("/federation-resources", controller.GetFederationResourcesController)
 }
 
-func initFederationManagementRoutes(router *gin.Engine) {
+func initFederationManagementRoutes(router *gin.Engine, svcs *Services) {
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
 	// FederationManagement := router.Group("/federation/v1")
 	// FederationManagement.POST("/partner", controller.PostFederationPartnerController)

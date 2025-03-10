@@ -10,30 +10,30 @@ import (
 )
 
 // interface for authentication service
-type AuthenticationService interface {
+type AuthService interface {
 	SaveAccessToken(accessToken models.AccessToken) error
 	QueryAccessToken(tokenStr string) (models.AccessToken, error)
 }
 
 // implementation of authentication service, requiring a mongo client
-type AuthenticationServiceImpl struct {
+type AuthServiceImpl struct {
 	mongoClient *mongo.Client
 }
 
 // create a new authentication service, injecting given mongo client
-func NewAuthenticationService(mongoClient *mongo.Client) *AuthenticationServiceImpl {
-	return &AuthenticationServiceImpl{mongoClient: mongoClient}
+func NewAuthService(mongoClient *mongo.Client) *AuthServiceImpl {
+	return &AuthServiceImpl{mongoClient: mongoClient}
 }
 
 // save an access token to the database
-func (s *AuthenticationServiceImpl) SaveAccessToken(accessToken models.AccessToken) error {
+func (s *AuthServiceImpl) SaveAccessToken(accessToken models.AccessToken) error {
 	collection := s.mongoClient.Database("mec-federator").Collection("access_tokens")
 	_, err := collection.InsertOne(context.TODO(), accessToken)
 	return err
 }
 
 // query an access token from the database; if experired, delete it
-func (s *AuthenticationServiceImpl) QueryAccessToken(tokenStr string) (models.AccessToken, error) {
+func (s *AuthServiceImpl) QueryAccessToken(tokenStr string) (models.AccessToken, error) {
 	filter := bson.M{"accessToken": tokenStr}
 	var result models.AccessToken
 	collection := s.mongoClient.Database("mec-federator").Collection("access_tokens")

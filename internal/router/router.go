@@ -2,15 +2,29 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mankings/mec-federator/internal/config"
+	"github.com/mankings/mec-federator/internal/services"
 )
 
-func Init() {
+type Services struct {
+	AuthService *services.AuthServiceImpl
+}
+
+func Init() *gin.Engine {
 	// start gin with default settings
 	router := gin.Default()
 
+	mongoClient := config.GetMongoClient()
+
+	services := &Services{
+		AuthService: services.NewAuthService(mongoClient),
+	}
+
 	// init routes
-	initRoutes(router)
+	initRoutes(router, services)
 
 	// run the server
-	router.Run(":8080")
+	router.Run()
+
+	return router
 }

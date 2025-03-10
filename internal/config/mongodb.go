@@ -37,3 +37,8 @@ func InitMongoDB() error {
 	log.Printf("Successfully connected to MongoDB")
 	return nil
 }
+
+// returns the MongoDB client
+func GetMongoClient() *mongo.Client {
+	return mongoClient
+}

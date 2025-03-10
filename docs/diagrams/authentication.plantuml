@@ -11,8 +11,9 @@ B -> IDP: Redirect Request to \n External Authentication Provider
 B <- IDP: Grant Authorization
 B -> IDP: Request Access Token
 B <- IDP: Access Token
+B -> B: Save Access Token \n to Database
 A <- B: Forward Access Token
+A -> A: Save Access Token \n to Database
 A -> B: Access Resources \n using Token
-
 
 @enduml
