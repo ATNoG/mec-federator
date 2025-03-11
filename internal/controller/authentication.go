@@ -29,6 +29,7 @@ func NewAuthController(authService *services.AuthServiceImpl, mongoClient *mongo
 
 func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	log.Print("BeginAuthController - Gathering OAuth2.0 configuration variables")
+
 	tokenEndpoint := config.AppConfig.KeycloakTokenEndpoint
 	clientId := c.PostForm("client_id")
 	clientSecrect := c.PostForm("client_secret")
@@ -39,6 +40,7 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	}
 
 	log.Print("BeginAuthController - Building request to Keycloak")
+
 	reqBody := strings.NewReader("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecrect)
 	req, err := http.NewRequest("POST", tokenEndpoint, reqBody)
 	if err != nil {
@@ -47,9 +49,9 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 		return
 	}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
 	log.Print("BeginAuthController - Sending request")
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		slog.Error("KeycloakAuthentication", "Error sending request: %v", err.Error())
@@ -70,6 +72,7 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	}
 
 	slog.Info("KeycloakAuthentication", "TokenResponse: %v", tokenResponse)
+
 	expiresAt := time.Now().Add(time.Duration(tokenResponse.ExpiresIn) * time.Second)
 
 	log.Print("BeginAuthController - Building AccessToken")
@@ -79,6 +82,7 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	}
 
 	log.Print("BeginAuthController - Saving AccessToken")
+
 	err = ac.authService.SaveAccessToken(accessToken)
 	if err != nil {
 		slog.Error("KeycloakAuthentication", "SaveAccessToken error: %v", err.Error())
