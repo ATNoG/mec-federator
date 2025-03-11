@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -26,23 +27,18 @@ func NewAuthController(authService *services.AuthServiceImpl, mongoClient *mongo
 	}
 }
 
-// Retrieve the access token from the cookie and check if it is valid
-func (ac *AuthController) IsAuthenticated(c *gin.Context) bool {
-	tokenStr, err := c.Cookie("accessToken")
-	if err != nil {
-		return false
+func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
+	log.Print("BeginAuthController - Gathering OAuth2.0 configuration variables")
+	tokenEndpoint := config.AppConfig.KeycloakTokenEndpoint
+	clientId := c.PostForm("client_id")
+	clientSecrect := c.PostForm("client_secret")
+	if tokenEndpoint == "" || clientId == "" || clientSecrect == "" {
+		log.Fatal("KeycloakAuthentication", "Missing configuration variables")
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Missing configuration variables"})
+		return
 	}
-	_, err = ac.authService.QueryAccessToken(tokenStr)
-	return err == nil
-}
 
-func (ac *AuthController) BeginAuthController(c *gin.Context) {
-	slog.Info("Gathering OAuth2.0 configuration variables")
-	tokenEndpoint := config.AppConfig.OAuth2TokenEndpoint
-	clientId := config.AppConfig.OAuth2ClientId    // this might need to come from the request itself
-	clientSecrect := config.AppConfig.OAuth2Secret // this might need to come from the request itself
-
-	slog.Info("Building request to Keycloak")
+	log.Print("BeginAuthController - Building request to Keycloak")
 	reqBody := strings.NewReader("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecrect)
 	req, err := http.NewRequest("POST", tokenEndpoint, reqBody)
 	if err != nil {
@@ -53,7 +49,7 @@ func (ac *AuthController) BeginAuthController(c *gin.Context) {
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	slog.Info("Sending request")
+	log.Print("BeginAuthController - Sending request")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		slog.Error("KeycloakAuthentication", "Error sending request: %v", err.Error())
@@ -66,22 +62,23 @@ func (ac *AuthController) BeginAuthController(c *gin.Context) {
 		ExpiresIn   int    `json:"expires_in"`
 	}
 
-	slog.Info("Decoding response")
+	log.Print("BeginAuthController - Decoding response")
 	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
 		slog.Error("KeycloakAuthentication", "Error decoding response: %v", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error decoding authentication response"})
 		return
 	}
 
+	slog.Info("KeycloakAuthentication", "TokenResponse: %v", tokenResponse)
 	expiresAt := time.Now().Add(time.Duration(tokenResponse.ExpiresIn) * time.Second)
 
-	slog.Info("Building AccessToken")
+	log.Print("BeginAuthController - Building AccessToken")
 	accessToken := models.AccessToken{
 		Token:     tokenResponse.AccessToken,
 		ExpiresAt: expiresAt,
 	}
 
-	slog.Info("Saving AccessToken")
+	log.Print("BeginAuthController - Saving AccessToken")
 	err = ac.authService.SaveAccessToken(accessToken)
 	if err != nil {
 		slog.Error("KeycloakAuthentication", "SaveAccessToken error: %v", err.Error())

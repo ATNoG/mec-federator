@@ -6,14 +6,14 @@ participant "Federator A" as A
 participant "Federator B" as B
 participant "Identity Provider" as IDP
 
-A -> B: Request Authorization
-B -> IDP: Redirect Request to \n External Authentication Provider
-B <- IDP: Grant Authorization
-B -> IDP: Request Access Token
-B <- IDP: Access Token
-B -> B: Save Access Token \n to Database
-A <- B: Forward Access Token
-A -> A: Save Access Token \n to Database
-A -> B: Access Resources \n using Token
+A -> B:     Request Authorization
+B -> IDP:   Redirect Request to \n External Authentication Provider
+B <- IDP:   Grant Authorization
+B -> IDP:   Request Access Token
+B <- IDP:   Access Token
+B -> B:     Save Access Token \n to Database
+A <- B:     Forward Access Token
+A -> A:     Save Access Token \n to Database
+A -> B:     Access Resources \n using Token
 
 @enduml

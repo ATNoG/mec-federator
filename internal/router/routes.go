@@ -24,9 +24,7 @@ func initAuthRoutes(router *gin.Engine, svcs *Services) {
 	authController := controller.NewAuthController(svcs.AuthService, config.GetMongoClient())
 	// AuthAPIManagement - Authentication and authorization of the partner OP
 	AuthAPIManagement := router.Group("/federation/v1/auth")
-	AuthAPIManagement.GET("/", authController.BeginAuthController)
-	// AuthAPIManagement.GET("/token", controller.CompleteAuthController)
-	// AuthAPIManagement.GET("/logout", controller.LogoutAuthController)
+	AuthAPIManagement.POST("/token", authController.IssueAccessTokenController)
 }
 
 func initFederationAPIManagementRoutes(router *gin.Engine, svcs *Services) {

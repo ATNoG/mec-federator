@@ -16,18 +16,25 @@ docker-build:
 docker-start: docker-build
 	docker run -p $(API_PORT):$(API_PORT) $(APP_NAME)
 
-docker-compose-up:
+dc-up:
 	docker compose \
 		--project-directory . \
 		-f deployment/docker/docker-compose.op-a.yml \
 		up -d \
 		$(if $(BUILD),--build)
 
-docker-compose-down:
+dc-down:
 	docker compose \
 		--project-directory . \
 		-f deployment/docker/docker-compose.op-a.yml \
 		down -v
+
+db-up:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.op-a.yml \
+		up -d \
+		mongodb
 
 clean:
 	rm -rf bin/*
