@@ -9,8 +9,13 @@ import (
 func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
 	initTestRoutes(router, svcs, authMiddleware)
 	initAuthRoutes(router, svcs, authMiddleware)
+
+	// EWBI API Management
 	initFederationAPIManagementRoutes(router, svcs, authMiddleware)
 	initFederationManagementRoutes(router, svcs, authMiddleware)
+
+	// SBI API Management
+	// orchestrator registration routes
 }
 
 func initTestRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {

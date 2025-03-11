@@ -46,6 +46,5 @@ func AuthMiddleware(as *services.AuthServiceImpl) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, problemDetails)
 			return
 		}
-		c.Next()
 	}
 }
