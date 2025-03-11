@@ -1,0 +1,20 @@
+@startuml Request Federation through UI
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+participant "User Interface" as UI
+participant "OSS/BSS" as OSS
+participant "MEAO" as M
+participant "Federator A" as FA
+participant "Federator B" as FB
+
+UI -> OSS: Request Federation
+OSS -> M: Request Federation
+M -> FA: Request Federation
+FA -> FB: Request Federation
+FA <- FB: Federation Accepted
+M <- FA: Federation Accepted
+OSS <- M: Federation Accepted
+UI <- OSS: Federation Accepted
+
+@enduml

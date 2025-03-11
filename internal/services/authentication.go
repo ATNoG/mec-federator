@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/mankings/mec-federator/internal/models"
@@ -29,6 +30,7 @@ func NewAuthService(mongoClient *mongo.Client) *AuthServiceImpl {
 func (s *AuthServiceImpl) SaveAccessToken(accessToken models.AccessToken) error {
 	collection := s.mongoClient.Database("mec-federator").Collection("access_tokens")
 	_, err := collection.InsertOne(context.TODO(), accessToken)
+	slog.Info("Saved access token", "accessToken", accessToken)
 	return err
 }
 

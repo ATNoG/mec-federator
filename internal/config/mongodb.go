@@ -21,6 +21,7 @@ func InitMongoDB() error {
 
 	mongoConnection := options.Client().ApplyURI(DatabaseURI)
 
+	var err error
 	mongoClient, err = mongo.Connect(mongoConnection)
 	if err != nil {
 		slog.Error("Error connecting to MongoDB", "error", err)

@@ -20,15 +20,12 @@ type Config struct {
 	OAuth2TokenEndpoint string
 }
 
-var (
-	AppConfig *Config
-	err       error
-)
+var AppConfig *Config
 
 func InitAppConfig() error {
 
 	// Initialize environment variables
-	if err = godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading environment variables from .env file")
 		return err
 	}

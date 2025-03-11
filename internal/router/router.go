@@ -24,7 +24,7 @@ func Init() *gin.Engine {
 	initRoutes(router, services)
 
 	// run the server
-	router.Run()
+	router.Run(":" + config.AppConfig.ApiPort)
 
 	return router
 }

@@ -15,7 +15,7 @@ func initRoutes(router *gin.Engine, svcs *Services) {
 
 func initTestRoutes(router *gin.Engine) {
 	// TestAPIManagement - Test API for testing the service
-	TestAPIManagement := router.Group("/test")
+	TestAPIManagement := router.Group("/federation/v1/test")
 	TestAPIManagement.GET("/ping", controller.PingController)
 	TestAPIManagement.GET("/health", controller.HealthController)
 }
@@ -23,7 +23,7 @@ func initTestRoutes(router *gin.Engine) {
 func initAuthRoutes(router *gin.Engine, svcs *Services) {
 	authController := controller.NewAuthController(svcs.AuthService, config.GetMongoClient())
 	// AuthAPIManagement - Authentication and authorization of the partner OP
-	AuthAPIManagement := router.Group("/auth")
+	AuthAPIManagement := router.Group("/federation/v1/auth")
 	AuthAPIManagement.GET("/", authController.BeginAuthController)
 	// AuthAPIManagement.GET("/token", controller.CompleteAuthController)
 	// AuthAPIManagement.GET("/logout", controller.LogoutAuthController)

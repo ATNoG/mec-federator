@@ -1,0 +1,11 @@
+@startuml Orchestrator Registration to Federator
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+participant "Federator" as F
+participant "MEAO" as M
+
+M -> F: Register Orchestrator
+F -> M: Acknowledge Registration 
+
+@enduml
