@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mankings/mec-federator/internal/config"
+	"github.com/mankings/mec-federator/internal/middleware"
 	"github.com/mankings/mec-federator/internal/services"
 )
 
@@ -20,8 +21,10 @@ func Init() *gin.Engine {
 		AuthService: services.NewAuthService(mongoClient),
 	}
 
+	authMiddleware := middleware.AuthMiddleware(services.AuthService)
+
 	// init routes
-	initRoutes(router, services)
+	initRoutes(router, services, authMiddleware)
 
 	// run the server
 	router.Run(":" + config.AppConfig.ApiPort)
