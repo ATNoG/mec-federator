@@ -8,7 +8,8 @@ import (
 )
 
 type Services struct {
-	AuthService *services.AuthServiceImpl
+	AuthService       *services.AuthService
+	FederationService *services.FederationService
 }
 
 func Init() *gin.Engine {
@@ -18,7 +19,8 @@ func Init() *gin.Engine {
 	mongoClient := config.GetMongoClient()
 
 	services := &Services{
-		AuthService: services.NewAuthService(mongoClient),
+		AuthService:       services.NewAuthService(mongoClient),
+		FederationService: services.NewFederationService(mongoClient),
 	}
 
 	authMiddleware := middleware.AuthMiddleware(services.AuthService)

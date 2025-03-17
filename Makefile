@@ -20,6 +20,7 @@ dc-up:
 	docker compose \
 		--project-directory . \
 		-f deployment/docker/docker-compose.op-a.yml \
+		--env-file .env.a \
 		up -d \
 		$(if $(BUILD),--build)
 
@@ -33,8 +34,9 @@ db-up:
 	docker compose \
 		--project-directory . \
 		-f deployment/docker/docker-compose.op-a.yml \
+		--env-file .env.a \
 		up -d \
-		mongodb
+		mongo mongo-express
 
 clean:
 	rm -rf bin/*

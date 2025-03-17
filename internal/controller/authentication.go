@@ -16,11 +16,11 @@ import (
 )
 
 type AuthController struct {
-	authService *services.AuthServiceImpl
+	authService *services.AuthService
 	mongoClient *mongo.Client
 }
 
-func NewAuthController(authService *services.AuthServiceImpl, mongoClient *mongo.Client) *AuthController {
+func NewAuthController(authService *services.AuthService, mongoClient *mongo.Client) *AuthController {
 	return &AuthController{
 		authService: authService,
 		mongoClient: mongoClient,
@@ -70,8 +70,6 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error decoding authentication response"})
 		return
 	}
-
-	slog.Info("KeycloakAuthentication", "TokenResponse: %v", tokenResponse)
 
 	expiresAt := time.Now().Add(time.Duration(tokenResponse.ExpiresIn) * time.Second)
 

@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"log/slog"
+	"log"
 	"time"
 
 	"github.com/mankings/mec-federator/internal/models"
@@ -11,34 +11,34 @@ import (
 )
 
 // interface for authentication service
-type AuthService interface {
+type AuthServiceInterface interface {
 	SaveAccessToken(accessToken models.AccessToken) error
 	QueryAccessToken(tokenStr string) (models.AccessToken, error)
 }
 
 // implementation of authentication service, requiring a mongo client
-type AuthServiceImpl struct {
+type AuthService struct {
 	mongoClient *mongo.Client
 }
 
 // create a new authentication service, injecting given mongo client
-func NewAuthService(mongoClient *mongo.Client) *AuthServiceImpl {
-	return &AuthServiceImpl{mongoClient: mongoClient}
+func NewAuthService(mongoClient *mongo.Client) *AuthService {
+	return &AuthService{mongoClient: mongoClient}
 }
 
 // save an access token to the database
-func (s *AuthServiceImpl) SaveAccessToken(accessToken models.AccessToken) error {
-	collection := s.mongoClient.Database("mec-federator").Collection("access_tokens")
+func (s *AuthService) SaveAccessToken(accessToken models.AccessToken) error {
+	collection := s.mongoClient.Database("federationDb").Collection("access_tokens")
 	_, err := collection.InsertOne(context.TODO(), accessToken)
-	slog.Info("Saved access token", "accessToken", accessToken)
+	log.Printf("AuthService - Saved access token")
 	return err
 }
 
 // query an access token from the database; if experired, delete it
-func (s *AuthServiceImpl) QueryAccessToken(tokenStr string) (models.AccessToken, error) {
+func (s *AuthService) QueryAccessToken(tokenStr string) (models.AccessToken, error) {
 	filter := bson.M{"accessToken": tokenStr}
 	var result models.AccessToken
-	collection := s.mongoClient.Database("mec-federator").Collection("access_tokens")
+	collection := s.mongoClient.Database("federationDb").Collection("access_tokens")
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		return result, err
