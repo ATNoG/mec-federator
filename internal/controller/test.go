@@ -17,3 +17,4 @@ func HealthController(c *gin.Context) {
 		"status": "healthy",
 	})
 }
+

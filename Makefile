@@ -1,47 +1,69 @@
-include .env
-
 tidy:
 	go mod tidy
 
 build: 
 	mkdir -p bin
-	go build -o bin/$(APP_NAME) cmd/$(APP_NAME)/main.go
+	go build -o bin/federator main.go
 
 start: build
-	./bin/$(APP_NAME)
+	./bin/federator
 
-docker-build:
-	docker build -t $(APP_NAME) . -f deployment/docker/Dockerfile
-
-docker-start: docker-build
-	docker run -p $(API_PORT):$(API_PORT) $(APP_NAME)
-
-dc-up:
+dev-up:
 	docker compose \
 		--project-directory . \
-		-f deployment/docker/docker-compose.op-a.yml \
-		--env-file .env.a \
+		-f deployment/docker/docker-compose.dev.yml \
+		--env-file .env \
+		up -d
+
+dev-down:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.dev.yml \
+		--env-file .env \
+		down -v
+
+half-up:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.half.yml \
+		--env-file .env.half \
 		up -d \
 		$(if $(BUILD),--build)
 
-dc-down:
+half-down:
 	docker compose \
 		--project-directory . \
-		-f deployment/docker/docker-compose.op-a.yml \
+		-f deployment/docker/docker-compose.half.yml \
+		--env-file .env.half \
 		down -v
 
-db-up:
+full-up:
 	docker compose \
 		--project-directory . \
-		-f deployment/docker/docker-compose.op-a.yml \
-		--env-file .env.a \
+		-f deployment/docker/docker-compose.full.yml \
+		--env-file .env.full \
 		up -d \
-		mongo mongo-express
+		$(if $(BUILD),--build)
+
+full-down:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.full.yml \
+		--env-file .env.half \
+		down -v
 
 clean:
 	rm -rf bin/*
 	docker rmi $(APP_NAME) -f
 	docker compose \
 		--project-directory . \
-		-f deployment/docker/docker-compose.op-a.yml \
+		-f deployment/docker/docker-compose.full.yml \
+		down -v
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.half.yml \
+		down -v
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.dev.yml \
 		down -v

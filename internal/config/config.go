@@ -23,11 +23,9 @@ type Config struct {
 var AppConfig *Config
 
 func InitAppConfig() error {
-
-	// Initialize environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading environment variables from .env file")
-		return err
+	// Initialize environment variables from .env file
+	if err := godotenv.Load(); err == nil {
+		log.Print("Warning! Using environment variables from .env file")
 	}
 
 	// Initialize AppConfig

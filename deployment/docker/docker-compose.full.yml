@@ -1,0 +1,74 @@
+services:
+  federator-a:
+    container_name: federator-a
+    build:
+      context: .
+      dockerfile: ./deployment/docker/Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo-a
+
+  mongo-a:
+    container_name: ${MONGO_HOST}-a
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-data-a:/data/db
+
+  mongo-express-a:
+    container_name: mongo-express-a
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}-a:27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    depends_on:
+      - mongo-a
+
+  federator-b:
+    container_name: federator-b
+    build:
+      context: .
+      dockerfile: ./deployment/docker/Dockerfile
+    ports:
+      - "8001:8000"
+    depends_on:
+      - mongo-b
+
+  mongo-b:
+    container_name: ${MONGO_HOST}-b
+    image: mongo:6.0
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-data-b:/data/db
+
+  mongo-express-b:
+    container_name: mongo-express-b
+    image: mongo-express
+    ports:
+      - "8082:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}-a:27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    depends_on:
+      - mongo-b
+
+volumes:
+  mongo-data-a:
+    driver: local
+  mongo-data-b:
+    driver: local

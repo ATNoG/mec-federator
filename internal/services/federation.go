@@ -2,10 +2,12 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -28,7 +30,7 @@ type FederationService struct {
 }
 
 func (fs *FederationService) getFederationCollection() *mongo.Collection {
-	return fs.mongoClient.Database("federatorDb").Collection("federations")
+	return fs.mongoClient.Database("federationDb").Collection("federations")
 }
 
 // NewFederationService creates a new instance of the FederationServiceImpl
@@ -41,9 +43,11 @@ func NewFederationService(mongoClient *mongo.Client) *FederationService {
 // SavePendingFederation saves a pending federation to the database
 func (fs *FederationService) CreateFederation(federationRequest models.FederationRequestData) (models.Federation, error) {
 	federationResponseData := models.FederationResponseData{
-		FederationContextId:   uuid.New().String(),
-		FederationExpiryDate:  time.Now().AddDate(0, 6, 0),
-		FederationRenewalDate: time.Now().AddDate(0, 3, 0),
+		FederationContextId:          uuid.New().String(),
+		PlatformCaps:                 &[]string{"MEC"},
+		PartnerOPCountryCode:         "443",
+		EdgeDiscoveryServiceEndPoint: &models.ServiceEndpoint{Fqdn: "edge-discovery-service.com", Port: 443},
+		LcmServiceEndPoint:           &models.ServiceEndpoint{Fqdn: "lcm-service.com", Port: 443},
 	}
 
 	healthInfo := models.FederationHealthInfo{}
@@ -63,6 +67,38 @@ func (fs *FederationService) CreateFederation(federationRequest models.Federatio
 	return federation, err
 }
 
+// DeleteFederation deletes a federation from the database using the federationContextId
+func (fs *FederationService) DeleteFederation(federationContextId string) error {
+	// remove Federation from the database
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := fs.getFederationCollection()
+	filter := bson.M{"partnerOP.federationContextId": federationContextId}
+	_, err := collection.DeleteOne(ctx, filter)
+	return err
+}
+
+// GetFederationFromContextId retrieves a federation from the database using the federationContextId
+func (fs *FederationService) GetFederationFromContextId(federationContextId string) (models.Federation, error) {
+	var federation models.Federation
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := fs.getFederationCollection()
+	filter := bson.M{"partnerOP.federationContextId": federationContextId}
+	err := collection.FindOne(ctx, filter).Decode(&federation)
+	return federation, err
+}
+
+// ExistsFederationWithContextId checks if a federation exists in the database using the federationContextId
+func (fs *FederationService) ExistsFederationWithContextId(federationContextId string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := fs.getFederationCollection()
+	filter := bson.M{"partnerOP.federationContextId": federationContextId}
+	count, _ := collection.CountDocuments(ctx, filter)
+	return count > 0
+}
+
 // UpdateFederation updates a federation in the database
 func (fs *FederationService) UpdateFederation(federation models.Federation) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -74,12 +110,48 @@ func (fs *FederationService) UpdateFederation(federation models.Federation) erro
 	return err
 }
 
-// DeleteFederation deletes a federation from the database using the federationContextId
-func (fs *FederationService) DeleteFederation(federationContextId string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	collection := fs.getFederationCollection()
-	filter := bson.M{"partnerOP.federationContextId": federationContextId}
-	_, err := collection.DeleteOne(ctx, filter)
-	return err
+func (fs *FederationService) PatchFederation(federationContextId string, patchParams models.FederationPatchParams) error {
+	federation, err := fs.GetFederationFromContextId(federationContextId)
+	if err != nil {
+		return err
+	}
+
+	switch patchParams.ObjectType {
+	case "MOBILE_NETWORK_CODES":
+		switch patchParams.OperationType {
+		case "ADD_CODES":
+			utils.AddMobileCodes(federation.OriginOP.OrigOPMobileNetworkCodes, patchParams.AddMobileNetworkIds)
+
+		case "REMOVE_CODES":
+			utils.RemoveMobileCodes(federation.OriginOP.OrigOPMobileNetworkCodes, patchParams.RemoveMobileNetworkIds)
+
+		case "UPDATE_CODES":
+			federation.OriginOP.OrigOPMobileNetworkCodes = patchParams.AddMobileNetworkIds
+
+		default:
+			return fmt.Errorf("unsupported operation type: %s", patchParams.OperationType)
+		}
+
+	case "FIXED_NETWORK_CODES":
+		switch patchParams.OperationType {
+		case "ADD_CODES":
+			federation.OriginOP.OrigOPFixedNetworkCodes = utils.AddFixedCodes(federation.OriginOP.OrigOPFixedNetworkCodes, patchParams.AddFixedNetworkIds)
+
+		case "REMOVE_CODES":
+			federation.OriginOP.OrigOPFixedNetworkCodes = utils.RemoveFixedCodes(federation.OriginOP.OrigOPFixedNetworkCodes, patchParams.RemoveFixedNetworkIds)
+
+		case "UPDATE_CODES":
+			federation.OriginOP.OrigOPFixedNetworkCodes = patchParams.AddFixedNetworkIds
+
+		default:
+			return fmt.Errorf("unsupported operation type: %s", patchParams.OperationType)
+		}
+
+	default:
+		return fmt.Errorf("unsupported object type: %s", patchParams.ObjectType)
+	}
+
+	return fs.UpdateFederation(federation)
 }
+
+// Helper functions for

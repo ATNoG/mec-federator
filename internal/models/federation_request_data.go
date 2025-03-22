@@ -5,15 +5,15 @@ import (
 )
 
 type FederationRequestData struct {
-	OrigOPFederationId string `json:"origOPFederationId,omitempty"`
+	OrigOPFederationId string `json:"origOPFederationId,omitempty" bson:"origOPFederationId,omitempty"`
 
-	OrigOPCountryCode string `json:"origOPCountryCode,omitempty"`
+	OrigOPCountryCode string `json:"origOPCountryCode,omitempty" bson:"origOPCountryCode,omitempty"`
 
-	OrigOPMobileNetworkCodes *MobileNetworkIds `json:"origOPMobileNetworkCodes,omitempty"`
+	OrigOPMobileNetworkCodes *MobileNetworkIds `json:"origOPMobileNetworkCodes,omitempty" bson:"origOPMobileNetworkCodes,omitempty"`
 
-	OrigOPFixedNetworkCodes *[]string `json:"origOPFixedNetworkCodes,omitempty"`
+	OrigOPFixedNetworkCodes *[]string `json:"origOPFixedNetworkCodes,omitempty" bson:"origOPFixedNetworkCodes,omitempty"`
 	// Time zone info of the federation initiated by the originating OP
-	InitialDate time.Time `json:"initialDate"`
+	InitialDate time.Time `json:"initialDate" bson:"initialDate" binding:"required"`
 
-	PartnerStatusLink string `json:"partnerStatusLink"`
+	PartnerStatusLink string `json:"partnerStatusLink" bson:"partnerStatusLink" binding:"required"`
 }

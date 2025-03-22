@@ -1,0 +1,48 @@
+services:
+  federator:
+    container_name: federator
+    build:
+      context: .
+      dockerfile: ./deployment/docker/Dockerfile
+    environment:
+      API_PORT: ${API_PORT}
+      BASE_URL: ${BASE_URL}
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      OAUTH2_CLIENT_ID: ${OAUTH2_CLIENT_ID}
+      OAUTH2_CLIENT_SECRET: ${OAUTH2_CLIENT_SECRET}
+      OAUTH2_TOKEN_ENDPOINT: ${OAUTH2_TOKEN_ENDPOINT}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+
+  mongo:
+    container_name: ${MONGO_HOST}
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-express:
+    container_name: mongo-express
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:
+    driver: local
