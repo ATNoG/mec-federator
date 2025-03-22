@@ -40,7 +40,7 @@ func NewFederationService(mongoClient *mongo.Client) *FederationService {
 	}
 }
 
-// SavePendingFederation saves a pending federation to the database
+// CreateFederation saves a new federation to the database according to the request data
 func (fs *FederationService) CreateFederation(federationRequest models.FederationRequestData) (models.Federation, error) {
 	federationResponseData := models.FederationResponseData{
 		FederationContextId:          uuid.New().String(),

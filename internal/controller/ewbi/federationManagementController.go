@@ -26,8 +26,7 @@ func NewFederationManagementController(federationService *services.FederationSer
 	}
 }
 
-// CreateFederationController godoc
-// @Summary Create a federation relationship
+// @Summary Create Federation Relationship
 // @Description Creates a new federation with another federator with the provided data
 // @Tags FederationManagement
 // @Accept json
@@ -45,6 +44,8 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		return
 	}
 
+	// need to update this endpoint to relate access tokens to the federation
+
 	federation, err := fmc.federationService.CreateFederation(federationRequestData)
 	if err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
@@ -52,9 +53,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		return
 	}
 
-	federationResponseData := federation.PartnerOP
-
-	c.JSON(http.StatusOK, federationResponseData)
+	c.JSON(http.StatusOK, federation.PartnerOP)
 }
 
 // @Summary Get Federation Meta Information
@@ -164,13 +163,6 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 	if err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
 		problemDetails.Detail = "Error updating the Federation object"
-		c.AbortWithStatusJSON(http.StatusInternalServerError, problemDetails)
-		return
-	}
-
-	// Update the database with the new federation object
-	if err != nil {
-		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, problemDetails)
 		return
 	}
