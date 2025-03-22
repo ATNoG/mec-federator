@@ -63,7 +63,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 // @Accept json
 // @Produce json
 // @Param federationContextId path string true "Federation Context ID"
-// @Success 200 {object} responseFields
+// @Success 200 {object} models.FederationMetaInfo
 // @Failure 400 {object} models.ProblemDetails "Invalid Federation Context ID"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
 // @Router /federation/v1/{federationContextId}/partner [get]
@@ -78,16 +78,7 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 		return
 	}
 
-	type responseFields struct {
-		EdgeDiscoveryServiceEndPoint *models.ServiceEndpoint  `json:"edgeDiscoveryServiceEndPoint"`
-		OfferedAvailabilityZones     []models.ZoneDetails     `json:"offeredAvailabilityZones"`
-		AllowedMobileNetworkIds      *models.MobileNetworkIds `json:"allowedMobileNetworkIds"`
-		AllowedFixedNetworkIds       *[]string                `json:"allowedFixedNetworkIds"`
-		LcmServiceEndPoint           *models.ServiceEndpoint  `json:"lcmServiceEndPoint"`
-		PlatformCaps                 *[]string                `json:"platformCaps" binding:"required"`
-	}
-
-	response := responseFields{
+	response := models.FederationMetaInfo{
 		EdgeDiscoveryServiceEndPoint: federation.PartnerOP.EdgeDiscoveryServiceEndPoint,
 		OfferedAvailabilityZones:     federation.PartnerOP.OfferedAvailabilityZones,
 		AllowedMobileNetworkIds:      federation.OriginOP.OrigOPMobileNetworkCodes,
@@ -128,7 +119,7 @@ func (fmc *FederationManagementController) RemoveFederationRelationshipControlle
 // @Accept json
 // @Produce json
 // @Param federationContextId path string true "Federation Context ID"
-// @Param patchParams body FederationPatchParams true "Patch Parameters"
+// @Param patchParams body models.FederationPatchParams true "Patch Parameters"
 // @Success 200 {object} map[string]string "status: Federation updated successfully"
 // @Failure 400 {object} models.ProblemDetails "Invalid request or federation not found"
 // @Failure 500 {object} models.ProblemDetails "Internal server error"

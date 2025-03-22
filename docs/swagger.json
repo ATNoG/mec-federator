@@ -1,7 +1,441 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "This is the API documentation for the MEC Federator.",
+        "title": "MEC Federator API",
+        "contact": {},
+        "version": "1.0"
     },
-    "paths": {}
+    "host": "localhost:8000",
+    "basePath": "/federation/v1",
+    "paths": {
+        "/federation/v1/partner": {
+            "post": {
+                "description": "Creates a new federation with another federator with the provided data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FederationManagement"
+                ],
+                "summary": "Create a federation relationship",
+                "parameters": [
+                    {
+                        "description": "Federation Request Data",
+                        "name": "federationRequestData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationRequestData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/federation/v1/{federationContextId}/partner": {
+            "get": {
+                "description": "Retrieves metadata information about a federation based on the federationContextId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FederationManagement"
+                ],
+                "summary": "Get Federation Meta Information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationMetaInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Federation Context ID",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes a federation relationship by its federationContextId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FederationManagement"
+                ],
+                "summary": "Remove Federation Relationship",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "status: Federation removed successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates a federation object with the given federationContextId and patch parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FederationManagement"
+                ],
+                "summary": "Update a Federation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch Parameters",
+                        "name": "patchParams",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationPatchParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "status: Federation updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or federation not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.FederationMetaInfo": {
+            "type": "object",
+            "required": [
+                "platformCaps"
+            ],
+            "properties": {
+                "allowedFixedNetworkIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "allowedMobileNetworkIds": {
+                    "$ref": "#/definitions/models.MobileNetworkIds"
+                },
+                "edgeDiscoveryServiceEndPoint": {
+                    "$ref": "#/definitions/models.ServiceEndpoint"
+                },
+                "lcmServiceEndPoint": {
+                    "$ref": "#/definitions/models.ServiceEndpoint"
+                },
+                "offeredAvailabilityZones": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ZoneDetails"
+                    }
+                },
+                "platformCaps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.FederationPatchParams": {
+            "type": "object",
+            "properties": {
+                "addFixedNetworkIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "addMobileNetworkIds": {
+                    "$ref": "#/definitions/models.MobileNetworkIds"
+                },
+                "modificationDate": {
+                    "type": "string"
+                },
+                "objectType": {
+                    "description": "Must be either \"MOBILE_NETWORK_CODES\" or \"FIXED_NETWORK_CODES\"",
+                    "type": "string"
+                },
+                "operationType": {
+                    "description": "Must be either \"ADD_CODES\", \"REMOVE_CODES\" or \"UPDATE_CODES\"",
+                    "type": "string"
+                },
+                "removeFixedNetworkIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "removeMobileNetworkIds": {
+                    "$ref": "#/definitions/models.MobileNetworkIds"
+                }
+            }
+        },
+        "models.FederationRequestData": {
+            "type": "object",
+            "required": [
+                "initialDate",
+                "partnerStatusLink"
+            ],
+            "properties": {
+                "initialDate": {
+                    "description": "Time zone info of the federation initiated by the originating OP",
+                    "type": "string"
+                },
+                "origOPCountryCode": {
+                    "type": "string"
+                },
+                "origOPFederationId": {
+                    "type": "string"
+                },
+                "origOPFixedNetworkCodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "origOPMobileNetworkCodes": {
+                    "$ref": "#/definitions/models.MobileNetworkIds"
+                },
+                "partnerStatusLink": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FederationResponseData": {
+            "type": "object",
+            "required": [
+                "edgeDiscoveryServiceEndPoint",
+                "federationContextId",
+                "lcmServiceEndPoint",
+                "partnerOPCountryCode",
+                "platformCaps"
+            ],
+            "properties": {
+                "edgeDiscoveryServiceEndPoint": {
+                    "$ref": "#/definitions/models.ServiceEndpoint"
+                },
+                "federationContextId": {
+                    "type": "string"
+                },
+                "federationExpiryDate": {
+                    "description": "Date and Time zone info of the existing federation expiry",
+                    "type": "string"
+                },
+                "federationRenewalDate": {
+                    "description": "Date and Time zone info of the existing federation renewal. Shall be less than federationExpiryDate",
+                    "type": "string"
+                },
+                "lcmServiceEndPoint": {
+                    "$ref": "#/definitions/models.ServiceEndpoint"
+                },
+                "offeredAvailabilityZones": {
+                    "description": "List of zones, which the operator platform wishes to make available to developers/ISVs of requesting operator platform.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ZoneDetails"
+                    }
+                },
+                "partnerOPCountryCode": {
+                    "type": "string"
+                },
+                "partnerOPFederationId": {
+                    "type": "string"
+                },
+                "partnerOPFixedNetworkCodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "partnerOPMobileNetworkCodes": {
+                    "$ref": "#/definitions/models.MobileNetworkIds"
+                },
+                "platformCaps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.InvalidParam": {
+            "type": "object",
+            "properties": {
+                "param": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MobileNetworkIds": {
+            "type": "object",
+            "properties": {
+                "mcc": {
+                    "type": "string"
+                },
+                "mncs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.ProblemDetails": {
+            "type": "object",
+            "properties": {
+                "cause": {
+                    "description": "Fixed string indicating cause of the issue",
+                    "type": "string"
+                },
+                "detail": {
+                    "description": "Specific detail of the issue",
+                    "type": "string"
+                },
+                "invalidParams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.InvalidParam"
+                    }
+                },
+                "title": {
+                    "description": "Summary of the problem",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ServiceEndpoint": {
+            "type": "object",
+            "properties": {
+                "fqdn": {
+                    "type": "string"
+                },
+                "ipv4Addresses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ipv6Addresses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.ZoneDetails": {
+            "type": "object",
+            "properties": {
+                "geographyDetails": {
+                    "description": "Details about cities or state covered by the edge. Details about the type of locality for eg rural, urban, industrial etc. This information is defined in human readable form.",
+                    "type": "string"
+                },
+                "geolocation": {
+                    "type": "string"
+                },
+                "zoneId": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }
