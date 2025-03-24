@@ -49,7 +49,7 @@ full-down:
 	docker compose \
 		--project-directory . \
 		-f deployment/docker/docker-compose.full.yml \
-		--env-file .env.half \
+		--env-file .env.full \
 		down -v
 
 clean:

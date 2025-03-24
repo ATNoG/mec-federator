@@ -16,7 +16,7 @@ type Config struct {
 	DbHost                string
 	DbPort                string
 	OAuth2ClientId        string
-	OAuth2Secret          string
+	OAuth2ClientSecret    string
 	KeycloakTokenEndpoint string
 }
 
@@ -37,7 +37,7 @@ func InitAppConfig() error {
 		DbHost:                os.Getenv("MONGO_HOST"),
 		DbPort:                os.Getenv("MONGO_PORT"),
 		OAuth2ClientId:        os.Getenv("OAUTH2_CLIENT_ID"),
-		OAuth2Secret:          os.Getenv("OAUTH2_SECRET"),
+		OAuth2ClientSecret:    os.Getenv("OAUTH2_CLIENT_SECRET"),
 		KeycloakTokenEndpoint: os.Getenv("OAUTH2_TOKEN_ENDPOINT"),
 	}
 

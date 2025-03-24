@@ -7,6 +7,10 @@ type Federation struct {
 
 	HealthInfo FederationHealthInfo `json:"federationHealthInfo,omitempty" bson:"federationHealthInfo"`
 
+	FederationEndpoint string `json:"federationEndpoint,omitempty" bson:"federationEndpoint"`
+
+	AuthEndpoint string `json:"authEndpoint,omitempty" bson:"authEndpoint"`
+
 	IsEstablished bool `json:"status,omitempty" bson:"status"`
 
 	IsOriginOP bool `json:"-" bson:"isOriginOP"`

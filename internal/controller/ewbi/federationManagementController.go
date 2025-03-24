@@ -2,7 +2,8 @@ package ewbi
 
 /*
  *
- * This file contains the implementation of the Federation Management Controller
+ * This file contains the implementation of the Federation Management Controller over the E/WBI
+ * Exposes FederationManagement functionalities to other federators.
  *
  */
 
@@ -10,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/services"
 	"github.com/mankings/mec-federator/internal/utils"
@@ -46,7 +48,25 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 
 	// need to update this endpoint to relate access tokens to the federation
 
-	federation, err := fmc.federationService.CreateFederation(federationRequestData)
+	federationResponseData := models.FederationResponseData{
+		FederationContextId:          uuid.New().String(),
+		PlatformCaps:                 &[]string{"MEC"},
+		PartnerOPCountryCode:         "443",
+		EdgeDiscoveryServiceEndPoint: &models.ServiceEndpoint{Fqdn: "edge-discovery-service.com", Port: 443},
+		LcmServiceEndPoint:           &models.ServiceEndpoint{Fqdn: "lcm-service.com", Port: 443},
+	}
+
+	healthInfo := models.FederationHealthInfo{}
+
+	federation := models.Federation{
+		PartnerOP:     federationResponseData,
+		OriginOP:      federationRequestData,
+		HealthInfo:    healthInfo,
+		IsEstablished: true,
+		IsOriginOP:    false,
+	}
+
+	federation, err := fmc.federationService.CreateFederation(federation)
 	if err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, problemDetails)

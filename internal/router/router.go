@@ -11,21 +11,26 @@ import (
 )
 
 type Services struct {
-	AuthService       *services.AuthService
-	FederationService *services.FederationService
+	FederationHttpClientManager *services.FederationHttpClientManager
+	AuthService                 *services.AuthService
+	FederationService           *services.FederationService
 }
 
 func Init() *gin.Engine {
 	// start gin with default settings
 	router := gin.Default()
 
+	// init mongo client
 	mongoClient := config.GetMongoClient()
 
+	// services to be injected into routes
 	services := &Services{
-		AuthService:       services.NewAuthService(mongoClient),
-		FederationService: services.NewFederationService(mongoClient),
+		FederationHttpClientManager: services.NewFederationHttpClientManager(),
+		AuthService:                 services.NewAuthService(mongoClient),
+		FederationService:           services.NewFederationService(mongoClient),
 	}
 
+	// init auth middleware
 	authMiddleware := middleware.AuthMiddleware(services.AuthService)
 
 	// init routes
@@ -42,22 +47,18 @@ func Init() *gin.Engine {
 
 func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
 	initTestRoutes(router, svcs, authMiddleware)
+
+	// Auth Routes
 	initAuthRoutes(router, svcs, authMiddleware)
 
 	// EWBI Routes
 	// initFederationAPIManagementRoutes(router, svcs, authMiddleware)
-	initFederationManagementRoutes(router, svcs, authMiddleware)
+	initEwbiFederationManagementRoutes(router, svcs, authMiddleware)
 
 	// SBI Routes
 	// interfaces with orchestrators and gives them orders
 
 	// NBI Routes
 	// receives orders from the orchestrators
+	initNbiFederationManagementRoutes(router, svcs)
 }
-
-// func initFederationAPIManagementRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
-// 	// FederationAPIManagement - Retrieves federation resources and methods a partner OP support on E/WBI
-// 	// FederationAPIManagement := router.Group("/federation/v1")
-
-// 	// FederationAPIManagement.GET("/federation-resources", controller.GetFederationResourcesController)
-// }

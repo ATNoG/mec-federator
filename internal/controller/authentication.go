@@ -12,6 +12,7 @@ import (
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -30,22 +31,52 @@ func NewAuthController(authService *services.AuthService, mongoClient *mongo.Cli
 func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	log.Print("BeginAuthController - Gathering OAuth2.0 configuration variables")
 
+	type requestBody struct {
+		ClientId     string `json:"clientId"`
+		ClientSecret string `json:"clientSecret"`
+	}
+
+	var expectedBody requestBody
+	if err := c.ShouldBindJSON(&expectedBody); err != nil {
+		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problemDetails)
+		return
+	}
+
 	tokenEndpoint := config.AppConfig.KeycloakTokenEndpoint
-	clientId := c.PostForm("client_id")
-	clientSecrect := c.PostForm("client_secret")
-	if tokenEndpoint == "" || clientId == "" || clientSecrect == "" {
-		log.Fatal("KeycloakAuthentication", "Missing configuration variables")
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Missing configuration variables"})
+	clientId := expectedBody.ClientId
+	clientSecret := expectedBody.ClientSecret
+
+	switch {
+	case tokenEndpoint == "":
+		log.Fatal("KeycloakAuthentication", "Missing tokenEndpoint configuration variable")
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Missing tokenEndpoint configuration variable"
+		c.JSON(http.StatusInternalServerError, problemDetails)
+		return
+	case clientId == "":
+		log.Fatal("KeycloakAuthentication", "Missing clientId body parameter")
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Missing clientId body parameter"
+		c.JSON(http.StatusInternalServerError, problemDetails)
+		return
+	case clientSecret == "":
+		log.Fatal("KeycloakAuthentication", "Missing clientSecret body parameter")
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Missing clientSecret body parameter"
+		c.JSON(http.StatusInternalServerError, problemDetails)
 		return
 	}
 
 	log.Print("BeginAuthController - Building request to Keycloak")
 
-	reqBody := strings.NewReader("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecrect)
+	reqBody := strings.NewReader("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret)
 	req, err := http.NewRequest("POST", tokenEndpoint, reqBody)
 	if err != nil {
 		slog.Error("KeycloakAuthentication", "Error creating request: %v", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error creating authentication request"})
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Error creating authentication request"
+		c.JSON(http.StatusInternalServerError, problemDetails)
 		return
 	}
 
@@ -55,25 +86,31 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		slog.Error("KeycloakAuthentication", "Error sending request: %v", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error sending authentication request"})
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Error sending authentication request"
+		c.JSON(http.StatusInternalServerError, problemDetails)
 		return
 	}
+
+	log.Print("BeginAuthController - Decoding response")
 
 	var tokenResponse struct {
 		AccessToken string `json:"access_token"`
 		ExpiresIn   int    `json:"expires_in"`
 	}
 
-	log.Print("BeginAuthController - Decoding response")
 	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
 		slog.Error("KeycloakAuthentication", "Error decoding response: %v", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error decoding authentication response"})
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Error decoding authentication response"
+		c.JSON(http.StatusInternalServerError, problemDetails)
 		return
 	}
 
 	expiresAt := time.Now().Add(time.Duration(tokenResponse.ExpiresIn) * time.Second)
 
 	log.Print("BeginAuthController - Building AccessToken")
+
 	accessToken := models.AccessToken{
 		Token:     tokenResponse.AccessToken,
 		ExpiresAt: expiresAt,
@@ -84,7 +121,9 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	err = ac.authService.SaveAccessToken(accessToken)
 	if err != nil {
 		slog.Error("KeycloakAuthentication", "SaveAccessToken error: %v", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error saving access token"})
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Error saving access token"
+		c.JSON(http.StatusInternalServerError, problemDetails)
 		return
 	}
 

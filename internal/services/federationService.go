@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -40,26 +39,8 @@ func NewFederationService(mongoClient *mongo.Client) *FederationService {
 	}
 }
 
-// CreateFederation saves a new federation to the database according to the request data
-func (fs *FederationService) CreateFederation(federationRequest models.FederationRequestData) (models.Federation, error) {
-	federationResponseData := models.FederationResponseData{
-		FederationContextId:          uuid.New().String(),
-		PlatformCaps:                 &[]string{"MEC"},
-		PartnerOPCountryCode:         "443",
-		EdgeDiscoveryServiceEndPoint: &models.ServiceEndpoint{Fqdn: "edge-discovery-service.com", Port: 443},
-		LcmServiceEndPoint:           &models.ServiceEndpoint{Fqdn: "lcm-service.com", Port: 443},
-	}
-
-	healthInfo := models.FederationHealthInfo{}
-
-	federation := models.Federation{
-		PartnerOP:     federationResponseData,
-		OriginOP:      federationRequest,
-		HealthInfo:    healthInfo,
-		IsEstablished: true,
-		IsOriginOP:    false,
-	}
-
+// CreateFederation saves a new federation to the database
+func (fs *FederationService) CreateFederation(federation models.Federation) (models.Federation, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	collection := fs.getFederationCollection()
