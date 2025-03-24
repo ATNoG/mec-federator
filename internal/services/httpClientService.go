@@ -12,6 +12,13 @@ import (
 	"github.com/mankings/mec-federator/internal/models"
 )
 
+/*
+ *
+ * This sections contains the implementation of the FederationHttpClientManager service.
+ *  Manages the HttpClient instances for each federation context.
+ *
+ */
+
 type FederationHttpClientManager struct {
 	mu      sync.RWMutex
 	clients map[string]*HttpClient // federation-context-id → HttpClient
@@ -39,6 +46,13 @@ func (m *FederationHttpClientManager) Get(federationContextId string) (*HttpClie
 	}
 	return client, nil
 }
+
+/*
+ *
+ * This sections contains the implementation of the HttpClient service.
+ *  Manages the HTTP requests between federators, including authorization mechanisms.
+ *
+ */
 
 type HttpClientConfig struct {
 	BaseUrl       string
@@ -103,13 +117,13 @@ func (f *HttpClient) fetchAccessToken(ctx context.Context) (models.AccessToken, 
 }
 
 // simple json post wrapper method
-func (f *HttpClient) PostJSON(ctx context.Context, url string, payload interface{}) (*http.Response, error) {
+func (f *HttpClient) PostJSON(ctx context.Context, endpoint string, payload interface{}) (*http.Response, error) {
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, f.config.BaseUrl+endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -120,7 +134,7 @@ func (f *HttpClient) PostJSON(ctx context.Context, url string, payload interface
 }
 
 // json post with auth wrapper method
-func (f *HttpClient) PostJSONWithAuth(ctx context.Context, url string, payload interface{}) (*http.Response, error) {
+func (f *HttpClient) PostJSONWithAuth(ctx context.Context, endpoint string, payload interface{}) (*http.Response, error) {
 	token, err := f.GetAccessToken(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
@@ -131,7 +145,7 @@ func (f *HttpClient) PostJSONWithAuth(ctx context.Context, url string, payload i
 		return nil, fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, f.config.BaseUrl+endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -143,8 +157,8 @@ func (f *HttpClient) PostJSONWithAuth(ctx context.Context, url string, payload i
 }
 
 // json post with auth and unmarshal wrapper method
-func (f *HttpClient) PostJSONWithAuthAndUnmarshal(ctx context.Context, url string, payload interface{}, response interface{}) error {
-	resp, err := f.PostJSONWithAuth(ctx, url, payload)
+func (f *HttpClient) PostJSONWithAuthAndUnmarshal(ctx context.Context, endpoint string, payload interface{}, response interface{}) error {
+	resp, err := f.PostJSONWithAuth(ctx, endpoint, payload)
 	if err != nil {
 		return fmt.Errorf("failed to post json with auth: %w", err)
 	}
@@ -155,4 +169,20 @@ func (f *HttpClient) PostJSONWithAuthAndUnmarshal(ctx context.Context, url strin
 	}
 
 	return nil
+}
+
+func (f *HttpClient) DeleteWithAuth(ctx context.Context, endpoint string) (*http.Response, error) {
+	token, err := f.GetAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, f.config.BaseUrl+endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token.Token)
+
+	return f.httpClient.Do(req)
 }

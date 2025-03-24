@@ -15,4 +15,5 @@ func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
 	// FederationManagement.GET("/:federationContextId/health", controller.GetFederationHealth)
 	// FederationManagement.POST("/:federationContextId/renew", controller.PostFederationRenew)
 	// FederationManagement.GET("/:federationContextId/platform-caps", controller.GetFederationPlatformCaps)
+	FederationManagement.DELETE("/:federationContextId/partner", federationManagementController.RemoveFederationController)
 }

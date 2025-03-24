@@ -1,5 +1,22 @@
 basePath: /federation/v1
 definitions:
+  models.AccessToken:
+    properties:
+      accessToken:
+        type: string
+      expiresAt:
+        type: string
+    type: object
+  models.FederationInitiateRequest:
+    properties:
+      authEndpoint:
+        type: string
+      federationEndpoint:
+        type: string
+    required:
+    - authEndpoint
+    - federationEndpoint
+    type: object
   models.FederationMetaInfo:
     properties:
       allowedFixedNetworkIds:
@@ -48,6 +65,8 @@ definitions:
     type: object
   models.FederationRequestData:
     properties:
+      accessToken:
+        $ref: '#/definitions/models.AccessToken'
       initialDate:
         description: Time zone info of the federation initiated by the originating
           OP
@@ -65,6 +84,7 @@ definitions:
       partnerStatusLink:
         type: string
     required:
+    - accessToken
     - initialDate
     - partnerStatusLink
     type: object
@@ -202,7 +222,7 @@ paths:
             $ref: '#/definitions/models.ProblemDetails'
       summary: Remove Federation Relationship
       tags:
-      - FederationManagement
+      - EWBI - FederationManagement
     get:
       consumes:
       - application/json
@@ -231,7 +251,7 @@ paths:
             $ref: '#/definitions/models.ProblemDetails'
       summary: Get Federation Meta Information
       tags:
-      - FederationManagement
+      - EWBI - FederationManagement
     patch:
       consumes:
       - application/json
@@ -268,13 +288,13 @@ paths:
             $ref: '#/definitions/models.ProblemDetails'
       summary: Update a Federation
       tags:
-      - FederationManagement
+      - EWBI - FederationManagement
   /federation/v1/partner:
     post:
       consumes:
       - application/json
-      description: Creates a new federation with another federator with the provided
-        data
+      description: Establishes a new federation relationship with another federator
+        with the provided data
       parameters:
       - description: Federation Request Data
         in: body
@@ -297,7 +317,37 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Create a federation relationship
+      summary: Create Federation Relationship
       tags:
-      - FederationManagement
+      - EWBI - FederationManagement
+  /nbi/federation/v1/partner:
+    post:
+      consumes:
+      - application/json
+      description: Initiates the federation establishment procedure with another federator
+      parameters:
+      - description: Federation and Auth Endpoints
+        in: body
+        name: federationRequest
+        required: true
+        schema:
+          $ref: '#/definitions/models.FederationInitiateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FederationResponseData'
+        "400":
+          description: Invalid request body or missing fields
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal error during federation process
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Initiate Federation Relationship
+      tags:
+      - NBI - FederationManagement
 swagger: "2.0"

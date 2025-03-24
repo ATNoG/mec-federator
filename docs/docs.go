@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/federation/v1/partner": {
             "post": {
-                "description": "Creates a new federation with another federator with the provided data",
+                "description": "Establishes a new federation relationship with another federator with the provided data",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,9 +25,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FederationManagement"
+                    "EWBI - FederationManagement"
                 ],
-                "summary": "Create a federation relationship",
+                "summary": "Create Federation Relationship",
                 "parameters": [
                     {
                         "description": "Federation Request Data",
@@ -71,7 +71,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FederationManagement"
+                    "EWBI - FederationManagement"
                 ],
                 "summary": "Get Federation Meta Information",
                 "parameters": [
@@ -113,7 +113,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FederationManagement"
+                    "EWBI - FederationManagement"
                 ],
                 "summary": "Remove Federation Relationship",
                 "parameters": [
@@ -152,7 +152,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FederationManagement"
+                    "EWBI - FederationManagement"
                 ],
                 "summary": "Update a Federation",
                 "parameters": [
@@ -197,9 +197,81 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/nbi/federation/v1/partner": {
+            "post": {
+                "description": "Initiates the federation establishment procedure with another federator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NBI - FederationManagement"
+                ],
+                "summary": "Initiate Federation Relationship",
+                "parameters": [
+                    {
+                        "description": "Federation and Auth Endpoints",
+                        "name": "federationRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationInitiateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or missing fields",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error during federation process",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "models.AccessToken": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FederationInitiateRequest": {
+            "type": "object",
+            "required": [
+                "authEndpoint",
+                "federationEndpoint"
+            ],
+            "properties": {
+                "authEndpoint": {
+                    "type": "string"
+                },
+                "federationEndpoint": {
+                    "type": "string"
+                }
+            }
+        },
         "models.FederationMetaInfo": {
             "type": "object",
             "required": [
@@ -272,10 +344,14 @@ const docTemplate = `{
         "models.FederationRequestData": {
             "type": "object",
             "required": [
+                "accessToken",
                 "initialDate",
                 "partnerStatusLink"
             ],
             "properties": {
+                "accessToken": {
+                    "$ref": "#/definitions/models.AccessToken"
+                },
                 "initialDate": {
                     "description": "Time zone info of the federation initiated by the originating OP",
                     "type": "string"

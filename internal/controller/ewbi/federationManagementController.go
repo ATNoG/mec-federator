@@ -8,6 +8,7 @@ package ewbi
  */
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,8 +30,8 @@ func NewFederationManagementController(federationService *services.FederationSer
 }
 
 // @Summary Create Federation Relationship
-// @Description Creates a new federation with another federator with the provided data
-// @Tags FederationManagement
+// @Description Establishes a new federation relationship with another federator with the provided data
+// @Tags EWBI - FederationManagement
 // @Accept json
 // @Produce json
 // @Param federationRequestData body models.FederationRequestData true "Federation Request Data"
@@ -39,6 +40,8 @@ func NewFederationManagementController(federationService *services.FederationSer
 // @Failure 500 {object} models.ProblemDetails
 // @Router /federation/v1/partner [post]
 func (fmc *FederationManagementController) CreateFederationController(c *gin.Context) {
+	log.Print("CreateFederationController - Establishing new federation relationship, checking request data")
+
 	var federationRequestData models.FederationRequestData
 	if err := c.ShouldBindJSON(&federationRequestData); err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
@@ -47,6 +50,8 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 	}
 
 	// need to update this endpoint to relate access tokens to the federation
+
+	log.Print("CreateFederationController - Request data is valid, creating federation object")
 
 	federationResponseData := models.FederationResponseData{
 		FederationContextId:          uuid.New().String(),
@@ -66,6 +71,8 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		IsOriginOP:    false,
 	}
 
+	log.Print("CreateFederationController - Federation object created, storing in database")
+
 	federation, err := fmc.federationService.CreateFederation(federation)
 	if err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
@@ -73,12 +80,14 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		return
 	}
 
+	log.Print("CreateFederationController - Federation relationship established successfully")
+
 	c.JSON(http.StatusOK, federation.PartnerOP)
 }
 
 // @Summary Get Federation Meta Information
 // @Description Retrieves metadata information about a federation based on the federationContextId
-// @Tags FederationManagement
+// @Tags EWBI - FederationManagement
 // @Accept json
 // @Produce json
 // @Param federationContextId path string true "Federation Context ID"
@@ -87,7 +96,21 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
 // @Router /federation/v1/{federationContextId}/partner [get]
 func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gin.Context) {
+	log.Print("GetFederationMetaInfoController - Retrieving federation meta information")
+
 	federationContextId := c.Param("federationContextId")
+
+	log.Print("GetFederationMetaInfoController - Checking if federation exists")
+
+	// Check if the federation exists
+	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
+		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
+		problemDetails.Detail = "No Federation found with the given federationContextId"
+		c.AbortWithStatusJSON(http.StatusBadRequest, problemDetails)
+		return
+	}
+
+	log.Print("GetFederationMetaInfoController - Federation exists, retrieving meta information")
 
 	federation, err := fmc.federationService.GetFederationFromContextId(federationContextId)
 	if err != nil {
@@ -106,12 +129,14 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 		PlatformCaps:                 federation.PartnerOP.PlatformCaps,
 	}
 
+	log.Print("GetFederationMetaInfoController - Federation meta information retrieved successfully")
+
 	c.JSON(http.StatusOK, response)
 }
 
 // @Summary Remove Federation Relationship
 // @Description Removes a federation relationship by its federationContextId
-// @Tags FederationManagement
+// @Tags EWBI - FederationManagement
 // @Accept json
 // @Produce json
 // @Param federationContextId path string true "Federation Context ID"
@@ -119,8 +144,22 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
 // @Router /federation/v1/{federationContextId}/partner [delete]
 func (fmc *FederationManagementController) RemoveFederationRelationshipController(c *gin.Context) {
+	log.Print("RemoveFederationRelationshipController - Removing federation relationship")
+
 	// Remove the federation object from the database
 	federationContextId := c.Param("federationContextId")
+
+	log.Print("RemoveFederationRelationshipController - Checking if federation exists")
+
+	// Check if the federation exists
+	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
+		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
+		problemDetails.Detail = "No Federation found with the given federationContextId"
+		c.AbortWithStatusJSON(http.StatusBadRequest, problemDetails)
+		return
+	}
+
+	log.Print("RemoveFederationRelationshipController - Deleting Federation object from database")
 
 	err := fmc.federationService.DeleteFederation(federationContextId)
 	if err != nil {
@@ -129,12 +168,14 @@ func (fmc *FederationManagementController) RemoveFederationRelationshipControlle
 		return
 	}
 
+	log.Print("RemoveFederationRelationshipController - Federation removed successfully")
+
 	c.JSON(http.StatusOK, gin.H{"status": "Federation removed successfully"})
 }
 
 // @Summary Update a Federation
 // @Description Updates a federation object with the given federationContextId and patch parameters
-// @Tags FederationManagement
+// @Tags EWBI - FederationManagement
 // @Accept json
 // @Produce json
 // @Param federationContextId path string true "Federation Context ID"
@@ -144,6 +185,8 @@ func (fmc *FederationManagementController) RemoveFederationRelationshipControlle
 // @Failure 500 {object} models.ProblemDetails "Internal server error"
 // @Router /federation/v1/{federationContextId}/partner [patch]
 func (fmc *FederationManagementController) UpdateFederationController(c *gin.Context) {
+	log.Print("UpdateFederationController - Updating federation, checking patch parameters from body")
+
 	// Check if the request body is valid and within expected data type
 	var patchParams models.FederationPatchParams
 	if err := c.ShouldBindJSON(&patchParams); err != nil {
@@ -152,6 +195,8 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 		c.AbortWithStatusJSON(http.StatusBadRequest, problemDetails)
 		return
 	}
+
+	log.Print("UpdateFederationController - Checking if federation exists")
 
 	// Get the federationContextId from the path
 	federationContextId := c.Param("federationContextId")
@@ -162,6 +207,8 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 		c.AbortWithStatusJSON(http.StatusBadRequest, problemDetails)
 		return
 	}
+
+	log.Print("UpdateFederationController - Checking validity of patch parameters")
 
 	// Check validity of patchParams
 	if patchParams.ObjectType != "MOBILE_NETWORK_CODES" && patchParams.ObjectType != "FIXED_NETWORK_CODES" {
@@ -178,6 +225,8 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 		return
 	}
 
+	log.Print("UpdateFederationController - Patch parameters are valid, updating federation object")
+
 	// Update the federation object
 	err := fmc.federationService.PatchFederation(federationContextId, patchParams)
 	if err != nil {
@@ -186,6 +235,8 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 		c.AbortWithStatusJSON(http.StatusInternalServerError, problemDetails)
 		return
 	}
+
+	log.Print("UpdateFederationController - Federation updated successfully")
 
 	c.JSON(http.StatusOK, gin.H{"status": "Federation updated successfully"})
 }

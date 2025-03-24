@@ -32,15 +32,21 @@ func NewFederationManagementController(fs *services.FederationService, hcm *serv
 	}
 }
 
+// @Summary Initiate Federation Relationship
+// @Description Initiates the federation establishment procedure with another federator
+// @Tags NBI - FederationManagement
+// @Accept  json
+// @Produce  json
+// @Param   federationRequest  body  models.FederationInitiateRequest  true  "Federation and Auth Endpoints"
+// @Success 200 {object} models.FederationResponseData
+// @Failure 400 {object} models.ProblemDetails "Invalid request body or missing fields"
+// @Failure 500 {object} models.ProblemDetails "Internal error during federation process"
+// @Router /nbi/federation/v1/partner [post]
 func (fmc *FederationManagementController) InitiateFederationController(c *gin.Context) {
 	log.Print("InitiateFederationController - Initiating federation")
 
 	// get federation and auth endpoints from request body
-	var requestBody struct {
-		FederationEndpoint string `json:"federationEndpoint" binding:"required"`
-		AuthEndpoint       string `json:"authEndpoint" binding:"required"`
-	}
-
+	var requestBody models.FederationInitiateRequest
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
 		problemDetails.Detail = "Invalid request body: " + err.Error()
@@ -84,7 +90,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 
 	// send federation request to other federator and unmarshal response
 	var federationResponseData models.FederationResponseData
-	err := httpClient.PostJSONWithAuthAndUnmarshal(c, federationEndpoint+"/federation/v1/partner", federationRequestData, &federationResponseData)
+	err := httpClient.PostJSONWithAuthAndUnmarshal(c, "/federation/v1/partner", federationRequestData, &federationResponseData)
 	if err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
 		problemDetails.Detail = err.Error()
@@ -117,4 +123,54 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 	log.Print("InitiateFederationController - Federation initiated successfully")
 
 	c.JSON(http.StatusOK, federationResponseData)
+}
+
+func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
+	log.Print("RemoveFederationController - Removing federation")
+
+	// get federation context id from request
+	federationContextId := c.Param("federationContextId")
+
+	if federationContextId == "" {
+		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
+		problemDetails.Detail = "federationContextId must be provided"
+		c.JSON(http.StatusBadRequest, problemDetails)
+		return
+	}
+
+	log.Print("RemoveFederationController - Getting HttpClient for Federation")
+
+	// get http client for federation
+	httpClient, err := fmc.federationHttpClientManager.Get(federationContextId)
+	if err != nil {
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "No http client found with the given federationContextId"
+		c.JSON(http.StatusInternalServerError, problemDetails)
+		return
+	}
+
+	log.Print("RemoveFederationController - Sending Federation Removal Request to Partner")
+
+	// send federation removal request to other federator
+	resp, err := httpClient.DeleteWithAuth(c, "/federation/v1/"+federationContextId+"/partner")
+	if err != nil {
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = err.Error()
+		c.JSON(http.StatusInternalServerError, problemDetails)
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Error removing federation from partner"
+		c.JSON(http.StatusInternalServerError, problemDetails)
+		return
+	}
+
+	// remove federation from database
+	fmc.federationService.DeleteFederation(federationContextId)
+
+	log.Print("RemoveFederationController - Federation removed successfully")
+
+	c.JSON(http.StatusOK, gin.H{"message": "Federation removed successfully"})
 }
