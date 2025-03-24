@@ -10,6 +10,7 @@ package ewbi
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -61,7 +62,13 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		LcmServiceEndPoint:           &models.ServiceEndpoint{Fqdn: "lcm-service.com", Port: 443},
 	}
 
-	healthInfo := models.FederationHealthInfo{}
+	healthInfo := models.FederationHealthInfo{
+		FederationStatus:    &models.State{AlarmState: "CLEAR"},
+		FederationStartTime: &time.Time{},
+		NumOfAcceptedZones:  "0",
+		NumOfActiveAlarms:   "0",
+		NumOfApplications:   "0",
+	}
 
 	federation := models.Federation{
 		PartnerOP:     federationResponseData,
@@ -239,4 +246,40 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 	log.Print("UpdateFederationController - Federation updated successfully")
 
 	c.JSON(http.StatusOK, gin.H{"status": "Federation updated successfully"})
+}
+
+// @Summary Health Check
+// @Description Checks the health status of the federation
+// @Tags EWBI - FederationManagement
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Success 200 {object} models.FederationHealthInfo
+// @Failure 400 {object} models.ProblemDetails "Invalid federationContextId"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /federation/v1/{federationContextId}/health [get]
+func (fmc *FederationManagementController) GetFederationHealthController(c *gin.Context) {
+	log.Print("HealthCheckController - Checking health status of the federator")
+
+	federationContextId := c.Param("federationContextId")
+
+	log.Print("HealthCheckController - Checking if federation exists")
+
+	// Check if the federation exists
+	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
+		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
+		problemDetails.Detail = "No Federation found with the given federationContextId"
+		c.AbortWithStatusJSON(http.StatusBadRequest, problemDetails)
+		return
+	}
+
+	healthInfo, err := fmc.federationService.GetFederationHealthInfo(federationContextId)
+	if err != nil {
+		problemDetails := utils.NewProblemDetails(http.StatusInternalServerError)
+		problemDetails.Detail = "Error retrieving health information"
+		c.AbortWithStatusJSON(http.StatusInternalServerError, problemDetails)
+		return
+	}
+
+	c.JSON(http.StatusOK, healthInfo)
 }

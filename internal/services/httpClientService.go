@@ -156,11 +156,32 @@ func (f *HttpClient) PostJSONWithAuth(ctx context.Context, endpoint string, payl
 	return f.httpClient.Do(req)
 }
 
-// json post with auth and unmarshal wrapper method
-func (f *HttpClient) PostJSONWithAuthAndUnmarshal(ctx context.Context, endpoint string, payload interface{}, response interface{}) error {
-	resp, err := f.PostJSONWithAuth(ctx, endpoint, payload)
+func (f *HttpClient) HttpRequestWithAuth(ctx context.Context, method, endpoint string, payload interface{}) (*http.Response, error) {
+	token, err := f.GetAccessToken(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to post json with auth: %w", err)
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal payload: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, f.config.BaseUrl+endpoint, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token.Token)
+
+	return f.httpClient.Do(req)
+}
+
+func (f *HttpClient) HttpRequestWithAuthAndUnmarshal(ctx context.Context, method, endpoint string, payload, response interface{}) error {
+	resp, err := f.HttpRequestWithAuth(ctx, method, endpoint, payload)
+	if err != nil {
+		return fmt.Errorf("failed to do http request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -169,20 +190,4 @@ func (f *HttpClient) PostJSONWithAuthAndUnmarshal(ctx context.Context, endpoint 
 	}
 
 	return nil
-}
-
-func (f *HttpClient) DeleteWithAuth(ctx context.Context, endpoint string) (*http.Response, error) {
-	token, err := f.GetAccessToken(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get access token: %w", err)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, f.config.BaseUrl+endpoint, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+token.Token)
-
-	return f.httpClient.Do(req)
 }

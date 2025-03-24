@@ -61,6 +61,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/federation/v1/{federationContextId}/health": {
+            "get": {
+                "description": "Checks the health status of the federation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - FederationManagement"
+                ],
+                "summary": "Health Check",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationHealthInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid federationContextId",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/federation/v1/{federationContextId}/partner": {
             "get": {
                 "description": "Retrieves metadata information about a federation based on the federationContextId",
@@ -243,6 +287,151 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/nbi/federation/v1/{federationContextId}/health": {
+            "get": {
+                "description": "Retrieves the health information of the federation partner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NBI - FederationManagement"
+                ],
+                "summary": "Get Federation Health Info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationHealthInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "federationContextId must be provided",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Federation not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/nbi/federation/v1/{federationContextId}/partner": {
+            "get": {
+                "description": "Retrieves federation information from the partner federator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NBI - FederationManagement"
+                ],
+                "summary": "Get Federation Meta Info from partner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationHealthInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "federationContextId must be provided",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Federation not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes a previously established federation relationship by its federationContextId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NBI - FederationManagement"
+                ],
+                "summary": "Remove Federation Relationship",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "status: Federation removed successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "federationContextId must be provided",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -253,6 +442,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "expiresAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FederationHealthInfo": {
+            "type": "object",
+            "properties": {
+                "federationStartTime": {
+                    "type": "string"
+                },
+                "federationStatus": {
+                    "$ref": "#/definitions/models.State"
+                },
+                "numOfAcceptedZones": {
+                    "type": "string"
+                },
+                "numOfActiveAlarms": {
+                    "type": "string"
+                },
+                "numOfApplications": {
                     "type": "string"
                 }
             }
@@ -501,6 +710,15 @@ const docTemplate = `{
                 },
                 "port": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.State": {
+            "type": "object",
+            "properties": {
+                "alarmState": {
+                    "description": "Defines the alarm state during its life cycle (raised | updated | cleared).",
+                    "type": "string"
                 }
             }
         },

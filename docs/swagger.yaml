@@ -7,6 +7,19 @@ definitions:
       expiresAt:
         type: string
     type: object
+  models.FederationHealthInfo:
+    properties:
+      federationStartTime:
+        type: string
+      federationStatus:
+        $ref: '#/definitions/models.State'
+      numOfAcceptedZones:
+        type: string
+      numOfActiveAlarms:
+        type: string
+      numOfApplications:
+        type: string
+    type: object
   models.FederationInitiateRequest:
     properties:
       authEndpoint:
@@ -177,6 +190,13 @@ definitions:
       port:
         type: integer
     type: object
+  models.State:
+    properties:
+      alarmState:
+        description: Defines the alarm state during its life cycle (raised | updated
+          | cleared).
+        type: string
+    type: object
   models.ZoneDetails:
     properties:
       geographyDetails:
@@ -196,6 +216,35 @@ info:
   title: MEC Federator API
   version: "1.0"
 paths:
+  /federation/v1/{federationContextId}/health:
+    get:
+      consumes:
+      - application/json
+      description: Checks the health status of the federation
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FederationHealthInfo'
+        "400":
+          description: Invalid federationContextId
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Health Check
+      tags:
+      - EWBI - FederationManagement
   /federation/v1/{federationContextId}/partner:
     delete:
       consumes:
@@ -320,6 +369,103 @@ paths:
       summary: Create Federation Relationship
       tags:
       - EWBI - FederationManagement
+  /nbi/federation/v1/{federationContextId}/health:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the health information of the federation partner
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FederationHealthInfo'
+        "400":
+          description: federationContextId must be provided
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "404":
+          description: Federation not found
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get Federation Health Info
+      tags:
+      - NBI - FederationManagement
+  /nbi/federation/v1/{federationContextId}/partner:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a previously established federation relationship by its
+        federationContextId
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'status: Federation removed successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: federationContextId must be provided
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Remove Federation Relationship
+      tags:
+      - NBI - FederationManagement
+    get:
+      consumes:
+      - application/json
+      description: Retrieves federation information from the partner federator
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FederationHealthInfo'
+        "400":
+          description: federationContextId must be provided
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "404":
+          description: Federation not found
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get Federation Meta Info from partner
+      tags:
+      - NBI - FederationManagement
   /nbi/federation/v1/partner:
     post:
       consumes:

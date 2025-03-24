@@ -46,7 +46,7 @@ func Init() *gin.Engine {
 }
 
 func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
-	initTestRoutes(router, svcs, authMiddleware)
+	initTestRoutes(router, authMiddleware)
 
 	// Auth Routes
 	initAuthRoutes(router, svcs, authMiddleware)

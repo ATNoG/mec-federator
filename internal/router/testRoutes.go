@@ -6,9 +6,8 @@ import (
 )
 
 // TestAPIManagement - Test API for testing the service
-func initTestRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
-	TestAPIManagement := router.Group("/federation/v1/test")
+func initTestRoutes(router *gin.Engine, authMiddleware gin.HandlerFunc) {
+	TestAPIManagement := router.Group("/test")
 	TestAPIManagement.GET("/ping", controller.PingController)
-	TestAPIManagement.GET("/health", controller.HealthController)
-	TestAPIManagement.GET("/auth", authMiddleware, controller.HealthController)
+	TestAPIManagement.GET("/auth", authMiddleware, controller.PingController)
 }

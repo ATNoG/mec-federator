@@ -91,6 +91,7 @@ func (fs *FederationService) UpdateFederation(federation models.Federation) erro
 	return err
 }
 
+// PatchFederation updates a federation in the database using patch parameters, then saves it
 func (fs *FederationService) PatchFederation(federationContextId string, patchParams models.FederationPatchParams) error {
 	federation, err := fs.GetFederationFromContextId(federationContextId)
 	if err != nil {
@@ -135,4 +136,12 @@ func (fs *FederationService) PatchFederation(federationContextId string, patchPa
 	return fs.UpdateFederation(federation)
 }
 
-// Helper functions for
+// GetFederationHealhInfo retrieves the health information of a federation from the database
+func (fs *FederationService) GetFederationHealthInfo(federationContextId string) (models.FederationHealthInfo, error) {
+	federation, err := fs.GetFederationFromContextId(federationContextId)
+	if err != nil {
+		return models.FederationHealthInfo{}, err
+	}
+
+	return federation.HealthInfo, nil
+}

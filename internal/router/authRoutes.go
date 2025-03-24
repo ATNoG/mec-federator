@@ -8,7 +8,13 @@ import (
 
 // AuthAPIManagement - Authentication and authorization of the partner OP
 func initAuthRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
-	authController := controller.NewAuthController(svcs.AuthService, config.GetMongoClient())
+	authController := controller.NewAuthController(
+		svcs.AuthService,
+		config.GetMongoClient(),
+	)
 	AuthAPIManagement := router.Group("/auth")
-	AuthAPIManagement.POST("/token", authController.IssueAccessTokenController)
+
+	AuthAPIManagement.POST(
+		"/token",
+		authController.IssueAccessTokenController)
 }
