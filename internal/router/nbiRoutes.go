@@ -11,7 +11,7 @@ func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
 		svcs.FederationHttpClientManager,
 	)
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
-	FederationManagement := router.Group("/nbi/federation/v1")
+	FederationManagement := router.Group("/nbi/v1")
 
 	FederationManagement.POST(
 		"/partner",

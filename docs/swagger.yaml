@@ -20,7 +20,7 @@ definitions:
       numOfApplications:
         type: string
     type: object
-  models.FederationInitiateRequest:
+  models.FederationInitiateData:
     properties:
       authEndpoint:
         type: string
@@ -216,7 +216,7 @@ info:
   title: MEC Federator API
   version: "1.0"
 paths:
-  /federation/v1/{federationContextId}/health:
+  /ewbi/v1/{federationContextId}/health:
     get:
       consumes:
       - application/json
@@ -242,10 +242,10 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Health Check
+      summary: Get Local Federation Health Info
       tags:
       - EWBI - FederationManagement
-  /federation/v1/{federationContextId}/partner:
+  /ewbi/v1/{federationContextId}/partner:
     delete:
       consumes:
       - application/json
@@ -335,10 +335,10 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Update a Federation
+      summary: Update Federation Details
       tags:
       - EWBI - FederationManagement
-  /federation/v1/partner:
+  /ewbi/v1/partner:
     post:
       consumes:
       - application/json
@@ -366,10 +366,10 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Create Federation Relationship
+      summary: Accept Federation Relationship
       tags:
       - EWBI - FederationManagement
-  /nbi/federation/v1/{federationContextId}/health:
+  /nbi/v1/{federationContextId}/health:
     get:
       consumes:
       - application/json
@@ -399,10 +399,10 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Get Federation Health Info
+      summary: Get Federation Health Info from partner OP
       tags:
       - NBI - FederationManagement
-  /nbi/federation/v1/{federationContextId}/partner:
+  /nbi/v1/{federationContextId}/partner:
     delete:
       consumes:
       - application/json
@@ -431,7 +431,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Remove Federation Relationship
+      summary: Remove Federation Relationship with a partner OP
       tags:
       - NBI - FederationManagement
     get:
@@ -463,10 +463,10 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Get Federation Meta Info from partner
+      summary: Get Federation Meta Info from partner OP
       tags:
       - NBI - FederationManagement
-  /nbi/federation/v1/partner:
+  /nbi/v1/partner:
     post:
       consumes:
       - application/json
@@ -477,7 +477,7 @@ paths:
         name: federationRequest
         required: true
         schema:
-          $ref: '#/definitions/models.FederationInitiateRequest'
+          $ref: '#/definitions/models.FederationInitiateData'
       produces:
       - application/json
       responses:
@@ -493,7 +493,7 @@ paths:
           description: Internal error during federation process
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Initiate Federation Relationship
+      summary: Initiate Federation Relationship with a partner OP
       tags:
       - NBI - FederationManagement
 swagger: "2.0"

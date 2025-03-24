@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/federation/v1/partner": {
+        "/ewbi/v1/partner": {
             "post": {
                 "description": "Establishes a new federation relationship with another federator with the provided data",
                 "consumes": [
@@ -27,7 +27,7 @@ const docTemplate = `{
                 "tags": [
                     "EWBI - FederationManagement"
                 ],
-                "summary": "Create Federation Relationship",
+                "summary": "Accept Federation Relationship",
                 "parameters": [
                     {
                         "description": "Federation Request Data",
@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/federation/v1/{federationContextId}/health": {
+        "/ewbi/v1/{federationContextId}/health": {
             "get": {
                 "description": "Checks the health status of the federation",
                 "consumes": [
@@ -73,7 +73,7 @@ const docTemplate = `{
                 "tags": [
                     "EWBI - FederationManagement"
                 ],
-                "summary": "Health Check",
+                "summary": "Get Local Federation Health Info",
                 "parameters": [
                     {
                         "type": "string",
@@ -105,7 +105,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/federation/v1/{federationContextId}/partner": {
+        "/ewbi/v1/{federationContextId}/partner": {
             "get": {
                 "description": "Retrieves metadata information about a federation based on the federationContextId",
                 "consumes": [
@@ -198,7 +198,7 @@ const docTemplate = `{
                 "tags": [
                     "EWBI - FederationManagement"
                 ],
-                "summary": "Update a Federation",
+                "summary": "Update Federation Details",
                 "parameters": [
                     {
                         "type": "string",
@@ -242,7 +242,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/nbi/federation/v1/partner": {
+        "/nbi/v1/partner": {
             "post": {
                 "description": "Initiates the federation establishment procedure with another federator",
                 "consumes": [
@@ -254,7 +254,7 @@ const docTemplate = `{
                 "tags": [
                     "NBI - FederationManagement"
                 ],
-                "summary": "Initiate Federation Relationship",
+                "summary": "Initiate Federation Relationship with a partner OP",
                 "parameters": [
                     {
                         "description": "Federation and Auth Endpoints",
@@ -262,7 +262,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.FederationInitiateRequest"
+                            "$ref": "#/definitions/models.FederationInitiateData"
                         }
                     }
                 ],
@@ -288,7 +288,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/nbi/federation/v1/{federationContextId}/health": {
+        "/nbi/v1/{federationContextId}/health": {
             "get": {
                 "description": "Retrieves the health information of the federation partner",
                 "consumes": [
@@ -300,7 +300,7 @@ const docTemplate = `{
                 "tags": [
                     "NBI - FederationManagement"
                 ],
-                "summary": "Get Federation Health Info",
+                "summary": "Get Federation Health Info from partner OP",
                 "parameters": [
                     {
                         "type": "string",
@@ -338,7 +338,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/nbi/federation/v1/{federationContextId}/partner": {
+        "/nbi/v1/{federationContextId}/partner": {
             "get": {
                 "description": "Retrieves federation information from the partner federator",
                 "consumes": [
@@ -350,7 +350,7 @@ const docTemplate = `{
                 "tags": [
                     "NBI - FederationManagement"
                 ],
-                "summary": "Get Federation Meta Info from partner",
+                "summary": "Get Federation Meta Info from partner OP",
                 "parameters": [
                     {
                         "type": "string",
@@ -398,7 +398,7 @@ const docTemplate = `{
                 "tags": [
                     "NBI - FederationManagement"
                 ],
-                "summary": "Remove Federation Relationship",
+                "summary": "Remove Federation Relationship with a partner OP",
                 "parameters": [
                     {
                         "type": "string",
@@ -466,7 +466,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.FederationInitiateRequest": {
+        "models.FederationInitiateData": {
             "type": "object",
             "required": [
                 "authEndpoint",

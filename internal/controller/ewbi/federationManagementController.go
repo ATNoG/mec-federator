@@ -30,7 +30,7 @@ func NewFederationManagementController(federationService *services.FederationSer
 	}
 }
 
-// @Summary Create Federation Relationship
+// @Summary Accept Federation Relationship
 // @Description Establishes a new federation relationship with another federator with the provided data
 // @Tags EWBI - FederationManagement
 // @Accept json
@@ -39,7 +39,7 @@ func NewFederationManagementController(federationService *services.FederationSer
 // @Success 200 {object} models.FederationResponseData
 // @Failure 400 {object} models.ProblemDetails
 // @Failure 500 {object} models.ProblemDetails
-// @Router /federation/v1/partner [post]
+// @Router /ewbi/v1/partner [post]
 func (fmc *FederationManagementController) CreateFederationController(c *gin.Context) {
 	log.Print("CreateFederationController - Establishing new federation relationship, checking request data")
 
@@ -101,7 +101,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 // @Success 200 {object} models.FederationMetaInfo
 // @Failure 400 {object} models.ProblemDetails "Invalid Federation Context ID"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /federation/v1/{federationContextId}/partner [get]
+// @Router /ewbi/v1/{federationContextId}/partner [get]
 func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gin.Context) {
 	log.Print("GetFederationMetaInfoController - Retrieving federation meta information")
 
@@ -149,7 +149,7 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 // @Param federationContextId path string true "Federation Context ID"
 // @Success 200 {object} map[string]string "status: Federation removed successfully"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /federation/v1/{federationContextId}/partner [delete]
+// @Router /ewbi/v1/{federationContextId}/partner [delete]
 func (fmc *FederationManagementController) RemoveFederationRelationshipController(c *gin.Context) {
 	log.Print("RemoveFederationRelationshipController - Removing federation relationship")
 
@@ -180,7 +180,7 @@ func (fmc *FederationManagementController) RemoveFederationRelationshipControlle
 	c.JSON(http.StatusOK, gin.H{"status": "Federation removed successfully"})
 }
 
-// @Summary Update a Federation
+// @Summary Update Federation Details
 // @Description Updates a federation object with the given federationContextId and patch parameters
 // @Tags EWBI - FederationManagement
 // @Accept json
@@ -190,7 +190,7 @@ func (fmc *FederationManagementController) RemoveFederationRelationshipControlle
 // @Success 200 {object} map[string]string "status: Federation updated successfully"
 // @Failure 400 {object} models.ProblemDetails "Invalid request or federation not found"
 // @Failure 500 {object} models.ProblemDetails "Internal server error"
-// @Router /federation/v1/{federationContextId}/partner [patch]
+// @Router /ewbi/v1/{federationContextId}/partner [patch]
 func (fmc *FederationManagementController) UpdateFederationController(c *gin.Context) {
 	log.Print("UpdateFederationController - Updating federation, checking patch parameters from body")
 
@@ -248,7 +248,7 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 	c.JSON(http.StatusOK, gin.H{"status": "Federation updated successfully"})
 }
 
-// @Summary Health Check
+// @Summary Get Local Federation Health Info
 // @Description Checks the health status of the federation
 // @Tags EWBI - FederationManagement
 // @Accept json
@@ -257,7 +257,7 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 // @Success 200 {object} models.FederationHealthInfo
 // @Failure 400 {object} models.ProblemDetails "Invalid federationContextId"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /federation/v1/{federationContextId}/health [get]
+// @Router /ewbi/v1/{federationContextId}/health [get]
 func (fmc *FederationManagementController) GetFederationHealthController(c *gin.Context) {
 	log.Print("HealthCheckController - Checking health status of the federator")
 

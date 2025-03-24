@@ -32,21 +32,21 @@ func NewFederationManagementController(fs *services.FederationService, hcm *serv
 	}
 }
 
-// @Summary Initiate Federation Relationship
+// @Summary Initiate Federation Relationship with a partner OP
 // @Description Initiates the federation establishment procedure with another federator
 // @Tags NBI - FederationManagement
 // @Accept  json
 // @Produce  json
-// @Param   federationRequest  body  models.FederationInitiateRequest  true  "Federation and Auth Endpoints"
+// @Param   federationRequest  body  models.FederationInitiateData  true  "Federation and Auth Endpoints"
 // @Success 200 {object} models.FederationResponseData
 // @Failure 400 {object} models.ProblemDetails "Invalid request body or missing fields"
 // @Failure 500 {object} models.ProblemDetails "Internal error during federation process"
-// @Router /nbi/federation/v1/partner [post]
+// @Router /nbi/v1/partner [post]
 func (fmc *FederationManagementController) InitiateFederationController(c *gin.Context) {
 	log.Print("InitiateFederationController - Initiating federation")
 
 	// get federation and auth endpoints from request body
-	var requestBody models.FederationInitiateRequest
+	var requestBody models.FederationInitiateData
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		problemDetails := utils.NewProblemDetails(http.StatusBadRequest)
 		problemDetails.Detail = "Invalid request body: " + err.Error()
@@ -125,7 +125,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 	c.JSON(http.StatusOK, federationResponseData)
 }
 
-// @Summary Remove Federation Relationship
+// @Summary Remove Federation Relationship with a partner OP
 // @Description Removes a previously established federation relationship by its federationContextId
 // @Tags NBI - FederationManagement
 // @Accept json
@@ -134,7 +134,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 // @Success 200 {object} map[string]string "status: Federation removed successfully"
 // @Failure 400 {object} models.ProblemDetails "federationContextId must be provided"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /nbi/federation/v1/{federationContextId}/partner [delete]
+// @Router /nbi/v1/{federationContextId}/partner [delete]
 func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
 	log.Print("RemoveFederationController - Removing federation")
 
@@ -189,7 +189,7 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 	c.JSON(http.StatusOK, gin.H{"message": "Federation removed successfully"})
 }
 
-// @Summary Get Federation Meta Info from partner
+// @Summary Get Federation Meta Info from partner OP
 // @Description Retrieves federation information from the partner federator
 // @Tags NBI - FederationManagement
 // @Accept json
@@ -199,7 +199,7 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 // @Failure 400 {object} models.ProblemDetails "federationContextId must be provided"
 // @Failure 404 {object} models.ProblemDetails "Federation not found"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /nbi/federation/v1/{federationContextId}/partner [get]
+// @Router /nbi/v1/{federationContextId}/partner [get]
 func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gin.Context) {
 	log.Print("GetFederationMetaInfoController - Getting federation meta info from partner")
 
@@ -253,7 +253,7 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 	log.Print("GetFederationMetaInfoController - Federation meta info retrieved successfully")
 }
 
-// @Summary Get Federation Health Info
+// @Summary Get Federation Health Info from partner OP
 // @Description Retrieves the health information of the federation partner
 // @Tags NBI - FederationManagement
 // @Accept json
@@ -263,7 +263,7 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 // @Failure 400 {object} models.ProblemDetails "federationContextId must be provided"
 // @Failure 404 {object} models.ProblemDetails "Federation not found"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /nbi/federation/v1/{federationContextId}/health [get]
+// @Router /nbi/v1/{federationContextId}/health [get]
 func (fmc *FederationManagementController) GetFederationHealthController(c *gin.Context) {
 	log.Print("GetFederationHealthController - Getting federation health info")
 
