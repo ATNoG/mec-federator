@@ -1,8 +1,16 @@
 package utils
 
-import "github.com/mankings/mec-federator/internal/models"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mankings/mec-federator/internal/models"
+)
 
-func NewProblemDetails(code int) *models.ProblemDetails {
+func HandleProblem(c *gin.Context, code int, detail string) {
+	problemDetails := NewProblemDetails(code, detail)
+	c.AbortWithStatusJSON(code, problemDetails)
+}
+
+func NewProblemDetails(code int, detail string) *models.ProblemDetails {
 	var problemDetails models.ProblemDetails
 
 	switch code {
@@ -23,6 +31,10 @@ func NewProblemDetails(code int) *models.ProblemDetails {
 
 	default:
 		problemDetails.Title = "Unknown Error."
+	}
+
+	if detail != "" {
+		problemDetails.Detail = detail
 	}
 
 	return &problemDetails

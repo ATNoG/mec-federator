@@ -6,12 +6,13 @@ import (
 )
 
 func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
-	federationManagementController := nbi.NewFederationManagementController(
-		svcs.FederationService,
-		svcs.FederationHttpClientManager,
-	)
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
 	FederationManagement := router.Group("/nbi/v1")
+
+	federationManagementController := nbi.NewFederationManagementController(
+		svcs.FederationService,
+		svcs.HttpClientService,
+	)
 
 	FederationManagement.POST(
 		"/partner",

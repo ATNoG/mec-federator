@@ -7,7 +7,6 @@
         "version": "1.0"
     },
     "host": "localhost:8000",
-    "basePath": "/federation/v1",
     "paths": {
         "/ewbi/v1/partner": {
             "post": {

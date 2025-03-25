@@ -59,25 +59,15 @@ func (fs *FederationService) DeleteFederation(federationContextId string) error 
 	return err
 }
 
-// GetFederationFromContextId retrieves a federation from the database using the federationContextId
-func (fs *FederationService) GetFederationFromContextId(federationContextId string) (models.Federation, error) {
-	var federation models.Federation
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+// GetFederation retrieves a federation from the database using the federationContextId
+func (fs *FederationService) GetFederation(federationContextId string) (models.Federation, error) {
 	collection := fs.getFederationCollection()
 	filter := bson.M{"partnerOP.federationContextId": federationContextId}
-	err := collection.FindOne(ctx, filter).Decode(&federation)
-	return federation, err
-}
-
-// ExistsFederationWithContextId checks if a federation exists in the database using the federationContextId
-func (fs *FederationService) ExistsFederationWithContextId(federationContextId string) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	collection := fs.getFederationCollection()
-	filter := bson.M{"partnerOP.federationContextId": federationContextId}
-	count, _ := collection.CountDocuments(ctx, filter)
-	return count > 0
+	federation, err := FetchEntityFromDatabase[models.Federation](collection, filter)
+	if err != nil {
+		return models.Federation{}, fmt.Errorf("error fetching federation using federationContextId: %v", err)
+	}
+	return federation, nil
 }
 
 // UpdateFederation updates a federation in the database
@@ -93,7 +83,7 @@ func (fs *FederationService) UpdateFederation(federation models.Federation) erro
 
 // PatchFederation updates a federation in the database using patch parameters, then saves it
 func (fs *FederationService) PatchFederation(federationContextId string, patchParams models.FederationPatchParams) error {
-	federation, err := fs.GetFederationFromContextId(federationContextId)
+	federation, err := fs.GetFederation(federationContextId)
 	if err != nil {
 		return err
 	}
@@ -136,12 +126,44 @@ func (fs *FederationService) PatchFederation(federationContextId string, patchPa
 	return fs.UpdateFederation(federation)
 }
 
-// GetFederationHealhInfo retrieves the health information of a federation from the database
-func (fs *FederationService) GetFederationHealthInfo(federationContextId string) (models.FederationHealthInfo, error) {
-	federation, err := fs.GetFederationFromContextId(federationContextId)
-	if err != nil {
-		return models.FederationHealthInfo{}, err
-	}
+// ExistsFederationWithContextId checks if a federation exists in the database using the federationContextId
+func (fs *FederationService) ExistsFederationWithContextId(federationContextId string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := fs.getFederationCollection()
+	filter := bson.M{"partnerOP.federationContextId": federationContextId}
+	count, _ := collection.CountDocuments(ctx, filter)
+	return count > 0
+}
 
-	return federation.HealthInfo, nil
+// GetFederationContextId retrieves the federationContextId from the database using the accessToken
+func (fs *FederationService) GetFederationContextId(accessToken string) (string, error) {
+	collection := fs.getFederationCollection()
+	filter := bson.M{"originOP.accessToken.accessToken": accessToken}
+	federationContextId, err := FetchEntityFromDatabase[string](collection, filter)
+	if err != nil {
+		return "", fmt.Errorf("error fetching federationContextId using accessToken: %v", err)
+	}
+	return federationContextId, nil
+}
+
+func (fs *FederationService) GetAccessToken(federationContextId string) (string, error) {
+	collection := fs.getFederationCollection()
+	filter := bson.M{"partnerOP.federationContextId": federationContextId}
+	accessToken, err := FetchEntityFromDatabase[string](collection, filter)
+	if err != nil {
+		return "", fmt.Errorf("error fetching accessToken using federationContextId: %v", err)
+	}
+	return accessToken, nil
+}
+
+// GetFederatorUrl retrieves the federatorUrl from the database using the federationContextId
+func (fs *FederationService) GetFederatorUrl(federationContextId string) (string, error) {
+	collection := fs.getFederationCollection()
+	filter := bson.M{"partnerOP.federationContextId": federationContextId}
+	federatorUrl, err := FetchEntityFromDatabase[string](collection, filter)
+	if err != nil {
+		return "", fmt.Errorf("error fetching federatorUrl using federationContextId: %v", err)
+	}
+	return federatorUrl, nil
 }

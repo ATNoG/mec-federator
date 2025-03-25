@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/mankings/mec-federator/docs"
 	"github.com/mankings/mec-federator/internal/config"
@@ -11,23 +13,24 @@ import (
 )
 
 type Services struct {
-	FederationHttpClientManager *services.FederationHttpClientManager
-	AuthService                 *services.AuthService
-	FederationService           *services.FederationService
+	AuthService       *services.AuthService
+	FederationService *services.FederationService
+	HttpClientService *services.HttpClientService
 }
 
 func Init() *gin.Engine {
 	// start gin with default settings
 	router := gin.Default()
 
-	// init mongo client
+	// init clients
 	mongoClient := config.GetMongoClient()
+	httpClient := &http.Client{}
 
 	// services to be injected into routes
 	services := &Services{
-		FederationHttpClientManager: services.NewFederationHttpClientManager(),
-		AuthService:                 services.NewAuthService(mongoClient),
-		FederationService:           services.NewFederationService(mongoClient),
+		AuthService:       services.NewAuthService(mongoClient),
+		FederationService: services.NewFederationService(mongoClient),
+		HttpClientService: services.NewHttpClientService(httpClient),
 	}
 
 	// init auth middleware

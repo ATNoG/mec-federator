@@ -744,7 +744,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8000",
-	BasePath:         "/federation/v1",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "MEC Federator API",
 	Description:      "This is the API documentation for the MEC Federator.",

@@ -6,9 +6,12 @@ import (
 )
 
 func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
-	federationManagementController := ewbi.NewFederationManagementController(svcs.FederationService)
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
 	FederationManagement := router.Group("/ewbi/v1", authMiddleware)
+
+	federationManagementController := ewbi.NewFederationManagementController(
+		svcs.FederationService,
+	)
 
 	FederationManagement.POST(
 		"/partner",
