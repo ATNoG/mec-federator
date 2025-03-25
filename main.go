@@ -2,7 +2,7 @@
 // @version 1.0
 // @description This is the API documentation for the MEC Federator.
 // @host localhost:8000
-// @BasePath
+// @BasePath /federation/v1
 
 // @securityDefinitions.oauth2.clientCredentials
 // @tokenUrl http://keycloak.local/realms/federation/protocol/openid-connect/token

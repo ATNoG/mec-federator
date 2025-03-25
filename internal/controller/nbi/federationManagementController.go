@@ -44,7 +44,7 @@ func NewFederationManagementController(fs *services.FederationService, hcp *serv
 // @Success 200 {object} models.FederationResponseData
 // @Failure 400 {object} models.ProblemDetails "Invalid request body or missing fields"
 // @Failure 500 {object} models.ProblemDetails "Internal error during federation process"
-// @Router /nbi/v1/partner [post]
+// @Router /nbi/partner [post]
 func (fmc *FederationManagementController) InitiateFederationController(c *gin.Context) {
 	log.Print("InitiateFederationController - Initiating Federation establishment procedure")
 
@@ -109,7 +109,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 	}
 
 	log.Print("InitiateFederationController - Sending Federation Request to Partner")
-	createFederationUrl := fmt.Sprintf("%s%s", requestBody.FederationEndpoint, "/ewbi/v1/partner")
+	createFederationUrl := fmt.Sprintf("%s%s", requestBody.FederationEndpoint, "/federation/v1/ewbi/partner")
 	authStrat := services.NewBearerTokenAuth(accessToken.AccessToken)
 	federationRequestData := models.FederationRequestData{
 		OrigOPCountryCode:       "351",
@@ -188,7 +188,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 // @Success 200 {object} map[string]string "status: Federation removed successfully"
 // @Failure 400 {object} models.ProblemDetails "federationContextId must be provided"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /nbi/v1/{federationContextId}/partner [delete]
+// @Router /nbi/{federationContextId}/partner [delete]
 func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
 	log.Print("RemoveFederationController - Removing federation")
 
@@ -209,12 +209,12 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 	// Get federation details from database
 	federation, err := fmc.federationService.GetFederation(federationContextId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting federation details from database:"+err.Error())
 		return
 	}
 
 	log.Print("RemoveFederationController - Sending Federation Removal Request to Partner")
-	deleteFederationUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/ewbi/v1/", federationContextId, "/partner")
+	deleteFederationUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federationContextId, "/partner")
 	authStrat := services.NewBearerTokenAuth(federation.OriginOP.AccessToken.AccessToken)
 
 	// Send request to partner federator
@@ -226,7 +226,7 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 		nil,
 		authStrat)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error sending request to partner: "+err.Error())
 		return
 	}
 	defer resp.Body.Close()
@@ -241,7 +241,7 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 	// Remove federation from database
 	err = fmc.federationService.DeleteFederation(federationContextId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting federation from database: "+err.Error())
 		return
 	}
 
@@ -259,7 +259,7 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 // @Failure 400 {object} models.ProblemDetails "federationContextId must be provided"
 // @Failure 404 {object} models.ProblemDetails "Federation not found"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /nbi/v1/{federationContextId}/partner [get]
+// @Router /nbi/{federationContextId}/partner [get]
 func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gin.Context) {
 	log.Print("GetFederationMetaInfoController - Getting federation meta info from partner")
 
@@ -280,12 +280,12 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 	// Get federation details from database
 	federation, err := fmc.federationService.GetFederation(federationContextId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting federation details from database:"+err.Error())
 		return
 	}
 
 	log.Print("GetFederationMetaInfoController - Sending meta info request to partner")
-	getMetaInfoUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/ewbi/v1/", federationContextId, "/partner")
+	getMetaInfoUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federationContextId, "/partner")
 	authStrat := services.NewBearerTokenAuth(federation.OriginOP.AccessToken.AccessToken)
 	var metaInfo models.FederationMetaInfo
 
@@ -298,21 +298,21 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 		nil,
 		authStrat)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error sending request to partner: "+err.Error())
 		return
 	}
 	defer resp.Body.Close()
 
 	// Check if response is OK
 	if resp.StatusCode != http.StatusOK {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Partner federator returned an error")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Partner federator returned error "+fmt.Sprintf("%d", resp.StatusCode))
 		return
 	}
 
 	// Decode response body to struct
 	err = json.NewDecoder(resp.Body).Decode(&metaInfo)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error decoding response body: "+err.Error())
 		return
 	}
 
@@ -330,7 +330,7 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 // @Failure 400 {object} models.ProblemDetails "federationContextId must be provided"
 // @Failure 404 {object} models.ProblemDetails "Federation not found"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /nbi/v1/{federationContextId}/health [get]
+// @Router /nbi/{federationContextId}/health [get]
 func (fmc *FederationManagementController) GetFederationHealthController(c *gin.Context) {
 	log.Print("GetFederationHealthController - Getting federation health info")
 
@@ -351,12 +351,12 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 	log.Print("GetFederationHealthController - Getting Federation Url from Database")
 	federation, err := fmc.federationService.GetFederation(federationContextId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting federation details from database: "+err.Error())
 		return
 	}
 
 	log.Print("GetFederationHealthController - Sending health check request to partner")
-	getHealthUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/ewbi/v1/", federationContextId, "/health")
+	getHealthUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federationContextId, "/health")
 	authStrat := services.NewBearerTokenAuth(federation.OriginOP.AccessToken.AccessToken)
 	var healthInfo models.FederationHealthInfo
 
@@ -369,7 +369,7 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 		nil,
 		authStrat)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error sending request to partner: "+err.Error())
 		return
 	}
 	defer resp.Body.Close()
@@ -383,10 +383,94 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 	// Decode response body to struct
 	err = json.NewDecoder(resp.Body).Decode(&healthInfo)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error decoding response body: "+err.Error())
 		return
 	}
 
 	log.Print("GetFederationHealthController - Federation health info retrieved successfully")
 	c.JSON(http.StatusOK, healthInfo)
+}
+
+// @Summary Request Federation Renewal with partner OP
+// @Description Requests the renewal of the federation with the partner federator
+// @Tags NBI - FederationManagement
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Success 200 {object} models.FederationRenewalResponseData
+// @Failure 400 {object} models.ProblemDetails "federationContextId must be provided"
+// @Failure 404 {object} models.ProblemDetails "Federation not found"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /nbi/{federationContextId}/renew [post]
+func (fmc *FederationManagementController) RequestFederationRenewalController(c *gin.Context) {
+	log.Print("RequestFederationRenewalController - Requesting federation renewal")
+
+	federationContextId := c.Param("federationContextId")
+	if federationContextId == "" {
+		utils.HandleProblem(c, http.StatusBadRequest, "federationContextId must be provided")
+		return
+	}
+
+	// Check if federation exists
+	log.Print("RequestFederationRenewalController - Checking if federation exists")
+	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
+		utils.HandleProblem(c, http.StatusNotFound, "Federation not found")
+		return
+	}
+
+	// Get federation details from database
+	log.Print("RequestFederationRenewalController - Getting Federation Url from Database")
+	federation, err := fmc.federationService.GetFederation(federationContextId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting federation details from database: "+err.Error())
+		return
+	}
+
+	log.Print("RequestFederationRenewalController - Sending renewal request to partner")
+	renewFederationUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federationContextId, "/renew")
+	authStrat := services.NewBearerTokenAuth(federation.OriginOP.AccessToken.AccessToken)
+	var renewalResponse models.FederationRenewalResponseData
+
+	// Send request to partner federator
+	resp, err := fmc.httpClientService.DoRequest(
+		c,
+		http.MethodPost,
+		renewFederationUrl,
+		nil,
+		nil,
+		authStrat)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error sending request to partner: "+err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check if response is OK
+	if resp.StatusCode != http.StatusOK {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Partner federator returned an error")
+		return
+	}
+
+	// Decode response body to struct
+	err = json.NewDecoder(resp.Body).Decode(&renewalResponse)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error deconding responde body: "+err.Error())
+		return
+	}
+
+	log.Print("RequestFederationRenewalController - Federation renewal successfully by partner")
+
+	federation.PartnerOP.FederationRenewalDate = renewalResponse.FederationRenewalDate
+	federation.PartnerOP.FederationExpiryDate = renewalResponse.FederationExpiryDate
+
+	log.Print("RequestFederationRenewalController - Updating Federation in Database")
+	// Update federation in database
+	err = fmc.federationService.UpdateFederation(federation)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Could not update federation in database: "+err.Error())
+		return
+	}
+
+	log.Print("RequestFederationRenewalController - Federation renewed successfully")
+	c.JSON(http.StatusOK, renewalResponse)
 }

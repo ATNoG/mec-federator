@@ -39,7 +39,7 @@ func NewFederationManagementController(federationService *services.FederationSer
 // @Success 200 {object} models.FederationResponseData
 // @Failure 400 {object} models.ProblemDetails
 // @Failure 500 {object} models.ProblemDetails
-// @Router /ewbi/v1/partner [post]
+// @Router /ewbi/partner [post]
 func (fmc *FederationManagementController) CreateFederationController(c *gin.Context) {
 	log.Print("CreateFederationController - Establishing new federation relationship")
 
@@ -57,11 +57,13 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		PartnerOPCountryCode:         "443",
 		EdgeDiscoveryServiceEndPoint: &models.ServiceEndpoint{Fqdn: "edge-discovery-service.com", Port: 443},
 		LcmServiceEndPoint:           &models.ServiceEndpoint{Fqdn: "lcm-service.com", Port: 443},
+		FederationExpiryDate:         time.Now().AddDate(1, 0, 0),
+		FederationRenewalDate:        time.Now().AddDate(0, 6, 0),
 	}
 
 	healthInfo := models.FederationHealthInfo{
 		FederationStatus:    &models.State{AlarmState: "CLEAR"},
-		FederationStartTime: &time.Time{},
+		FederationStartTime: time.Now(),
 		NumOfAcceptedZones:  "0",
 		NumOfActiveAlarms:   "0",
 		NumOfApplications:   "0",
@@ -87,7 +89,39 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 	c.JSON(http.StatusOK, federation.PartnerOP)
 }
 
-// @Summary Get Federation Meta Information
+// @Summary Remove Federation Relationship
+// @Description Removes a federation relationship by its federationContextId
+// @Tags EWBI - FederationManagement
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Success 200 {object} map[string]string "status: Federation removed successfully"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /ewbi/{federationContextId}/partner [delete]
+func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
+	log.Print("RemoveFederationRelationshipController - Removing federation relationship")
+
+	federationContextId := c.Param("federationContextId")
+	// Check if the federation exists
+	log.Print("RemoveFederationRelationshipController - Checking if federation exists")
+	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
+		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given federationContextId")
+		return
+	}
+
+	log.Print("RemoveFederationRelationshipController - Deleting Federation object from database")
+	// Delete the federation object from the database
+	err := fmc.federationService.DeleteFederation(federationContextId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing the Federation object")
+		return
+	}
+
+	log.Print("RemoveFederationRelationshipController - Federation removed successfully")
+	c.JSON(http.StatusOK, gin.H{"status": "Federation removed successfully"})
+}
+
+// @Summary Get Federation Meta Info
 // @Description Retrieves metadata information about a federation based on the federationContextId
 // @Tags EWBI - FederationManagement
 // @Accept json
@@ -96,7 +130,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 // @Success 200 {object} models.FederationMetaInfo
 // @Failure 400 {object} models.ProblemDetails "Invalid Federation Context ID"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /ewbi/v1/{federationContextId}/partner [get]
+// @Router /ewbi/{federationContextId}/partner [get]
 func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gin.Context) {
 	log.Print("GetFederationMetaInfoController - Retrieving federation meta information")
 
@@ -129,38 +163,6 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 	c.JSON(http.StatusOK, response)
 }
 
-// @Summary Remove Federation Relationship
-// @Description Removes a federation relationship by its federationContextId
-// @Tags EWBI - FederationManagement
-// @Accept json
-// @Produce json
-// @Param federationContextId path string true "Federation Context ID"
-// @Success 200 {object} map[string]string "status: Federation removed successfully"
-// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /ewbi/v1/{federationContextId}/partner [delete]
-func (fmc *FederationManagementController) RemoveFederationRelationshipController(c *gin.Context) {
-	log.Print("RemoveFederationRelationshipController - Removing federation relationship")
-
-	federationContextId := c.Param("federationContextId")
-	// Check if the federation exists
-	log.Print("RemoveFederationRelationshipController - Checking if federation exists")
-	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
-		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given federationContextId")
-		return
-	}
-
-	log.Print("RemoveFederationRelationshipController - Deleting Federation object from database")
-	// Delete the federation object from the database
-	err := fmc.federationService.DeleteFederation(federationContextId)
-	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing the Federation object")
-		return
-	}
-
-	log.Print("RemoveFederationRelationshipController - Federation removed successfully")
-	c.JSON(http.StatusOK, gin.H{"status": "Federation removed successfully"})
-}
-
 // @Summary Update Federation Details
 // @Description Updates a federation object with the given federationContextId and patch parameters
 // @Tags EWBI - FederationManagement
@@ -171,7 +173,7 @@ func (fmc *FederationManagementController) RemoveFederationRelationshipControlle
 // @Success 200 {object} map[string]string "status: Federation updated successfully"
 // @Failure 400 {object} models.ProblemDetails "Invalid request or federation not found"
 // @Failure 500 {object} models.ProblemDetails "Internal server error"
-// @Router /ewbi/v1/{federationContextId}/partner [patch]
+// @Router /ewbi/{federationContextId}/partner [patch]
 func (fmc *FederationManagementController) UpdateFederationController(c *gin.Context) {
 	log.Print("UpdateFederationController - Updating federation, checking patch parameters from body")
 	var patchParams models.FederationPatchParams
@@ -218,7 +220,7 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 // @Success 200 {object} models.FederationHealthInfo
 // @Failure 400 {object} models.ProblemDetails "Invalid federationContextId"
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
-// @Router /ewbi/v1/{federationContextId}/health [get]
+// @Router /ewbi/{federationContextId}/health [get]
 func (fmc *FederationManagementController) GetFederationHealthController(c *gin.Context) {
 	log.Print("HealthCheckController - Checking health status of the federator")
 
@@ -240,4 +242,51 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 
 	log.Print("HealthCheckController - Returning health information")
 	c.JSON(http.StatusOK, federation.HealthInfo)
+}
+
+// @Summary Renew Federation Relationship
+// @Description Renews the federation relationship with the given federationContextId
+// @Tags EWBI - FederationManagement
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Success 200 {object} map[string]string "federationContextId: id, federationRenewalDate: time, federationExpiryDate: time"
+// @Failure 400 {object} models.ProblemDetails "Invalid federationContextId"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /ewbi/{federationContextId}/renew [post]
+func (fmc *FederationManagementController) RenewFederationController(c *gin.Context) {
+	log.Print("RenewFederationController - Renewing federation relationship")
+
+	federationContextId := c.Param("federationContextId")
+	log.Print("RenewFederationController - Checking if federation exists")
+	// Check if the federation exists
+	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
+		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given federationContextId")
+		return
+	}
+
+	log.Print("RenewFederationController - Getting federation object")
+	// Get the federation object
+	federation, err := fmc.federationService.GetFederation(federationContextId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving the Federation object")
+		return
+	}
+
+	log.Print("RenewFederationController - Renewing federation relationship")
+	// Renew the federation relationship
+	federation, err = fmc.federationService.RenewFederation(federation)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error renewing the Federation object")
+		return
+	}
+
+	response := models.FederationRenewalResponseData{
+		FederationContextId:   federation.PartnerOP.FederationContextId,
+		FederationRenewalDate: federation.PartnerOP.FederationRenewalDate,
+		FederationExpiryDate:  federation.PartnerOP.FederationExpiryDate,
+	}
+
+	log.Print("RenewFederationController - Federation relationship renewed successfully")
+	c.JSON(http.StatusOK, response)
 }

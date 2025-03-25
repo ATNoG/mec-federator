@@ -1,9 +1,17 @@
+basePath: /federation/v1
 definitions:
   models.AccessToken:
     properties:
       accessToken:
         type: string
       expiresAt:
+        type: string
+    type: object
+  models.AccessTokenRequestData:
+    properties:
+      clientId:
+        type: string
+      clientSecret:
         type: string
     type: object
   models.FederationHealthInfo:
@@ -74,6 +82,15 @@ definitions:
         type: array
       removeMobileNetworkIds:
         $ref: '#/definitions/models.MobileNetworkIds'
+    type: object
+  models.FederationRenewalResponseData:
+    properties:
+      federationContextId:
+        type: string
+      federationExpiryDate:
+        type: string
+      federationRenewalDate:
+        type: string
     type: object
   models.FederationRequestData:
     properties:
@@ -215,7 +232,37 @@ info:
   title: MEC Federator API
   version: "1.0"
 paths:
-  /ewbi/v1/{federationContextId}/health:
+  /auth/token:
+    post:
+      consumes:
+      - application/json
+      description: Issue an access token from Keycloak
+      parameters:
+      - description: Client ID and Client Secret
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.AccessTokenRequestData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AccessToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Issue Access Token
+      tags:
+      - Authentication
+  /ewbi/{federationContextId}/health:
     get:
       consumes:
       - application/json
@@ -244,7 +291,7 @@ paths:
       summary: Get Local Federation Health Info
       tags:
       - EWBI - FederationManagement
-  /ewbi/v1/{federationContextId}/partner:
+  /ewbi/{federationContextId}/partner:
     delete:
       consumes:
       - application/json
@@ -297,7 +344,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Get Federation Meta Information
+      summary: Get Federation Meta Info
       tags:
       - EWBI - FederationManagement
     patch:
@@ -337,7 +384,39 @@ paths:
       summary: Update Federation Details
       tags:
       - EWBI - FederationManagement
-  /ewbi/v1/partner:
+  /ewbi/{federationContextId}/renew:
+    post:
+      consumes:
+      - application/json
+      description: Renews the federation relationship with the given federationContextId
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'federationContextId: id, federationRenewalDate: time, federationExpiryDate:
+            time'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid federationContextId
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Renew Federation Relationship
+      tags:
+      - EWBI - FederationManagement
+  /ewbi/partner:
     post:
       consumes:
       - application/json
@@ -368,7 +447,7 @@ paths:
       summary: Accept Federation Relationship
       tags:
       - EWBI - FederationManagement
-  /nbi/v1/{federationContextId}/health:
+  /nbi/{federationContextId}/health:
     get:
       consumes:
       - application/json
@@ -401,7 +480,7 @@ paths:
       summary: Get Federation Health Info from partner OP
       tags:
       - NBI - FederationManagement
-  /nbi/v1/{federationContextId}/partner:
+  /nbi/{federationContextId}/partner:
     delete:
       consumes:
       - application/json
@@ -465,7 +544,40 @@ paths:
       summary: Get Federation Meta Info from partner OP
       tags:
       - NBI - FederationManagement
-  /nbi/v1/partner:
+  /nbi/{federationContextId}/renew:
+    post:
+      consumes:
+      - application/json
+      description: Requests the renewal of the federation with the partner federator
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FederationRenewalResponseData'
+        "400":
+          description: federationContextId must be provided
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "404":
+          description: Federation not found
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Request Federation Renewal with partner OP
+      tags:
+      - NBI - FederationManagement
+  /nbi/partner:
     post:
       consumes:
       - application/json

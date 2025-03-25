@@ -76,7 +76,7 @@ func (fs *FederationService) UpdateFederation(federation models.Federation) erro
 	defer cancel()
 	collection := fs.getFederationCollection()
 	filter := bson.M{"partnerOP.federationContextId": federation.PartnerOP.FederationContextId}
-	update := bson.M{"$set:": federation}
+	update := bson.M{"$set": federation}
 	_, err := collection.UpdateOne(ctx, filter, update)
 	return err
 }
@@ -124,6 +124,23 @@ func (fs *FederationService) PatchFederation(federationContextId string, patchPa
 	}
 
 	return fs.UpdateFederation(federation)
+}
+
+// RenewFederation renews the federation in the database
+func (fs *FederationService) RenewFederation(federation models.Federation) (models.Federation, error) {
+	renewalDate := time.Now().AddDate(0, 6, 0)
+	expiryDate := renewalDate.AddDate(0, 6, 0)
+
+	federation.PartnerOP.FederationRenewalDate = renewalDate
+	federation.PartnerOP.FederationExpiryDate = expiryDate
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := fs.getFederationCollection()
+	filter := bson.M{"partnerOP.federationContextId": federation.PartnerOP.FederationContextId}
+	update := bson.M{"$set": federation}
+	_, err := collection.UpdateOne(ctx, filter, update)
+	return federation, err
 }
 
 // ExistsFederationWithContextId checks if a federation exists in the database using the federationContextId

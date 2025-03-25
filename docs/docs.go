@@ -15,7 +15,53 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/ewbi/v1/partner": {
+        "/auth/token": {
+            "post": {
+                "description": "Issue an access token from Keycloak",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Issue Access Token",
+                "parameters": [
+                    {
+                        "description": "Client ID and Client Secret",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AccessTokenRequestData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AccessToken"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/partner": {
             "post": {
                 "description": "Establishes a new federation relationship with another federator with the provided data",
                 "consumes": [
@@ -61,7 +107,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ewbi/v1/{federationContextId}/health": {
+        "/ewbi/{federationContextId}/health": {
             "get": {
                 "description": "Checks the health status of the federation",
                 "consumes": [
@@ -105,7 +151,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ewbi/v1/{federationContextId}/partner": {
+        "/ewbi/{federationContextId}/partner": {
             "get": {
                 "description": "Retrieves metadata information about a federation based on the federationContextId",
                 "consumes": [
@@ -117,7 +163,7 @@ const docTemplate = `{
                 "tags": [
                     "EWBI - FederationManagement"
                 ],
-                "summary": "Get Federation Meta Information",
+                "summary": "Get Federation Meta Info",
                 "parameters": [
                     {
                         "type": "string",
@@ -242,7 +288,54 @@ const docTemplate = `{
                 }
             }
         },
-        "/nbi/v1/partner": {
+        "/ewbi/{federationContextId}/renew": {
+            "post": {
+                "description": "Renews the federation relationship with the given federationContextId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - FederationManagement"
+                ],
+                "summary": "Renew Federation Relationship",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "federationContextId: id, federationRenewalDate: time, federationExpiryDate: time",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid federationContextId",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/nbi/partner": {
             "post": {
                 "description": "Initiates the federation establishment procedure with another federator",
                 "consumes": [
@@ -288,7 +381,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/nbi/v1/{federationContextId}/health": {
+        "/nbi/{federationContextId}/health": {
             "get": {
                 "description": "Retrieves the health information of the federation partner",
                 "consumes": [
@@ -338,7 +431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/nbi/v1/{federationContextId}/partner": {
+        "/nbi/{federationContextId}/partner": {
             "get": {
                 "description": "Retrieves federation information from the partner federator",
                 "consumes": [
@@ -432,6 +525,56 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/nbi/{federationContextId}/renew": {
+            "post": {
+                "description": "Requests the renewal of the federation with the partner federator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NBI - FederationManagement"
+                ],
+                "summary": "Request Federation Renewal with partner OP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FederationRenewalResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "federationContextId must be provided",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Federation not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -442,6 +585,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "expiresAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AccessTokenRequestData": {
+            "type": "object",
+            "properties": {
+                "clientId": {
+                    "type": "string"
+                },
+                "clientSecret": {
                     "type": "string"
                 }
             }
@@ -547,6 +701,20 @@ const docTemplate = `{
                 },
                 "removeMobileNetworkIds": {
                     "$ref": "#/definitions/models.MobileNetworkIds"
+                }
+            }
+        },
+        "models.FederationRenewalResponseData": {
+            "type": "object",
+            "properties": {
+                "federationContextId": {
+                    "type": "string"
+                },
+                "federationExpiryDate": {
+                    "type": "string"
+                },
+                "federationRenewalDate": {
+                    "type": "string"
                 }
             }
         },
@@ -744,7 +912,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8000",
-	BasePath:         "",
+	BasePath:         "/federation/v1",
 	Schemes:          []string{},
 	Title:            "MEC Federator API",
 	Description:      "This is the API documentation for the MEC Federator.",

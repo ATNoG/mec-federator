@@ -15,6 +15,7 @@ func AuthMiddleware(as *services.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authorizationHeader := c.GetHeader("Authorization")
 		if authorizationHeader == "" {
+			log.Print("AuthMiddleware - Authorization Header is missing")
 			utils.HandleProblem(c, http.StatusUnauthorized, "Authorization Header is missing")
 			return
 		}
@@ -23,6 +24,7 @@ func AuthMiddleware(as *services.AuthService) gin.HandlerFunc {
 
 		parts := strings.Split(authorizationHeader, " ")
 		if len(parts) != 2 {
+			log.Print("AuthMiddleware - Invalid Authorization Header")
 			utils.HandleProblem(c, http.StatusUnauthorized, "Invalid Authorization Header")
 			return
 		}
@@ -30,6 +32,7 @@ func AuthMiddleware(as *services.AuthService) gin.HandlerFunc {
 		tokenStr := parts[1]
 		_, err := as.QueryAccessToken(tokenStr)
 		if err != nil {
+			log.Print("AuthMiddleware - Provided access token is invalid or expired")
 			utils.HandleProblem(c, http.StatusUnauthorized, "Provided access token is invalid or expired")
 			return
 		}

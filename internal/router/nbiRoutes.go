@@ -7,7 +7,7 @@ import (
 
 func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
-	FederationManagement := router.Group("/nbi/v1")
+	FederationManagement := router.Group("/federation/v1/nbi")
 
 	federationManagementController := nbi.NewFederationManagementController(
 		svcs.FederationService,
@@ -26,4 +26,7 @@ func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
 	FederationManagement.GET(
 		"/:federationContextId/health",
 		federationManagementController.GetFederationHealthController)
+	FederationManagement.GET(
+		"/:federationContextId/renew",
+		federationManagementController.RequestFederationRenewalController)
 }

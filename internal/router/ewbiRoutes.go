@@ -7,7 +7,7 @@ import (
 
 func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
-	FederationManagement := router.Group("/ewbi/v1", authMiddleware)
+	FederationManagement := router.Group("/federation/v1/ewbi", authMiddleware)
 
 	federationManagementController := ewbi.NewFederationManagementController(
 		svcs.FederationService,
@@ -18,7 +18,7 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, auth
 		federationManagementController.CreateFederationController)
 	FederationManagement.DELETE(
 		"/:federationContextId/partner",
-		federationManagementController.RemoveFederationRelationshipController)
+		federationManagementController.RemoveFederationController)
 	FederationManagement.GET(
 		"/:federationContextId/partner",
 		federationManagementController.GetFederationMetaInfoController)
@@ -28,6 +28,7 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, auth
 	FederationManagement.GET(
 		"/:federationContextId/health",
 		federationManagementController.GetFederationHealthController)
-	// FederationManagement.POST("/:federationContextId/renew", controller.PostFederationRenew)
-	// FederationManagement.GET("/:federationContextId/platform-caps", controller.GetFederationPlatformCaps)
+	FederationManagement.POST(
+		"/:federationContextId/renew",
+		federationManagementController.RenewFederationController)
 }
