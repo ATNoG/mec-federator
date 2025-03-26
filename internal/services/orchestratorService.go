@@ -5,12 +5,17 @@ package services
  *	responsible for interacting with an orchestrator
  */
 
-type OrchestratorService interface {
+type OrchestratorServiceInterface interface {
 }
 
-type OrchestratorServiceImpl struct {
+type OrchestratorService struct {
 }
 
-func NewOrchestratorService() *OrchestratorServiceImpl {
-	return &OrchestratorServiceImpl{}
+func NewOrchestratorService() *OrchestratorService {
+	return &OrchestratorService{}
+}
+
+// DeleteArtefact deletes an artefact from the orchestrator
+func (os *OrchestratorService) DeleteArtefact() error {
+	return nil
 }
