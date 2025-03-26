@@ -416,6 +416,37 @@ paths:
       summary: Renew Federation Relationship
       tags:
       - EWBI - FederationManagement
+  /ewbi/fed-context-id:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the federationContextId using the accessToken
+      parameters:
+      - description: Access Token
+        in: query
+        name: accessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'federationContextId: id'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: No Federation found with the given accessToken
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get Federation Context Identifier
+      tags:
+      - EWBI - FederationManagement
   /ewbi/partner:
     post:
       consumes:

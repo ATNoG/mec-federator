@@ -203,12 +203,42 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 	log.Print("UpdateFederationController - Updating federation object")
 	err := fmc.federationService.PatchFederation(federationContextId, patchParams)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error updating the Federation object")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error updating the Federation object: "+err.Error())
 		return
 	}
 
 	log.Print("UpdateFederationController - Federation updated successfully")
 	c.JSON(http.StatusOK, gin.H{"status": "Federation updated successfully"})
+}
+
+// @Summary Get Federation Context Identifier
+// @Description Retrieves the federationContextId using the accessToken
+// @Tags EWBI - FederationManagement
+// @Accept json
+// @Produce json
+// @Param accessToken query string true "Access Token"
+// @Success 200 {object} map[string]string "federationContextId: id"
+// @Failure 400 {object} models.ProblemDetails "No Federation found with the given accessToken"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /ewbi/fed-context-id [get]
+func (fmc *FederationManagementController) GetFederationContextIdentifierController(c *gin.Context) {
+	log.Print("GetFederationContextIdentifier - Retrieving federationContextId using the accessToken")
+
+	// Check if the a federation exists with the given accessToken
+	accessToken := c.Query("accessToken")
+	if !fmc.federationService.ExistsFederationWithAccessToken(accessToken) {
+		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given accessToken")
+		return
+	}
+
+	// Retrieve the federation through the accessToken
+	federation, err := fmc.federationService.GetFederationByAccessToken(accessToken)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving federation information: "+err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"federationContextId": federation.PartnerOP.FederationContextId})
 }
 
 // @Summary Get Local Federation Health Info

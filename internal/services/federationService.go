@@ -153,6 +153,16 @@ func (fs *FederationService) ExistsFederationWithContextId(federationContextId s
 	return count > 0
 }
 
+// ExistsFederationWithAccessToken checks if a federation exists in the database using the accessToken
+func (fs *FederationService) ExistsFederationWithAccessToken(accessToken string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := fs.getFederationCollection()
+	filter := bson.M{"originOP.accessToken.accessToken": accessToken}
+	count, _ := collection.CountDocuments(ctx, filter)
+	return count > 0
+}
+
 // GetFederationContextId retrieves the federationContextId from the database using the accessToken
 func (fs *FederationService) GetFederationContextId(accessToken string) (string, error) {
 	collection := fs.getFederationCollection()
@@ -162,6 +172,17 @@ func (fs *FederationService) GetFederationContextId(accessToken string) (string,
 		return "", fmt.Errorf("error fetching federationContextId using accessToken: %v", err)
 	}
 	return federationContextId, nil
+}
+
+// GetFederationByAccessToken retrieves the federation from the database using the accessToken
+func (fs *FederationService) GetFederationByAccessToken(accessToken string) (models.Federation, error) {
+	collection := fs.getFederationCollection()
+	filter := bson.M{"originOP.accessToken.accessToken": accessToken}
+	federation, err := FetchEntityFromDatabase[models.Federation](collection, filter)
+	if err != nil {
+		return models.Federation{}, fmt.Errorf("error fetching federation using accessToken: %v", err)
+	}
+	return federation, nil
 }
 
 func (fs *FederationService) GetAccessToken(federationContextId string) (string, error) {

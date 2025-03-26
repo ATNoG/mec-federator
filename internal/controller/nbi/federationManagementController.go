@@ -391,6 +391,10 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 	c.JSON(http.StatusOK, healthInfo)
 }
 
+func (fmc *FederationManagementController) FetchFedContextIdFromPartnerController(c *gin.Context) {
+	
+}
+
 // @Summary Request Federation Renewal with partner OP
 // @Description Requests the renewal of the federation with the partner federator
 // @Tags NBI - FederationManagement

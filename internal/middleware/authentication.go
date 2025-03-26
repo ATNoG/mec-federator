@@ -36,5 +36,8 @@ func AuthMiddleware(as *services.AuthService) gin.HandlerFunc {
 			utils.HandleProblem(c, http.StatusUnauthorized, "Provided access token is invalid or expired")
 			return
 		}
+
+		log.Print("AuthMiddleware - Access token is valid, setting it in the context")
+		c.Set("accessToken", tokenStr)
 	}
 }

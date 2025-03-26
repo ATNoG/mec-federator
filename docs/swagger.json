@@ -55,6 +55,53 @@
                 }
             }
         },
+        "/ewbi/fed-context-id": {
+            "get": {
+                "description": "Retrieves the federationContextId using the accessToken",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - FederationManagement"
+                ],
+                "summary": "Get Federation Context Identifier",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Access Token",
+                        "name": "accessToken",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "federationContextId: id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No Federation found with the given accessToken",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/ewbi/partner": {
             "post": {
                 "description": "Establishes a new federation relationship with another federator with the provided data",

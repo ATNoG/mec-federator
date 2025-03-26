@@ -16,15 +16,18 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, auth
 	FederationManagement.POST(
 		"/partner",
 		federationManagementController.CreateFederationController)
-	FederationManagement.DELETE(
-		"/:federationContextId/partner",
-		federationManagementController.RemoveFederationController)
 	FederationManagement.GET(
 		"/:federationContextId/partner",
 		federationManagementController.GetFederationMetaInfoController)
 	FederationManagement.PATCH(
 		"/:federationContextId/partner",
 		federationManagementController.UpdateFederationController)
+	FederationManagement.DELETE(
+		"/:federationContextId/partner",
+		federationManagementController.RemoveFederationController)
+	FederationManagement.GET(
+		"/fed-context-id",
+		federationManagementController.GetFederationContextIdentifierController)
 	FederationManagement.GET(
 		"/:federationContextId/health",
 		federationManagementController.GetFederationHealthController)
