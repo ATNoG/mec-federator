@@ -16,6 +16,7 @@ type Services struct {
 	AuthService         *services.AuthService
 	FederationService   *services.FederationService
 	OrchestratorService *services.OrchestratorService
+	ZoneService         *services.ZoneService
 	HttpClientService   *services.HttpClientService
 }
 
@@ -27,12 +28,20 @@ func Init() *gin.Engine {
 	mongoClient := config.GetMongoClient()
 	httpClient := &http.Client{}
 
-	// services to be injected into routes
+	// init services
+	authServ := services.NewAuthService(mongoClient)
+	fedServ := services.NewFederationService(mongoClient)
+	orchServ := services.NewOrchestratorService()
+	zoneServ := services.NewZoneService(mongoClient, orchServ, fedServ)
+	httpServ := services.NewHttpClientService(httpClient)
+
+	// bundle all services
 	services := &Services{
-		AuthService:         services.NewAuthService(mongoClient),
-		FederationService:   services.NewFederationService(mongoClient),
-		OrchestratorService: services.NewOrchestratorService(),
-		HttpClientService:   services.NewHttpClientService(httpClient),
+		AuthService:         authServ,
+		FederationService:   fedServ,
+		OrchestratorService: orchServ,
+		ZoneService:         zoneServ,
+		HttpClientService:   httpServ,
 	}
 
 	// init auth middleware
@@ -51,14 +60,13 @@ func Init() *gin.Engine {
 }
 
 func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
-	initTestRoutes(router, authMiddleware)
-
 	// Auth Routes
 	initAuthRoutes(router, svcs, authMiddleware)
 
 	// EWBI Routes
 	// initFederationAPIManagementRoutes(router, svcs, authMiddleware)
 	initEwbiFederationManagementRoutes(router, svcs, authMiddleware)
+	initZoneInfoSyncRoutes(router, svcs, authMiddleware)
 	initEwbiArtefactManagementRoutes(router, svcs, authMiddleware)
 
 	// SBI Routes

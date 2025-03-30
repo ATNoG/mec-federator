@@ -36,6 +36,25 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, auth
 		federationManagementController.RenewFederationController)
 }
 
+func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
+	// ZoneInfoSync - Sync zone information
+	ZoneInfoSync := router.Group("/federation/v1/ewbi", authMiddleware)
+
+	zoneInfoSyncController := ewbi.NewZonesInfoSyncController(
+		svcs.ZoneService,
+	)
+
+	ZoneInfoSync.POST(
+		"/:federationContextId/zones",
+		zoneInfoSyncController.SubscribeZoneController)
+	ZoneInfoSync.DELETE(
+		"/:federationContextId/zones/:zoneId",
+		zoneInfoSyncController.UnsubscribeZoneController)
+	ZoneInfoSync.GET(
+		"/:federationContextId/zones/:zoneId",
+		zoneInfoSyncController.GetZoneController)
+}
+
 func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
 	// ArtefactManagement - Create and manage artefacts
 	ArtefactManagement := router.Group("/artefacts/v1/ewbi", authMiddleware)

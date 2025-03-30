@@ -9,10 +9,8 @@ import (
 // Federation Management
 
 type FederationRenewalResponse struct {
-	FederationContextId string `json:"federationContextId"`
-
-	FederationExpiryDate time.Time `json:"federationExpiryDate"`
-
+	FederationContextId   string    `json:"federationContextId"`
+	FederationExpiryDate  time.Time `json:"federationExpiryDate"`
 	FederationRenewalDate time.Time `json:"federationRenewalDate"`
 }
 
