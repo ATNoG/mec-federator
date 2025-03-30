@@ -49,7 +49,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 	log.Print("InitiateFederationController - Initiating Federation establishment procedure")
 
 	// Bind request body to struct
-	var requestBody models.FederationInitiateData
+	var requestBody FederationInitiateRequest
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
@@ -392,7 +392,7 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 }
 
 func (fmc *FederationManagementController) FetchFedContextIdFromPartnerController(c *gin.Context) {
-	
+
 }
 
 // @Summary Request Federation Renewal with partner OP
@@ -433,7 +433,7 @@ func (fmc *FederationManagementController) RequestFederationRenewalController(c 
 	log.Print("RequestFederationRenewalController - Sending renewal request to partner")
 	renewFederationUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federationContextId, "/renew")
 	authStrat := services.NewBearerTokenAuth(federation.OriginOP.AccessToken.AccessToken)
-	var renewalResponse models.FederationRenewalResponseData
+	var renewalResponse FederationRenewalResponse
 
 	// Send request to partner federator
 	resp, err := fmc.httpClientService.DoRequest(

@@ -35,3 +35,31 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, auth
 		"/:federationContextId/renew",
 		federationManagementController.RenewFederationController)
 }
+
+func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
+	// ArtefactManagement - Create and manage artefacts
+	ArtefactManagement := router.Group("/artefacts/v1/ewbi", authMiddleware)
+
+	artefactManagementController := ewbi.NewArtefactManagementController(
+		svcs.OrchestratorService,
+	)
+
+	ArtefactManagement.POST(
+		"/:federationContextId/artefact",
+		artefactManagementController.OnboardArtefactController)
+	ArtefactManagement.GET(
+		"/:federationContextId/artefact/:artefactId",
+		artefactManagementController.GetArtefactController)
+	ArtefactManagement.DELETE(
+		"/:federationContextId/artefact/:artefactId",
+		artefactManagementController.DeleteArtefactController)
+	ArtefactManagement.POST(
+		"/:federationContextId/files",
+		artefactManagementController.UploadFileController)
+	ArtefactManagement.GET(
+		"/:federationContextId/files/:fileId",
+		artefactManagementController.GetFileController)
+	ArtefactManagement.DELETE(
+		"/:federationContextId/files/:fileId",
+		artefactManagementController.DeleteFileController)
+}

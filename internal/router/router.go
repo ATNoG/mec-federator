@@ -13,9 +13,10 @@ import (
 )
 
 type Services struct {
-	AuthService       *services.AuthService
-	FederationService *services.FederationService
-	HttpClientService *services.HttpClientService
+	AuthService         *services.AuthService
+	FederationService   *services.FederationService
+	OrchestratorService *services.OrchestratorService
+	HttpClientService   *services.HttpClientService
 }
 
 func Init() *gin.Engine {
@@ -28,9 +29,10 @@ func Init() *gin.Engine {
 
 	// services to be injected into routes
 	services := &Services{
-		AuthService:       services.NewAuthService(mongoClient),
-		FederationService: services.NewFederationService(mongoClient),
-		HttpClientService: services.NewHttpClientService(httpClient),
+		AuthService:         services.NewAuthService(mongoClient),
+		FederationService:   services.NewFederationService(mongoClient),
+		OrchestratorService: services.NewOrchestratorService(),
+		HttpClientService:   services.NewHttpClientService(httpClient),
 	}
 
 	// init auth middleware
@@ -57,6 +59,7 @@ func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFu
 	// EWBI Routes
 	// initFederationAPIManagementRoutes(router, svcs, authMiddleware)
 	initEwbiFederationManagementRoutes(router, svcs, authMiddleware)
+	initEwbiArtefactManagementRoutes(router, svcs, authMiddleware)
 
 	// SBI Routes
 	// interfaces with orchestrators and gives them orders
@@ -64,4 +67,5 @@ func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFu
 	// NBI Routes
 	// receives orders from the orchestrators
 	initNbiFederationManagementRoutes(router, svcs)
+	// initNbiArtefactManagementRoutes(router, svcs)
 }

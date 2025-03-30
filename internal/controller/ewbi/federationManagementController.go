@@ -311,7 +311,7 @@ func (fmc *FederationManagementController) RenewFederationController(c *gin.Cont
 		return
 	}
 
-	response := models.FederationRenewalResponseData{
+	response := FederationRenewalResponse{
 		FederationContextId:   federation.PartnerOP.FederationContextId,
 		FederationRenewalDate: federation.PartnerOP.FederationRenewalDate,
 		FederationExpiryDate:  federation.PartnerOP.FederationExpiryDate,
