@@ -29,7 +29,7 @@ func init() {
 		panic(err)
 	}
 
-	err = config.InitOrchestrators()
+	err = config.InitMecSystemInformation()
 	if err != nil {
 		panic(err)
 	}

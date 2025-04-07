@@ -15,6 +15,7 @@ import (
 type Services struct {
 	AuthService         *services.AuthService
 	FederationService   *services.FederationService
+	MecSystemService    *services.MecSystemService
 	OrchestratorService *services.OrchestratorService
 	ZoneService         *services.ZoneService
 	HttpClientService   *services.HttpClientService
@@ -31,6 +32,7 @@ func Init() *gin.Engine {
 	// init services
 	authServ := services.NewAuthService(mongoClient)
 	fedServ := services.NewFederationService(mongoClient)
+	mecServ := services.NewMecSystemService(mongoClient)
 	orchServ := services.NewOrchestratorService()
 	zoneServ := services.NewZoneService(mongoClient, orchServ, fedServ)
 	httpServ := services.NewHttpClientService(httpClient)
@@ -39,6 +41,7 @@ func Init() *gin.Engine {
 	services := &Services{
 		AuthService:         authServ,
 		FederationService:   fedServ,
+		MecSystemService:    mecServ,
 		OrchestratorService: orchServ,
 		ZoneService:         zoneServ,
 		HttpClientService:   httpServ,
@@ -74,6 +77,6 @@ func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFu
 
 	// NBI Routes
 	// receives orders from the orchestrators
-	initNbiFederationManagementRoutes(router, svcs)
-	// initNbiArtefactManagementRoutes(router, svcs)
+	//initNbiFederationManagementRoutes(router, svcs) not using since we will use kafka instead
+	initMecSystemManagementRoutes(router, svcs)
 }

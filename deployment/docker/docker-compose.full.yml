@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: ./deployment/docker/Dockerfile
     environment:
+      OPERATOR_ID: ${OPERATOR_ID_OO}
       API_PORT: ${API_PORT_OO}
       BASE_URL: ${BASE_URL_OO}
       MONGO_HOST: ${MONGO_HOST_OO}
@@ -59,6 +60,7 @@ services:
       context: .
       dockerfile: ./deployment/docker/Dockerfile
     environment:
+      OPERATOR_ID: ${OPERATOR_ID_PO}
       API_PORT: ${API_PORT_PO}
       BASE_URL: ${BASE_URL_PO}
       MONGO_HOST: ${MONGO_HOST_PO}
