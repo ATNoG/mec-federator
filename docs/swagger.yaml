@@ -27,7 +27,7 @@ definitions:
       numOfApplications:
         type: string
     type: object
-  models.FederationInitiateData:
+  models.FederationInitiateRequestData:
     properties:
       authEndpoint:
         type: string
@@ -619,7 +619,7 @@ paths:
         name: federationRequest
         required: true
         schema:
-          $ref: '#/definitions/models.FederationInitiateData'
+          $ref: '#/definitions/models.FederationInitiateRequestData'
       produces:
       - application/json
       responses:

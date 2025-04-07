@@ -402,7 +402,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.FederationInitiateData"
+                            "$ref": "#/definitions/models.FederationInitiateRequestData"
                         }
                     }
                 ],
@@ -667,7 +667,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.FederationInitiateData": {
+        "models.FederationInitiateRequestData": {
             "type": "object",
             "required": [
                 "authEndpoint",

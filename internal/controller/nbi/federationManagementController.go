@@ -40,7 +40,7 @@ func NewFederationManagementController(fs *services.FederationService, hcp *serv
 // @Tags NBI - FederationManagement
 // @Accept  json
 // @Produce  json
-// @Param   federationRequest  body  models.FederationInitiateData  true  "Federation and Auth Endpoints"
+// @Param   federationRequest  body  models.FederationInitiateRequestData  true  "Federation and Auth Endpoints"
 // @Success 200 {object} models.FederationResponseData
 // @Failure 400 {object} models.ProblemDetails "Invalid request body or missing fields"
 // @Failure 500 {object} models.ProblemDetails "Internal error during federation process"
@@ -49,7 +49,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 	log.Print("InitiateFederationController - Initiating Federation establishment procedure")
 
 	// Bind request body to struct
-	var requestBody FederationInitiateRequest
+	var requestBody models.FederationInitiateRequestData
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
@@ -433,7 +433,7 @@ func (fmc *FederationManagementController) RequestFederationRenewalController(c 
 	log.Print("RequestFederationRenewalController - Sending renewal request to partner")
 	renewFederationUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federationContextId, "/renew")
 	authStrat := services.NewBearerTokenAuth(federation.OriginOP.AccessToken.AccessToken)
-	var renewalResponse FederationRenewalResponse
+	var renewalResponse models.FederationRenewalResponseData
 
 	// Send request to partner federator
 	resp, err := fmc.httpClientService.DoRequest(
