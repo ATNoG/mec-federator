@@ -382,6 +382,79 @@ const docTemplate = `{
                 }
             }
         },
+        "/nbi/mec-system": {
+            "get": {
+                "description": "Get MEC System Information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NBI - MEC System Management"
+                ],
+                "summary": "Get MEC System Information",
+                "responses": {
+                    "200": {
+                        "description": "Orchestrator Information",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrchestratorInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error during orchestrator information retrieval",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Register MEC System Information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NBI - MEC System Management"
+                ],
+                "summary": "Register MEC System Information",
+                "parameters": [
+                    {
+                        "description": "Orchestrator Information",
+                        "name": "orchestratorInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.OrchestratorInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orchestrator Information",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrchestratorInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or missing fields",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error during orchestrator registration",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/nbi/partner": {
             "post": {
                 "description": "Initiates the federation establishment procedure with another federator",
@@ -879,6 +952,32 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "models.OrchestratorInfo": {
+            "type": "object",
+            "properties": {
+                "kafkaUrl": {
+                    "type": "string"
+                },
+                "mobileNetworkCodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "operatorAddress": {
+                    "type": "string"
+                },
+                "operatorId": {
+                    "type": "string"
+                },
+                "operatorName": {
+                    "type": "string"
+                },
+                "operatorPublicKey": {
+                    "type": "string"
                 }
             }
         },

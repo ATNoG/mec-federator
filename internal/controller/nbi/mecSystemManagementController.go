@@ -21,6 +21,16 @@ func NewMecSystemManagementController(orchestratorService *services.Orchestrator
 	}
 }
 
+// @Summary Register MEC System Information
+// @Description Register MEC System Information
+// @Tags NBI - MEC System Management
+// @Accept json
+// @Produce json
+// @Param orchestratorInfo body models.OrchestratorInfo true "Orchestrator Information"
+// @Success 200 {object} models.OrchestratorInfo "Orchestrator Information"
+// @Failure 400 {object} models.ProblemDetails "Invalid request body or missing fields"
+// @Failure 500 {object} models.ProblemDetails "Internal error during orchestrator registration"
+// @Router /nbi/mec-system [post]
 func (omc *MecSystemManagementController) RegisterOrchestratorController(c *gin.Context) {
 	log.Print("RegisterOrchestratorController - Registering orchestrator information")
 
@@ -39,6 +49,14 @@ func (omc *MecSystemManagementController) RegisterOrchestratorController(c *gin.
 	c.JSON(http.StatusOK, gin.H{"message": "Orchestrator information registered successfully"})
 }
 
+// @Summary Get MEC System Information
+// @Description Get MEC System Information
+// @Tags NBI - MEC System Management
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.OrchestratorInfo "Orchestrator Information"
+// @Failure 500 {object} models.ProblemDetails "Internal error during orchestrator information retrieval"
+// @Router /nbi/mec-system [get]
 func (omc *MecSystemManagementController) GetOrchestratorInfoController(c *gin.Context) {
 	log.Print("GetOrchestratorInfoController - Getting orchestrator information")
 

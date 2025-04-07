@@ -175,6 +175,23 @@ definitions:
           type: string
         type: array
     type: object
+  models.OrchestratorInfo:
+    properties:
+      kafkaUrl:
+        type: string
+      mobileNetworkCodes:
+        items:
+          type: string
+        type: array
+      operatorAddress:
+        type: string
+      operatorId:
+        type: string
+      operatorName:
+        type: string
+      operatorPublicKey:
+        type: string
+    type: object
   models.ProblemDetails:
     properties:
       cause:
@@ -608,6 +625,54 @@ paths:
       summary: Request Federation Renewal with partner OP
       tags:
       - NBI - FederationManagement
+  /nbi/mec-system:
+    get:
+      consumes:
+      - application/json
+      description: Get MEC System Information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Orchestrator Information
+          schema:
+            $ref: '#/definitions/models.OrchestratorInfo'
+        "500":
+          description: Internal error during orchestrator information retrieval
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get MEC System Information
+      tags:
+      - NBI - MEC System Management
+    post:
+      consumes:
+      - application/json
+      description: Register MEC System Information
+      parameters:
+      - description: Orchestrator Information
+        in: body
+        name: orchestratorInfo
+        required: true
+        schema:
+          $ref: '#/definitions/models.OrchestratorInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Orchestrator Information
+          schema:
+            $ref: '#/definitions/models.OrchestratorInfo'
+        "400":
+          description: Invalid request body or missing fields
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal error during orchestrator registration
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Register MEC System Information
+      tags:
+      - NBI - MEC System Management
   /nbi/partner:
     post:
       consumes:
