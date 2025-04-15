@@ -629,7 +629,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get MEC System Information
+      description: Get the MEC System Information from the MEF
       produces:
       - application/json
       responses:
@@ -647,7 +647,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Register MEC System Information
+      description: Provide the MEF with info about the MEC System where it belongs
+        to
       parameters:
       - description: Orchestrator Information
         in: body

@@ -384,7 +384,7 @@ const docTemplate = `{
         },
         "/nbi/mec-system": {
             "get": {
-                "description": "Get MEC System Information",
+                "description": "Get the MEC System Information from the MEF",
                 "consumes": [
                     "application/json"
                 ],
@@ -411,7 +411,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Register MEC System Information",
+                "description": "Provide the MEF with info about the MEC System where it belongs to",
                 "consumes": [
                     "application/json"
                 ],

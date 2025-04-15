@@ -22,7 +22,7 @@ func NewMecSystemManagementController(orchestratorService *services.Orchestrator
 }
 
 // @Summary Register MEC System Information
-// @Description Register MEC System Information
+// @Description Provide the MEF with info about the MEC System where it belongs to
 // @Tags NBI - MEC System Management
 // @Accept json
 // @Produce json
@@ -50,7 +50,7 @@ func (omc *MecSystemManagementController) RegisterOrchestratorController(c *gin.
 }
 
 // @Summary Get MEC System Information
-// @Description Get MEC System Information
+// @Description Get the MEC System Information from the MEF
 // @Tags NBI - MEC System Management
 // @Accept json
 // @Produce json
