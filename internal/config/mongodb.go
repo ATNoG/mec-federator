@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 
+	"github.com/mankings/mec-federator/internal/models"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -42,4 +43,19 @@ func InitMongoDB() error {
 // returns the MongoDB client
 func GetMongoClient() *mongo.Client {
 	return mongoClient
+}
+
+// inits MecSystem information in the database
+func InitMecSystemInformation() error {
+	collection := mongoClient.Database("mecDb").Collection("systems")
+	orchestratorInfo := models.OrchestratorInfo{
+		OperatorId: AppConfig.OperatorId,
+	}
+
+	_, err := collection.InsertOne(ctx, orchestratorInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

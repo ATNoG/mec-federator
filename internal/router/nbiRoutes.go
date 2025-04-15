@@ -30,3 +30,20 @@ func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
 		"/:federationContextId/renew",
 		federationManagementController.RequestFederationRenewalController)
 }
+
+func initMecSystemManagementRoutes(router *gin.Engine, svcs *Services) {
+	// OrchestratorManagement - Register and manage orchestrator information
+	OrchestratorManagement := router.Group("/federation/v1/nbi/mec-system")
+
+	orchestratorManagementController := nbi.NewMecSystemManagementController(
+		svcs.OrchestratorService,
+		svcs.MecSystemService,
+	)
+
+	OrchestratorManagement.POST(
+		"",
+		orchestratorManagementController.RegisterOrchestratorController)
+	OrchestratorManagement.GET(
+		"",
+		orchestratorManagementController.GetOrchestratorInfoController)
+}

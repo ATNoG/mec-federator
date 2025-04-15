@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	OperatorId            string
 	ApiPort               string
 	BaseUrl               string
 	DbUsername            string
@@ -30,6 +31,7 @@ func InitAppConfig() error {
 
 	// Initialize AppConfig
 	AppConfig = &Config{
+		OperatorId:            os.Getenv("OPERATOR_ID"),
 		ApiPort:               os.Getenv("API_PORT"),
 		BaseUrl:               os.Getenv("BASE_URL"),
 		DbUsername:            os.Getenv("MONGO_USERNAME"),

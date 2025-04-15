@@ -28,7 +28,6 @@ half-up:
 		-f deployment/docker/docker-compose.half.yml \
 		--env-file .env.half \
 		up -d \
-		$(if $(BUILD),--build)
 
 half-down:
 	docker compose \
@@ -37,13 +36,19 @@ half-down:
 		--env-file .env.half \
 		down -v
 
+half-build:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.half.yml \
+		--env-file .env.half \
+		up -d --build
+
 full-up:
 	docker compose \
 		--project-directory . \
 		-f deployment/docker/docker-compose.full.yml \
 		--env-file .env.full \
-		up -d \
-		$(if $(BUILD),--build)
+		up -d
 
 full-down:
 	docker compose \
@@ -51,6 +56,13 @@ full-down:
 		-f deployment/docker/docker-compose.full.yml \
 		--env-file .env.full \
 		down -v
+
+full-build:
+	docker compose \
+		--project-directory . \
+		-f deployment/docker/docker-compose.full.yml \
+		--env-file .env.full \
+		up -d --build
 
 clean:
 	rm -rf bin/*
