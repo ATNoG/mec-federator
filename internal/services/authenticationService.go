@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -28,7 +29,7 @@ func NewAuthService(mongoClient *mongo.Client) *AuthService {
 
 // save an access token to the database
 func (s *AuthService) SaveAccessToken(accessToken models.AccessToken) error {
-	collection := s.mongoClient.Database("authDb").Collection("access_tokens")
+	collection := s.mongoClient.Database(config.AppConfig.Database).Collection("access_tokens")
 	_, err := collection.InsertOne(context.TODO(), accessToken)
 	log.Printf("AuthService - Saved access token")
 	return err
@@ -38,7 +39,7 @@ func (s *AuthService) SaveAccessToken(accessToken models.AccessToken) error {
 func (s *AuthService) QueryAccessToken(tokenStr string) (models.AccessToken, error) {
 	filter := bson.M{"accessToken": tokenStr}
 	var result models.AccessToken
-	collection := s.mongoClient.Database("authDb").Collection("access_tokens")
+	collection := s.mongoClient.Database(config.AppConfig.Database).Collection("access_tokens")
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		return result, err

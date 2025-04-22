@@ -45,9 +45,14 @@ func GetMongoClient() *mongo.Client {
 	return mongoClient
 }
 
+// returns the MongoDB database
+func GetMongoDatabase() *mongo.Database {
+	return mongoClient.Database(AppConfig.Database)
+}
+
 // inits MecSystem information in the database
 func InitMecSystemInformation() error {
-	collection := mongoClient.Database("mecDb").Collection("systems")
+	collection := mongoClient.Database(AppConfig.Database).Collection("systems")
 	orchestratorInfo := models.OrchestratorInfo{
 		OperatorId: AppConfig.OperatorId,
 	}

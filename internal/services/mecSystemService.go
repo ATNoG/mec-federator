@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -30,7 +31,7 @@ func NewMecSystemService(mongoClient *mongo.Client) *MecSystemService {
 }
 
 func (mss *MecSystemService) getMecSystemCollection() *mongo.Collection {
-	return mss.mongoClient.Database("mecDb").Collection("systems")
+	return mss.mongoClient.Database(config.AppConfig.Database).Collection("systems")
 }
 
 func (mecSystemService *MecSystemService) GetMecInfo() (models.OrchestratorInfo, error) {
