@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -26,7 +27,7 @@ func NewZoneService(mongoClient *mongo.Client, orchestratorService *Orchestrator
 }
 
 func (z *ZoneService) getZoneDetailsCollection() *mongo.Collection {
-	return z.mongoClient.Database("mec").Collection("zoneDetails")
+	return z.mongoClient.Database(config.AppConfig.Database).Collection("zoneDetails")
 }
 
 // Returns all the local zones that are registered for federation

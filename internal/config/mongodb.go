@@ -17,7 +17,7 @@ var (
 )
 
 func InitMongoDB() error {
-	DatabaseURI := "mongodb://" + AppConfig.DbUsername + ":" + AppConfig.DbPassword + "@" + AppConfig.DbHost + ":" + AppConfig.DbPort
+	DatabaseURI := "mongodb://" + AppConfig.DbUsername + ":" + AppConfig.DbPassword + "@" + AppConfig.DbHost + ":" + AppConfig.DbPort + "/?directConnection=true"
 	log.Printf("Connecting to MongoDB at %s", DatabaseURI)
 
 	mongoConnection := options.Client().ApplyURI(DatabaseURI)
@@ -45,11 +45,17 @@ func GetMongoClient() *mongo.Client {
 	return mongoClient
 }
 
+// returns the MongoDB database
+func GetMongoDatabase() *mongo.Database {
+	return mongoClient.Database(AppConfig.Database)
+}
+
 // inits MecSystem information in the database
 func InitMecSystemInformation() error {
-	collection := mongoClient.Database("mecDb").Collection("systems")
+	collection := mongoClient.Database(AppConfig.Database).Collection("systems")
 	orchestratorInfo := models.OrchestratorInfo{
 		OperatorId: AppConfig.OperatorId,
+		KafkaUrl:   AppConfig.KafkaHost + ":" + AppConfig.KafkaPort,
 	}
 
 	_, err := collection.InsertOne(ctx, orchestratorInfo)

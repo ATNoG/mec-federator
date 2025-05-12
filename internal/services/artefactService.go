@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -35,11 +36,11 @@ func NewArtefactService(mongoClient *mongo.Client) *ArtefactService {
 }
 
 func (as *ArtefactService) getArtefactCollection() *mongo.Collection {
-	return as.mongoClient.Database("artefactDb").Collection("artefacts")
+	return as.mongoClient.Database(config.AppConfig.Database).Collection("artefacts")
 }
 
 func (as *ArtefactService) getFileCollection() *mongo.Collection {
-	return as.mongoClient.Database("fileDb").Collection("files")
+	return as.mongoClient.Database(config.AppConfig.Database).Collection("files")
 }
 
 // Register an artefact locally

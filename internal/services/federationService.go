@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -29,7 +30,7 @@ type FederationService struct {
 }
 
 func (fs *FederationService) getFederationCollection() *mongo.Collection {
-	return fs.mongoClient.Database("federationDb").Collection("federations")
+	return fs.mongoClient.Database(config.AppConfig.Database).Collection("federations")
 }
 
 // NewFederationService creates a new instance of the FederationServiceImpl
