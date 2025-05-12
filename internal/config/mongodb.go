@@ -55,6 +55,7 @@ func InitMecSystemInformation() error {
 	collection := mongoClient.Database(AppConfig.Database).Collection("systems")
 	orchestratorInfo := models.OrchestratorInfo{
 		OperatorId: AppConfig.OperatorId,
+		KafkaUrl:   AppConfig.KafkaHost + ":" + AppConfig.KafkaPort,
 	}
 
 	_, err := collection.InsertOne(ctx, orchestratorInfo)

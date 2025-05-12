@@ -18,7 +18,9 @@ type Services struct {
 	MecSystemService    *services.MecSystemService
 	OrchestratorService *services.OrchestratorService
 	ZoneService         *services.ZoneService
-	HttpClientService   *services.HttpClientService
+
+	HttpClientService *services.HttpClientService
+	KafkaService      *services.KafkaService
 }
 
 func Init() *gin.Engine {
@@ -36,6 +38,7 @@ func Init() *gin.Engine {
 	orchServ := services.NewOrchestratorService()
 	zoneServ := services.NewZoneService(mongoClient, orchServ, fedServ)
 	httpServ := services.NewHttpClientService(httpClient)
+	kafkaServ := services.NewKafkaService()
 
 	// bundle all services
 	services := &Services{
@@ -44,7 +47,9 @@ func Init() *gin.Engine {
 		MecSystemService:    mecServ,
 		OrchestratorService: orchServ,
 		ZoneService:         zoneServ,
-		HttpClientService:   httpServ,
+
+		HttpClientService: httpServ,
+		KafkaService:      kafkaServ,
 	}
 
 	// init auth middleware

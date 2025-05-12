@@ -1,9 +1,10 @@
 package services
 
 import (
-	"context"
+	"encoding/json"
 
-	"github.com/segmentio/kafka-go"
+	"github.com/IBM/sarama"
+	"github.com/mankings/mec-federator/internal/config"
 )
 
 /*
@@ -15,15 +16,27 @@ type KafkaServiceInterface struct {
 }
 
 type KafkaService struct {
-	writer *kafka.Writer
+	topics []string
 }
 
-func NewKafkaService(writer *kafka.Writer) *KafkaService {
+func NewKafkaService() *KafkaService {
 	return &KafkaService{
-		writer: writer,
+		topics: []string{"federator-topic"},
 	}
 }
 
-func (k *KafkaService) Produce(ctx context.Context, msg kafka.Message) error {
-	return k.writer.WriteMessages(ctx, msg)
+// Produce a message to a topic in kafka
+func (k *KafkaService) Produce(topic string, message interface{}) error {
+	bytes, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
+	msg := &sarama.ProducerMessage{
+		Topic: topic,
+		Value: sarama.ByteEncoder(bytes),
+	}
+
+	_, _, err = config.Producer.SendMessage(msg)
+	return err
 }
