@@ -25,9 +25,9 @@ func InitKafka() error {
 	producerConfig.Producer.Retry.Max = 5
 	producerConfig.Producer.Retry.Backoff = 100 * time.Millisecond
 
-	// producerConfig.Net.SASL.Enable = true
-	// producerConfig.Net.SASL.User = username
-	// producerConfig.Net.SASL.Password = password
+	producerConfig.Net.SASL.Enable = true
+	producerConfig.Net.SASL.User = username
+	producerConfig.Net.SASL.Password = password
 	log.Println("Connecting to Kafka with username:", username, "and password:", password)
 
 	p, err := sarama.NewSyncProducer(brokers, producerConfig)
@@ -37,15 +37,17 @@ func InitKafka() error {
 	Producer = p
 
 	consumerConfig := sarama.NewConfig()
-	// consumerConfig.Net.SASL.Enable = true
-	// consumerConfig.Net.SASL.User = username
-	// consumerConfig.Net.SASL.Password = password
+	consumerConfig.Net.SASL.Enable = true
+	consumerConfig.Net.SASL.User = username
+	consumerConfig.Net.SASL.Password = password
 
 	c, err := sarama.NewConsumerGroup(brokers, "federator-consumer-group", consumerConfig)
 	if err != nil {
 		return err
 	}
 	Consumer = c
+
+	log.Println("Kafka initialized successfully")
 
 	return nil
 }

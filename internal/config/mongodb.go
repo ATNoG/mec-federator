@@ -17,7 +17,7 @@ var (
 )
 
 func InitMongoDB() error {
-	DatabaseURI := "mongodb://" + AppConfig.DbUsername + ":" + AppConfig.DbPassword + "@" + AppConfig.DbHost + ":" + AppConfig.DbPort
+	DatabaseURI := "mongodb://" + AppConfig.DbUsername + ":" + AppConfig.DbPassword + "@" + AppConfig.DbHost + ":" + AppConfig.DbPort + "/?directConnection=true"
 	log.Printf("Connecting to MongoDB at %s", DatabaseURI)
 
 	mongoConnection := options.Client().ApplyURI(DatabaseURI)

@@ -24,17 +24,17 @@ func init() {
 		panic(err)
 	}
 
+	err = config.InitKafka()
+	if err != nil {
+		panic(err)
+	}
+
 	err = config.InitMongoDB()
 	if err != nil {
 		panic(err)
 	}
 
 	err = config.InitMecSystemInformation()
-	if err != nil {
-		panic(err)
-	}
-
-	err = config.InitKafka()
 	if err != nil {
 		panic(err)
 	}
