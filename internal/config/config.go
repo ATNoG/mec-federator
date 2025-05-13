@@ -59,7 +59,22 @@ func InitAppConfig() error {
 		KafkaPort:     os.Getenv("KAFKA_PORT"),
 	}
 
-	slog.Info("Environment Variables", "AppConfig", AppConfig)
+	slog.Info("Environment Variables\n" +
+		"  OperatorId: " + AppConfig.OperatorId + "\n" +
+		"  ApiPort: " + AppConfig.ApiPort + "\n" +
+		"  BaseUrl: " + AppConfig.BaseUrl + "\n" +
+		"  OAuth2ClientId: " + AppConfig.OAuth2ClientId + "\n" +
+		"  OAuth2ClientSecret: " + AppConfig.OAuth2ClientSecret + "\n" +
+		"  KeycloakTokenEndpoint: " + AppConfig.KeycloakTokenEndpoint + "\n" +
+		"  DbUsername: " + AppConfig.DbUsername + "\n" +
+		"  DbPassword: " + AppConfig.DbPassword + "\n" +
+		"  DbHost: " + AppConfig.DbHost + "\n" +
+		"  DbPort: " + AppConfig.DbPort + "\n" +
+		"  Database: " + AppConfig.Database + "\n" +
+		"  KafkaUsername: " + AppConfig.KafkaUsername + "\n" +
+		"  KafkaPassword: " + AppConfig.KafkaPassword + "\n" +
+		"  KafkaHost: " + AppConfig.KafkaHost + "\n" +
+		"  KafkaPort: " + AppConfig.KafkaPort)
 
 	return nil
 }
