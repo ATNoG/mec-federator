@@ -2,9 +2,11 @@ package ewbi
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type ArtefactManagementController struct {
@@ -24,6 +26,18 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	log.Print("OnboardArtefactController - Onboarding artefact onto federator")
 
 	// Check if the request multipart form is valid
+	form, err := c.MultipartForm()
+	if err != nil {
+		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body, missing parameters or wrong data type")
+		return
+	}
+	artefactFile := form.File["artefactFile"]
+	if len(artefactFile) == 0 {
+		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body, missing parameters or wrong data type")
+		return
+	}
+	
+
 	// Check if the artefact is valid
 	// Check if the artefact is already onboarded
 	// Save the artefact to the database

@@ -5,9 +5,9 @@ import (
 	"github.com/mankings/mec-federator/internal/controller/ewbi"
 )
 
-func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
+func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
-	FederationManagement := router.Group("/federation/v1/ewbi", authMiddleware)
+	FederationManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
 	federationManagementController := ewbi.NewFederationManagementController(
 		svcs.FederationService,
@@ -36,9 +36,9 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, auth
 		federationManagementController.RenewFederationController)
 }
 
-func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
+func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ZoneInfoSync - Sync zone information
-	ZoneInfoSync := router.Group("/federation/v1/ewbi", authMiddleware)
+	ZoneInfoSync := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
 	zoneInfoSyncController := ewbi.NewZonesInfoSyncController(
 		svcs.ZoneService,
@@ -55,9 +55,9 @@ func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, authMiddleware g
 		zoneInfoSyncController.GetZoneController)
 }
 
-func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
+func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ArtefactManagement - Create and manage artefacts
-	ArtefactManagement := router.Group("/artefacts/v1/ewbi", authMiddleware)
+	ArtefactManagement := router.Group("/artefacts/v1/ewbi", *mdws.AuthMiddleware)
 
 	artefactManagementController := ewbi.NewArtefactManagementController(
 		svcs.OrchestratorService,

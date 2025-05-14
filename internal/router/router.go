@@ -23,6 +23,11 @@ type Services struct {
 	KafkaService      *services.KafkaService
 }
 
+type Middlewares struct {
+	AuthMiddleware             *gin.HandlerFunc
+	FederationExistsMiddleware *gin.HandlerFunc
+}
+
 func Init() *gin.Engine {
 	// start gin with default settings
 	router := gin.Default()
@@ -52,11 +57,18 @@ func Init() *gin.Engine {
 		KafkaService:      kafkaServ,
 	}
 
-	// init auth middleware
+	// init middlewares
 	authMiddleware := middleware.AuthMiddleware(services.AuthService)
+	federationExistsMiddleware := middleware.FederationExistsMiddleware(services.FederationService)
+
+	// bundle middlewares
+	middlewares := &Middlewares{
+		AuthMiddleware:             &authMiddleware,
+		FederationExistsMiddleware: &federationExistsMiddleware,
+	}
 
 	// init routes
-	initRoutes(router, services, authMiddleware)
+	initRoutes(router, services, middlewares)
 
 	// init swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -67,15 +79,15 @@ func Init() *gin.Engine {
 	return router
 }
 
-func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
+func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// Auth Routes
 	initAuthRoutes(router, svcs)
 
 	// EWBI Routes
 	// initFederationAPIManagementRoutes(router, svcs, authMiddleware)
-	initEwbiFederationManagementRoutes(router, svcs, authMiddleware)
-	initZoneInfoSyncRoutes(router, svcs, authMiddleware)
-	initEwbiArtefactManagementRoutes(router, svcs, authMiddleware)
+	initEwbiFederationManagementRoutes(router, svcs, mdws)
+	initZoneInfoSyncRoutes(router, svcs, mdws)
+	initEwbiArtefactManagementRoutes(router, svcs, mdws)
 
 	// SBI Routes
 	// interfaces with orchestrators and gives them orders
