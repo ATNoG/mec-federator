@@ -1,4 +1,4 @@
-package models
+package dto
 
 type AccessTokenRequestData struct {
 	ClientId     string `json:"clientId"`

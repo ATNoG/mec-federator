@@ -24,11 +24,15 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	log.Print("OnboardArtefactController - Onboarding artefact onto federator")
 
 	// Check if the request multipart form is valid
-	
+	// Check if the artefact is valid
+	// Check if the artefact is already onboarded
+	// Save the artefact to the database
+	// Send message to orchestrator through kafka with artefact id
+
 }
 
 func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
-
+	log.Print("GetArtefactController - Getting artefact details")
 }
 
 func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context) {

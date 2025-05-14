@@ -1,4 +1,4 @@
-package models
+package dto
 
 type FederationInitiateRequestData struct {
 	FederationEndpoint string `json:"federationEndpoint" binding:"required"`

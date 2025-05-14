@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/services"
 	"github.com/mankings/mec-federator/internal/utils"
 )
@@ -311,7 +312,7 @@ func (fmc *FederationManagementController) RenewFederationController(c *gin.Cont
 		return
 	}
 
-	response := models.FederationRenewalResponseData{
+	response := dto.FederationRenewalResponseData{
 		FederationContextId:   federation.PartnerOP.FederationContextId,
 		FederationRenewalDate: federation.PartnerOP.FederationRenewalDate,
 		FederationExpiryDate:  federation.PartnerOP.FederationExpiryDate,

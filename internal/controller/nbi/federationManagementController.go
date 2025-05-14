@@ -18,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/services"
 	"github.com/mankings/mec-federator/internal/utils"
 )
@@ -49,7 +50,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 	log.Print("InitiateFederationController - Initiating Federation establishment procedure")
 
 	// Bind request body to struct
-	var requestBody models.FederationInitiateRequestData
+	var requestBody dto.FederationInitiateRequestData
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
@@ -68,7 +69,7 @@ func (fmc *FederationManagementController) InitiateFederationController(c *gin.C
 	log.Print("InitiateFederationController - Fetching Access Token from Auth Endpoint")
 	accessTokenUrl := requestBody.AuthEndpoint
 	headers := map[string]string{"Content-Type": "application/json"}
-	accessTokenRequestData := models.AccessTokenRequestData{
+	accessTokenRequestData := dto.AccessTokenRequestData{
 		ClientId:     config.AppConfig.OAuth2ClientId,
 		ClientSecret: config.AppConfig.OAuth2ClientSecret,
 	}
@@ -433,7 +434,7 @@ func (fmc *FederationManagementController) RequestFederationRenewalController(c 
 	log.Print("RequestFederationRenewalController - Sending renewal request to partner")
 	renewFederationUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federationContextId, "/renew")
 	authStrat := services.NewBearerTokenAuth(federation.OriginOP.AccessToken.AccessToken)
-	var renewalResponse models.FederationRenewalResponseData
+	var renewalResponse dto.FederationRenewalResponseData
 
 	// Send request to partner federator
 	resp, err := fmc.httpClientService.DoRequest(
