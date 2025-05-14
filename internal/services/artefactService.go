@@ -7,6 +7,7 @@ import (
 
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -57,7 +58,7 @@ func (as *ArtefactService) RegisterArtefact(artefact models.Artefact) error {
 func (as *ArtefactService) GetArtefact(federationContextId string, artefactId string) (models.Artefact, error) {
 	collection := as.getArtefactCollection()
 	filter := bson.M{"federationContextId": federationContextId, "artefactId": artefactId}
-	artefact, err := FetchEntityFromDatabase[models.Artefact](collection, filter)
+	artefact, err := utils.FetchEntityFromDatabase[models.Artefact](collection, filter)
 	if err != nil {
 		return models.Artefact{}, fmt.Errorf("error, could not find artefact with given federationContextId and artefactId: %v", err)
 	}
@@ -68,7 +69,7 @@ func (as *ArtefactService) GetArtefact(federationContextId string, artefactId st
 func (as *ArtefactService) GetArtefactById(artefactId string) (models.Artefact, error) {
 	collection := as.getArtefactCollection()
 	filter := bson.M{"artefactId": artefactId}
-	artefact, err := FetchEntityFromDatabase[models.Artefact](collection, filter)
+	artefact, err := utils.FetchEntityFromDatabase[models.Artefact](collection, filter)
 	if err != nil {
 		return models.Artefact{}, fmt.Errorf("error, could not find artefact with given artefactId: %v", err)
 	}
@@ -98,7 +99,7 @@ func (as *ArtefactService) RegisterFile(file models.File) error {
 func (as *ArtefactService) GetFile(federationContextId string, fileId string) (models.File, error) {
 	collection := as.getFileCollection()
 	filter := bson.M{"federationContextId": federationContextId, "fileId": fileId}
-	file, err := FetchEntityFromDatabase[models.File](collection, filter)
+	file, err := utils.FetchEntityFromDatabase[models.File](collection, filter)
 	if err != nil {
 		return models.File{}, fmt.Errorf("error, could not find file with given federationContextId and fileId: %v", err)
 	}

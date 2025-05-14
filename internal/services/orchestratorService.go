@@ -9,8 +9,11 @@ type OrchestratorServiceInterface interface {
 }
 
 type OrchestratorService struct {
+	kafkaService *KafkaService
 }
 
-func NewOrchestratorService() *OrchestratorService {
-	return &OrchestratorService{}
+func NewOrchestratorService(kafkaService *KafkaService) *OrchestratorService {
+	return &OrchestratorService{
+		kafkaService: kafkaService,
+	}
 }

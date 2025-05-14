@@ -6,6 +6,7 @@ import (
 
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -39,7 +40,7 @@ func (mecSystemService *MecSystemService) GetMecInfo() (models.OrchestratorInfo,
 
 	filter := bson.M{}
 
-	orchestratorInfo, err := FetchEntityFromDatabase[models.OrchestratorInfo](collection, filter)
+	orchestratorInfo, err := utils.FetchEntityFromDatabase[models.OrchestratorInfo](collection, filter)
 	if err != nil {
 		return models.OrchestratorInfo{}, fmt.Errorf("error. could not fetch orchestrator info from database: %s", err)
 	}

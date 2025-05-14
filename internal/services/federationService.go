@@ -29,15 +29,15 @@ type FederationService struct {
 	mongoClient *mongo.Client
 }
 
-func (fs *FederationService) getFederationCollection() *mongo.Collection {
-	return fs.mongoClient.Database(config.AppConfig.Database).Collection("federations")
-}
-
 // NewFederationService creates a new instance of the FederationServiceImpl
 func NewFederationService(mongoClient *mongo.Client) *FederationService {
 	return &FederationService{
 		mongoClient: mongoClient,
 	}
+}
+
+func (fs *FederationService) getFederationCollection() *mongo.Collection {
+	return fs.mongoClient.Database(config.AppConfig.Database).Collection("federations")
 }
 
 // CreateFederation saves a new federation to the database
@@ -64,7 +64,7 @@ func (fs *FederationService) DeleteFederation(federationContextId string) error 
 func (fs *FederationService) GetFederation(federationContextId string) (models.Federation, error) {
 	collection := fs.getFederationCollection()
 	filter := bson.M{"partnerOP.federationContextId": federationContextId}
-	federation, err := FetchEntityFromDatabase[models.Federation](collection, filter)
+	federation, err := utils.FetchEntityFromDatabase[models.Federation](collection, filter)
 	if err != nil {
 		return models.Federation{}, fmt.Errorf("error fetching federation using federationContextId: %v", err)
 	}
@@ -168,7 +168,7 @@ func (fs *FederationService) ExistsFederationWithAccessToken(accessToken string)
 func (fs *FederationService) GetFederationContextId(accessToken string) (string, error) {
 	collection := fs.getFederationCollection()
 	filter := bson.M{"originOP.accessToken.accessToken": accessToken}
-	federationContextId, err := FetchEntityFromDatabase[string](collection, filter)
+	federationContextId, err := utils.FetchEntityFromDatabase[string](collection, filter)
 	if err != nil {
 		return "", fmt.Errorf("error fetching federationContextId using accessToken: %v", err)
 	}
@@ -179,7 +179,7 @@ func (fs *FederationService) GetFederationContextId(accessToken string) (string,
 func (fs *FederationService) GetFederationByAccessToken(accessToken string) (models.Federation, error) {
 	collection := fs.getFederationCollection()
 	filter := bson.M{"originOP.accessToken.accessToken": accessToken}
-	federation, err := FetchEntityFromDatabase[models.Federation](collection, filter)
+	federation, err := utils.FetchEntityFromDatabase[models.Federation](collection, filter)
 	if err != nil {
 		return models.Federation{}, fmt.Errorf("error fetching federation using accessToken: %v", err)
 	}
@@ -189,7 +189,7 @@ func (fs *FederationService) GetFederationByAccessToken(accessToken string) (mod
 func (fs *FederationService) GetAccessToken(federationContextId string) (string, error) {
 	collection := fs.getFederationCollection()
 	filter := bson.M{"partnerOP.federationContextId": federationContextId}
-	accessToken, err := FetchEntityFromDatabase[string](collection, filter)
+	accessToken, err := utils.FetchEntityFromDatabase[string](collection, filter)
 	if err != nil {
 		return "", fmt.Errorf("error fetching accessToken using federationContextId: %v", err)
 	}
@@ -200,7 +200,7 @@ func (fs *FederationService) GetAccessToken(federationContextId string) (string,
 func (fs *FederationService) GetFederatorUrl(federationContextId string) (string, error) {
 	collection := fs.getFederationCollection()
 	filter := bson.M{"partnerOP.federationContextId": federationContextId}
-	federatorUrl, err := FetchEntityFromDatabase[string](collection, filter)
+	federatorUrl, err := utils.FetchEntityFromDatabase[string](collection, filter)
 	if err != nil {
 		return "", fmt.Errorf("error fetching federatorUrl using federationContextId: %v", err)
 	}

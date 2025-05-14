@@ -1,4 +1,4 @@
-package services
+package utils
 
 import (
 	"context"
@@ -7,19 +7,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
-
-type DatabaseServiceInterface interface {
-}
-
-type DatabaseService struct {
-	mongoClient *mongo.Client
-}
-
-func NewDatabaseService(mongoClient *mongo.Client) *DatabaseService {
-	return &DatabaseService{
-		mongoClient: mongoClient,
-	}
-}
 
 // fetches entities list of a specified type
 func FetchEntitiesFromDatabase[T any](collection *mongo.Collection, filter interface{}) ([]T, error) {

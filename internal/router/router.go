@@ -37,13 +37,13 @@ func Init() *gin.Engine {
 	httpClient := &http.Client{}
 
 	// init services
+	kafkaServ := services.NewKafkaService()
 	authServ := services.NewAuthService(mongoClient)
 	fedServ := services.NewFederationService(mongoClient)
 	mecServ := services.NewMecSystemService(mongoClient)
-	orchServ := services.NewOrchestratorService()
+	orchServ := services.NewOrchestratorService(kafkaServ)
 	zoneServ := services.NewZoneService(mongoClient, orchServ, fedServ)
 	httpServ := services.NewHttpClientService(httpClient)
-	kafkaServ := services.NewKafkaService()
 
 	// bundle all services
 	services := &Services{
