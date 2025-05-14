@@ -5,7 +5,7 @@ import (
 	"github.com/mankings/mec-federator/internal/controller/nbi"
 )
 
-func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
+func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
 	FederationManagement := router.Group("/federation/v1/nbi")
 
@@ -19,15 +19,19 @@ func initNbiFederationManagementRoutes(router *gin.Engine, svcs *Services) {
 		federationManagementController.InitiateFederationController)
 	FederationManagement.GET(
 		"/:federationContextId/partner",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.GetFederationMetaInfoController)
 	FederationManagement.DELETE(
 		"/:federationContextId/partner",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.RemoveFederationController)
 	FederationManagement.GET(
 		"/:federationContextId/health",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.GetFederationHealthController)
 	FederationManagement.GET(
 		"/:federationContextId/renew",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.RequestFederationRenewalController)
 }
 
