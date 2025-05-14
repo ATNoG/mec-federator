@@ -88,12 +88,4 @@ func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	initEwbiFederationManagementRoutes(router, svcs, mdws)
 	initZoneInfoSyncRoutes(router, svcs, mdws)
 	initEwbiArtefactManagementRoutes(router, svcs, mdws)
-
-	// SBI Routes
-	// interfaces with orchestrators and gives them orders
-
-	// NBI Routes
-	// receives orders from the orchestrators
-	//initNbiFederationManagementRoutes(router, svcs) not using since we will use kafka instead
-	initMecSystemManagementRoutes(router, svcs)
 }

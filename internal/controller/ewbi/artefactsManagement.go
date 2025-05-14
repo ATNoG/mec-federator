@@ -36,7 +36,6 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body, missing parameters or wrong data type")
 		return
 	}
-	
 
 	// Check if the artefact is valid
 	// Check if the artefact is already onboarded

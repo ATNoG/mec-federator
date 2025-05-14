@@ -199,13 +199,6 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 		return
 	}
 
-	log.Print("RemoveFederationController - Checking if federation exists")
-	// Check if federation exists
-	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
-		utils.HandleProblem(c, http.StatusNotFound, "Federation not found")
-		return
-	}
-
 	log.Print("RemoveFederationController - Getting Federation Url from Database")
 	// Get federation details from database
 	federation, err := fmc.federationService.GetFederation(federationContextId)
