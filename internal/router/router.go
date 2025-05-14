@@ -69,7 +69,7 @@ func Init() *gin.Engine {
 
 func initRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
 	// Auth Routes
-	initAuthRoutes(router, svcs, authMiddleware)
+	initAuthRoutes(router, svcs)
 
 	// EWBI Routes
 	// initFederationAPIManagementRoutes(router, svcs, authMiddleware)

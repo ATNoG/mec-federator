@@ -7,7 +7,7 @@ import (
 )
 
 // AuthAPIManagement - Authentication and authorization of the partner OP
-func initAuthRoutes(router *gin.Engine, svcs *Services, authMiddleware gin.HandlerFunc) {
+func initAuthRoutes(router *gin.Engine, svcs *Services) {
 	AuthAPIManagement := router.Group("/auth")
 
 	authController := controller.NewAuthController(
