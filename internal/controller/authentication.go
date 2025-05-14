@@ -34,7 +34,7 @@ func NewAuthController(authService *services.AuthService, mongoClient *mongo.Cli
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param body body models.AccessTokenRequestData true "Client ID and Client Secret"
+// @Param body body dto.AccessTokenRequestData true "Client ID and Client Secret"
 // @Success 200 {object} models.AccessToken
 // @Failure 400 {object} models.ProblemDetails
 // @Failure 500 {object} models.ProblemDetails

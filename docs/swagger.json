@@ -29,7 +29,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AccessTokenRequestData"
+                            "$ref": "#/definitions/dto.AccessTokenRequestData"
                         }
                     }
                 ],
@@ -375,323 +375,20 @@
                     }
                 }
             }
-        },
-        "/nbi/mec-system": {
-            "get": {
-                "description": "Get the MEC System Information from the MEF",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "NBI - MEC System Management"
-                ],
-                "summary": "Get MEC System Information",
-                "responses": {
-                    "200": {
-                        "description": "Orchestrator Information",
-                        "schema": {
-                            "$ref": "#/definitions/models.OrchestratorInfo"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error during orchestrator information retrieval",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Provide the MEF with info about the MEC System where it belongs to",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "NBI - MEC System Management"
-                ],
-                "summary": "Register MEC System Information",
-                "parameters": [
-                    {
-                        "description": "Orchestrator Information",
-                        "name": "orchestratorInfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.OrchestratorInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Orchestrator Information",
-                        "schema": {
-                            "$ref": "#/definitions/models.OrchestratorInfo"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body or missing fields",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error during orchestrator registration",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    }
-                }
-            }
-        },
-        "/nbi/partner": {
-            "post": {
-                "description": "Initiates the federation establishment procedure with another federator",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "NBI - FederationManagement"
-                ],
-                "summary": "Initiate Federation Relationship with a partner OP",
-                "parameters": [
-                    {
-                        "description": "Federation and Auth Endpoints",
-                        "name": "federationRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.FederationInitiateRequestData"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.FederationResponseData"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body or missing fields",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error during federation process",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    }
-                }
-            }
-        },
-        "/nbi/{federationContextId}/health": {
-            "get": {
-                "description": "Retrieves the health information of the federation partner",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "NBI - FederationManagement"
-                ],
-                "summary": "Get Federation Health Info from partner OP",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Federation Context ID",
-                        "name": "federationContextId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.FederationHealthInfo"
-                        }
-                    },
-                    "400": {
-                        "description": "federationContextId must be provided",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "404": {
-                        "description": "Federation not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    }
-                }
-            }
-        },
-        "/nbi/{federationContextId}/partner": {
-            "get": {
-                "description": "Retrieves federation information from the partner federator",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "NBI - FederationManagement"
-                ],
-                "summary": "Get Federation Meta Info from partner OP",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Federation Context ID",
-                        "name": "federationContextId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.FederationHealthInfo"
-                        }
-                    },
-                    "400": {
-                        "description": "federationContextId must be provided",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "404": {
-                        "description": "Federation not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Removes a previously established federation relationship by its federationContextId",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "NBI - FederationManagement"
-                ],
-                "summary": "Remove Federation Relationship with a partner OP",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Federation Context ID",
-                        "name": "federationContextId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "status: Federation removed successfully",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "federationContextId must be provided",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    }
-                }
-            }
-        },
-        "/nbi/{federationContextId}/renew": {
-            "post": {
-                "description": "Requests the renewal of the federation with the partner federator",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "NBI - FederationManagement"
-                ],
-                "summary": "Request Federation Renewal with partner OP",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Federation Context ID",
-                        "name": "federationContextId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.FederationRenewalResponseData"
-                        }
-                    },
-                    "400": {
-                        "description": "federationContextId must be provided",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "404": {
-                        "description": "Federation not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ProblemDetails"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
+        "dto.AccessTokenRequestData": {
+            "type": "object",
+            "properties": {
+                "clientId": {
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AccessToken": {
             "type": "object",
             "properties": {
@@ -699,17 +396,6 @@
                     "type": "string"
                 },
                 "expiresAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.AccessTokenRequestData": {
-            "type": "object",
-            "properties": {
-                "clientId": {
-                    "type": "string"
-                },
-                "clientSecret": {
                     "type": "string"
                 }
             }
@@ -730,21 +416,6 @@
                     "type": "string"
                 },
                 "numOfApplications": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.FederationInitiateRequestData": {
-            "type": "object",
-            "required": [
-                "authEndpoint",
-                "federationEndpoint"
-            ],
-            "properties": {
-                "authEndpoint": {
-                    "type": "string"
-                },
-                "federationEndpoint": {
                     "type": "string"
                 }
             }
@@ -815,20 +486,6 @@
                 },
                 "removeMobileNetworkIds": {
                     "$ref": "#/definitions/models.MobileNetworkIds"
-                }
-            }
-        },
-        "models.FederationRenewalResponseData": {
-            "type": "object",
-            "properties": {
-                "federationContextId": {
-                    "type": "string"
-                },
-                "federationExpiryDate": {
-                    "type": "string"
-                },
-                "federationRenewalDate": {
-                    "type": "string"
                 }
             }
         },
@@ -946,32 +603,6 @@
                     "items": {
                         "type": "string"
                     }
-                }
-            }
-        },
-        "models.OrchestratorInfo": {
-            "type": "object",
-            "properties": {
-                "kafkaUrl": {
-                    "type": "string"
-                },
-                "mobileNetworkCodes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "operatorAddress": {
-                    "type": "string"
-                },
-                "operatorId": {
-                    "type": "string"
-                },
-                "operatorName": {
-                    "type": "string"
-                },
-                "operatorPublicKey": {
-                    "type": "string"
                 }
             }
         },

@@ -1,17 +1,17 @@
 basePath: /federation/v1
 definitions:
+  dto.AccessTokenRequestData:
+    properties:
+      clientId:
+        type: string
+      clientSecret:
+        type: string
+    type: object
   models.AccessToken:
     properties:
       accessToken:
         type: string
       expiresAt:
-        type: string
-    type: object
-  models.AccessTokenRequestData:
-    properties:
-      clientId:
-        type: string
-      clientSecret:
         type: string
     type: object
   models.FederationHealthInfo:
@@ -26,16 +26,6 @@ definitions:
         type: string
       numOfApplications:
         type: string
-    type: object
-  models.FederationInitiateRequestData:
-    properties:
-      authEndpoint:
-        type: string
-      federationEndpoint:
-        type: string
-    required:
-    - authEndpoint
-    - federationEndpoint
     type: object
   models.FederationMetaInfo:
     properties:
@@ -82,15 +72,6 @@ definitions:
         type: array
       removeMobileNetworkIds:
         $ref: '#/definitions/models.MobileNetworkIds'
-    type: object
-  models.FederationRenewalResponseData:
-    properties:
-      federationContextId:
-        type: string
-      federationExpiryDate:
-        type: string
-      federationRenewalDate:
-        type: string
     type: object
   models.FederationRequestData:
     properties:
@@ -175,23 +156,6 @@ definitions:
           type: string
         type: array
     type: object
-  models.OrchestratorInfo:
-    properties:
-      kafkaUrl:
-        type: string
-      mobileNetworkCodes:
-        items:
-          type: string
-        type: array
-      operatorAddress:
-        type: string
-      operatorId:
-        type: string
-      operatorName:
-        type: string
-      operatorPublicKey:
-        type: string
-    type: object
   models.ProblemDetails:
     properties:
       cause:
@@ -260,7 +224,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/models.AccessTokenRequestData'
+          $ref: '#/definitions/dto.AccessTokenRequestData'
       produces:
       - application/json
       responses:
@@ -495,213 +459,4 @@ paths:
       summary: Accept Federation Relationship
       tags:
       - EWBI - FederationManagement
-  /nbi/{federationContextId}/health:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves the health information of the federation partner
-      parameters:
-      - description: Federation Context ID
-        in: path
-        name: federationContextId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.FederationHealthInfo'
-        "400":
-          description: federationContextId must be provided
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "404":
-          description: Federation not found
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-      summary: Get Federation Health Info from partner OP
-      tags:
-      - NBI - FederationManagement
-  /nbi/{federationContextId}/partner:
-    delete:
-      consumes:
-      - application/json
-      description: Removes a previously established federation relationship by its
-        federationContextId
-      parameters:
-      - description: Federation Context ID
-        in: path
-        name: federationContextId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 'status: Federation removed successfully'
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: federationContextId must be provided
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-      summary: Remove Federation Relationship with a partner OP
-      tags:
-      - NBI - FederationManagement
-    get:
-      consumes:
-      - application/json
-      description: Retrieves federation information from the partner federator
-      parameters:
-      - description: Federation Context ID
-        in: path
-        name: federationContextId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.FederationHealthInfo'
-        "400":
-          description: federationContextId must be provided
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "404":
-          description: Federation not found
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-      summary: Get Federation Meta Info from partner OP
-      tags:
-      - NBI - FederationManagement
-  /nbi/{federationContextId}/renew:
-    post:
-      consumes:
-      - application/json
-      description: Requests the renewal of the federation with the partner federator
-      parameters:
-      - description: Federation Context ID
-        in: path
-        name: federationContextId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.FederationRenewalResponseData'
-        "400":
-          description: federationContextId must be provided
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "404":
-          description: Federation not found
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-      summary: Request Federation Renewal with partner OP
-      tags:
-      - NBI - FederationManagement
-  /nbi/mec-system:
-    get:
-      consumes:
-      - application/json
-      description: Get the MEC System Information from the MEF
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Orchestrator Information
-          schema:
-            $ref: '#/definitions/models.OrchestratorInfo'
-        "500":
-          description: Internal error during orchestrator information retrieval
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-      summary: Get MEC System Information
-      tags:
-      - NBI - MEC System Management
-    post:
-      consumes:
-      - application/json
-      description: Provide the MEF with info about the MEC System where it belongs
-        to
-      parameters:
-      - description: Orchestrator Information
-        in: body
-        name: orchestratorInfo
-        required: true
-        schema:
-          $ref: '#/definitions/models.OrchestratorInfo'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Orchestrator Information
-          schema:
-            $ref: '#/definitions/models.OrchestratorInfo'
-        "400":
-          description: Invalid request body or missing fields
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "500":
-          description: Internal error during orchestrator registration
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-      summary: Register MEC System Information
-      tags:
-      - NBI - MEC System Management
-  /nbi/partner:
-    post:
-      consumes:
-      - application/json
-      description: Initiates the federation establishment procedure with another federator
-      parameters:
-      - description: Federation and Auth Endpoints
-        in: body
-        name: federationRequest
-        required: true
-        schema:
-          $ref: '#/definitions/models.FederationInitiateRequestData'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.FederationResponseData'
-        "400":
-          description: Invalid request body or missing fields
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-        "500":
-          description: Internal error during federation process
-          schema:
-            $ref: '#/definitions/models.ProblemDetails'
-      summary: Initiate Federation Relationship with a partner OP
-      tags:
-      - NBI - FederationManagement
 swagger: "2.0"
