@@ -18,21 +18,26 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws
 		federationManagementController.CreateFederationController)
 	FederationManagement.GET(
 		"/:federationContextId/partner",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.GetFederationMetaInfoController)
 	FederationManagement.PATCH(
 		"/:federationContextId/partner",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.UpdateFederationController)
 	FederationManagement.DELETE(
 		"/:federationContextId/partner",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.RemoveFederationController)
 	FederationManagement.GET(
 		"/fed-context-id",
 		federationManagementController.GetFederationContextIdentifierController)
 	FederationManagement.GET(
 		"/:federationContextId/health",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.GetFederationHealthController)
 	FederationManagement.POST(
 		"/:federationContextId/renew",
+		*mdws.FederationExistsMiddleware,
 		federationManagementController.RenewFederationController)
 }
 
@@ -46,12 +51,15 @@ func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middleware
 
 	ZoneInfoSync.POST(
 		"/:federationContextId/zones",
+		*mdws.FederationExistsMiddleware,
 		zoneInfoSyncController.SubscribeZoneController)
 	ZoneInfoSync.DELETE(
 		"/:federationContextId/zones/:zoneId",
+		*mdws.FederationExistsMiddleware,
 		zoneInfoSyncController.UnsubscribeZoneController)
 	ZoneInfoSync.GET(
 		"/:federationContextId/zones/:zoneId",
+		*mdws.FederationExistsMiddleware,
 		zoneInfoSyncController.GetZoneController)
 }
 
@@ -65,20 +73,26 @@ func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *
 
 	ArtefactManagement.POST(
 		"/:federationContextId/artefact",
+		*mdws.FederationExistsMiddleware,
 		artefactManagementController.OnboardArtefactController)
 	ArtefactManagement.GET(
 		"/:federationContextId/artefact/:artefactId",
+		*mdws.FederationExistsMiddleware,
 		artefactManagementController.GetArtefactController)
 	ArtefactManagement.DELETE(
 		"/:federationContextId/artefact/:artefactId",
+		*mdws.FederationExistsMiddleware,
 		artefactManagementController.DeleteArtefactController)
 	ArtefactManagement.POST(
 		"/:federationContextId/files",
+		*mdws.FederationExistsMiddleware,
 		artefactManagementController.UploadFileController)
 	ArtefactManagement.GET(
 		"/:federationContextId/files/:fileId",
+		*mdws.FederationExistsMiddleware,
 		artefactManagementController.GetFileController)
 	ArtefactManagement.DELETE(
 		"/:federationContextId/files/:fileId",
+		*mdws.FederationExistsMiddleware,
 		artefactManagementController.DeleteFileController)
 }

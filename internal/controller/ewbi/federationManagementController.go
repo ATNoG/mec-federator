@@ -102,19 +102,11 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
 	log.Print("RemoveFederationRelationshipController - Removing federation relationship")
 
-	federationContextId := c.Param("federationContextId")
-	// Check if the federation exists
-	log.Print("RemoveFederationRelationshipController - Checking if federation exists")
-	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
-		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given federationContextId")
-		return
-	}
-
-	log.Print("RemoveFederationRelationshipController - Deleting Federation object from database")
 	// Delete the federation object from the database
+	federationContextId := c.Param("federationContextId")
 	err := fmc.federationService.DeleteFederation(federationContextId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing the Federation object")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing the Federation object from database")
 		return
 	}
 
@@ -135,16 +127,8 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gin.Context) {
 	log.Print("GetFederationMetaInfoController - Retrieving federation meta information")
 
-	log.Print("GetFederationMetaInfoController - Checking if federation exists")
-	// Check if the federation exists
-	federationContextId := c.Param("federationContextId")
-	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
-		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given federationContextId")
-		return
-	}
-
-	log.Print("GetFederationMetaInfoController - Federation exists, retrieving meta information")
 	// Get federation details from the database
+	federationContextId := c.Param("federationContextId")
 	federation, err := fmc.federationService.GetFederation(federationContextId)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving federation information")
@@ -183,12 +167,7 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 		return
 	}
 
-	log.Print("UpdateFederationController - Checking if federation exists")
 	federationContextId := c.Param("federationContextId")
-	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
-		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given federationContextId")
-		return
-	}
 
 	log.Print("UpdateFederationController - Checking validity of patch parameters")
 	if patchParams.ObjectType != "MOBILE_NETWORK_CODES" && patchParams.ObjectType != "FIXED_NETWORK_CODES" {
