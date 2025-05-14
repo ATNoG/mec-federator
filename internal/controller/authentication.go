@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/services"
 	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -41,7 +42,7 @@ func NewAuthController(authService *services.AuthService, mongoClient *mongo.Cli
 func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	log.Print("BeginAuthController - Gathering OAuth2.0 configuration variables")
 
-	var expectedBody models.AccessTokenRequestData
+	var expectedBody dto.AccessTokenRequestData
 	if err := c.ShouldBindJSON(&expectedBody); err != nil {
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body")
 		return

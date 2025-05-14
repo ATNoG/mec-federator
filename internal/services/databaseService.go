@@ -61,3 +61,16 @@ func FetchEntityFromDatabase[T any](collection *mongo.Collection, filter interfa
 
 	return result, nil
 }
+
+// saves an entity to the database, returning the id of the entity
+func SaveEntityToDatabase[T any](collection *mongo.Collection, entity T) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := collection.InsertOne(ctx, entity)
+	if err != nil {
+		return "", fmt.Errorf("error. could not save entity to database: %s", err)
+	}
+
+	return result.InsertedID.(string), nil
+}
