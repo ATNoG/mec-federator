@@ -65,10 +65,11 @@ func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middleware
 
 func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ArtefactManagement - Create and manage artefacts
-	ArtefactManagement := router.Group("/artefacts/v1/ewbi", *mdws.AuthMiddleware)
+	ArtefactManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
 	artefactManagementController := ewbi.NewArtefactManagementController(
 		svcs.OrchestratorService,
+		svcs.ArtefactService,
 	)
 
 	ArtefactManagement.POST(

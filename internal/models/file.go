@@ -22,4 +22,6 @@ type File struct {
 	RepoType RepoType `json:"repoType,omitempty" bson:"repoType"`
 
 	ObjectRepoLocation ObjectRepoLocation `json:"objectRepoLocation,omitempty" bson:"objectRepoLocation"`
+
+	ArtefactFile *[]byte `json:"artefactFile,omitempty" bson:"artefactFile"`
 }

@@ -54,6 +54,13 @@ func (as *ArtefactService) RegisterArtefact(artefact models.Artefact) error {
 	return err
 }
 
+// Save an artefact to the local database
+func (as *ArtefactService) SaveArtefact(artefact models.Artefact) error {
+	collection := as.getArtefactCollection()
+	_, err := collection.InsertOne(context.Background(), artefact)
+	return err
+}
+
 // Get an artefact from the local database using the federationContextId and artefactId
 func (as *ArtefactService) GetArtefact(federationContextId string, artefactId string) (models.Artefact, error) {
 	collection := as.getArtefactCollection()

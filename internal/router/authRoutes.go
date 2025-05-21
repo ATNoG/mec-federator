@@ -8,7 +8,7 @@ import (
 
 // AuthAPIManagement - Authentication and authorization of the partner OP
 func initAuthRoutes(router *gin.Engine, svcs *Services) {
-	AuthAPIManagement := router.Group("/auth")
+	AuthAPIManagement := router.Group("/federation/v1/auth")
 
 	authController := controller.NewAuthController(
 		svcs.AuthService,

@@ -18,6 +18,7 @@ type Services struct {
 	MecSystemService    *services.MecSystemService
 	OrchestratorService *services.OrchestratorService
 	ZoneService         *services.ZoneService
+	ArtefactService     *services.ArtefactService
 
 	HttpClientService *services.HttpClientService
 	KafkaService      *services.KafkaService
@@ -42,6 +43,7 @@ func Init() *gin.Engine {
 	fedServ := services.NewFederationService(mongoClient)
 	mecServ := services.NewMecSystemService(mongoClient)
 	orchServ := services.NewOrchestratorService(kafkaServ)
+	artefactServ := services.NewArtefactService(mongoClient)
 	zoneServ := services.NewZoneService(mongoClient, orchServ, fedServ)
 	httpServ := services.NewHttpClientService(httpClient)
 
@@ -52,6 +54,7 @@ func Init() *gin.Engine {
 		MecSystemService:    mecServ,
 		OrchestratorService: orchServ,
 		ZoneService:         zoneServ,
+		ArtefactService:     artefactServ,
 
 		HttpClientService: httpServ,
 		KafkaService:      kafkaServ,
