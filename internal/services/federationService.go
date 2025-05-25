@@ -26,18 +26,15 @@ type FederationServiceInterface interface {
 }
 
 type FederationService struct {
-	mongoClient *mongo.Client
 }
 
 // NewFederationService creates a new instance of the FederationServiceImpl
-func NewFederationService(mongoClient *mongo.Client) *FederationService {
-	return &FederationService{
-		mongoClient: mongoClient,
-	}
+func NewFederationService() *FederationService {
+	return &FederationService{}
 }
 
 func (fs *FederationService) getFederationCollection() *mongo.Collection {
-	return fs.mongoClient.Database(config.AppConfig.Database).Collection("federations")
+	return config.GetMongoDatabase().Collection("federations")
 }
 
 // CreateFederation saves a new federation to the database

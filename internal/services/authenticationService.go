@@ -19,17 +19,20 @@ type AuthServiceInterface interface {
 
 // implementation of authentication service, requiring a mongo client
 type AuthService struct {
-	mongoClient *mongo.Client
 }
 
 // create a new authentication service, injecting given mongo client
-func NewAuthService(mongoClient *mongo.Client) *AuthService {
-	return &AuthService{mongoClient: mongoClient}
+func NewAuthService() *AuthService {
+	return &AuthService{}
+}
+
+func (s *AuthService) getAccessTokenCollection() *mongo.Collection {
+	return config.GetMongoDatabase().Collection("access_tokens")
 }
 
 // save an access token to the database
 func (s *AuthService) SaveAccessToken(accessToken models.AccessToken) error {
-	collection := s.mongoClient.Database(config.AppConfig.Database).Collection("access_tokens")
+	collection := s.getAccessTokenCollection()
 	_, err := collection.InsertOne(context.TODO(), accessToken)
 	log.Printf("AuthService - Saved access token")
 	return err
@@ -39,7 +42,7 @@ func (s *AuthService) SaveAccessToken(accessToken models.AccessToken) error {
 func (s *AuthService) QueryAccessToken(tokenStr string) (models.AccessToken, error) {
 	filter := bson.M{"accessToken": tokenStr}
 	var result models.AccessToken
-	collection := s.mongoClient.Database(config.AppConfig.Database).Collection("access_tokens")
+	collection := s.getAccessTokenCollection()
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		return result, err

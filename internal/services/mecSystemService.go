@@ -22,17 +22,14 @@ type MecSystemServiceInterface interface {
 }
 
 type MecSystemService struct {
-	mongoClient *mongo.Client
 }
 
-func NewMecSystemService(mongoClient *mongo.Client) *MecSystemService {
-	return &MecSystemService{
-		mongoClient: mongoClient,
-	}
+func NewMecSystemService() *MecSystemService {
+	return &MecSystemService{}
 }
 
 func (mss *MecSystemService) getMecSystemCollection() *mongo.Collection {
-	return mss.mongoClient.Database(config.AppConfig.Database).Collection("systems")
+	return config.GetMongoDatabase().Collection("systems")
 }
 
 func (mecSystemService *MecSystemService) GetMecInfo() (models.OrchestratorInfo, error) {

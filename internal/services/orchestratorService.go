@@ -1,9 +1,14 @@
 package services
 
 import (
+	"context"
 	"log/slog"
 
-	"github.com/mankings/mec-federator/internal/models"
+	"github.com/google/uuid"
+	"github.com/mankings/mec-federator/internal/config"
+	"github.com/mankings/mec-federator/internal/models/dto"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 /*
@@ -24,11 +29,34 @@ func NewOrchestratorService(kafkaService *KafkaService) *OrchestratorService {
 	}
 }
 
+func (s *OrchestratorService) getOrchestratorAppPkgsCollection() *mongo.Collection {
+	return config.GetOrchestratorMongoDatabase().Collection("app_pkgs")
+}
+
 // Onboards an artefact onto the orchestrator
-func (s *OrchestratorService) OnboardArtefact(artefact models.Artefact) error {
-	slog.Info("Onboarding artefact onto orchestrator", "artefact", artefact)
-	
-	
-	
+func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) error {
+	slog.Info("Onboarding appPkg onto orchestrator")
+
+	// Insert the app_pkg into the database
+	result, err := s.getOrchestratorAppPkgsCollection().InsertOne(context.Background(), appPkg)
+	if err != nil {
+		return err
+	}
+
+	// get the app_pkg id as a string
+	appPkgId := result.InsertedID.(bson.ObjectID)
+
+	// make a message to send to the kafka topic
+	message := dto.NewAppPkgMessage{
+		AppPkgId:  appPkgId.Hex(),
+		MessageId: uuid.New().String(),
+	}
+
+	// send the message to the kafka topic
+	err = s.kafkaService.Produce("new_app_pkg", message)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -25,23 +25,18 @@ type ArtefactServiceInterface interface {
 }
 
 type ArtefactService struct {
-	mongoClient       *mongo.Client
-	federationService FederationService
 }
 
-func NewArtefactService(mongoClient *mongo.Client) *ArtefactService {
-	return &ArtefactService{
-		mongoClient:       mongoClient,
-		federationService: *NewFederationService(mongoClient),
-	}
+func NewArtefactService() *ArtefactService {
+	return &ArtefactService{}
 }
 
 func (as *ArtefactService) getArtefactCollection() *mongo.Collection {
-	return as.mongoClient.Database(config.AppConfig.Database).Collection("artefacts")
+	return config.GetMongoDatabase().Collection("artefacts")
 }
 
 func (as *ArtefactService) getFileCollection() *mongo.Collection {
-	return as.mongoClient.Database(config.AppConfig.Database).Collection("files")
+	return config.GetMongoDatabase().Collection("files")
 }
 
 // Register an artefact locally

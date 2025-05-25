@@ -75,11 +75,20 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 		return
 	}
 
-	// // Validate that file is a valid descriptor file
-	// if !utils.IsDescriptorFile(fileContent) {
-	// 	utils.HandleProblem(c, http.StatusBadRequest, "Invalid descriptor file")
-	// 	return
-	// }
+	// Get descriptor data from the tar ball
+	descriptorData, err := utils.GetDescriptorData(fileContent)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Validate the descriptor data
+	appPkg, err := utils.ValidateDescriptorData(descriptorData)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	appPkg.AppD = fileContent
 
 	// Create artefact object
 	artefact := models.Artefact{
@@ -102,9 +111,9 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	}
 
 	// Onboard the artefact onto the orchestrator
-	err = amc.orchestratorService.OnboardArtefact(artefact)
+	err = amc.orchestratorService.OnboardAppPkg(appPkg)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error onboarding artefact onto orchestrator")
+		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 

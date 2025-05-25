@@ -13,21 +13,19 @@ type ZoneServiceInterface interface {
 }
 
 type ZoneService struct {
-	mongoClient         *mongo.Client
 	orchestratorService *OrchestratorService
 	federationService   *FederationService
 }
 
-func NewZoneService(mongoClient *mongo.Client, orchestratorService *OrchestratorService, federationService *FederationService) *ZoneService {
+func NewZoneService(orchestratorService *OrchestratorService, federationService *FederationService) *ZoneService {
 	return &ZoneService{
-		mongoClient:         mongoClient,
 		orchestratorService: orchestratorService,
 		federationService:   federationService,
 	}
 }
 
 func (z *ZoneService) getZoneDetailsCollection() *mongo.Collection {
-	return z.mongoClient.Database(config.AppConfig.Database).Collection("zoneDetails")
+	return config.GetMongoDatabase().Collection("zoneDetails")
 }
 
 // Returns all the local zones that are registered for federation

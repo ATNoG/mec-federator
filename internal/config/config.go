@@ -17,11 +17,12 @@ type Config struct {
 	OAuth2ClientSecret    string
 	KeycloakTokenEndpoint string
 
-	DbUsername string
-	DbPassword string
-	DbHost     string
-	DbPort     string
-	Database   string
+	DbUsername           string
+	DbPassword           string
+	DbHost               string
+	DbPort               string
+	Database             string
+	OrchestratorDatabase string
 
 	KafkaUsername string
 	KafkaPassword string
@@ -47,11 +48,12 @@ func InitAppConfig() error {
 		OAuth2ClientSecret:    os.Getenv("OAUTH2_CLIENT_SECRET"),
 		KeycloakTokenEndpoint: os.Getenv("OAUTH2_TOKEN_ENDPOINT"),
 
-		DbUsername: os.Getenv("MONGO_USERNAME"),
-		DbPassword: os.Getenv("MONGO_PASSWORD"),
-		DbHost:     os.Getenv("MONGO_HOST"),
-		DbPort:     os.Getenv("MONGO_PORT"),
-		Database:   os.Getenv("MONGO_DATABASE"),
+		DbUsername:           os.Getenv("MONGO_USERNAME"),
+		DbPassword:           os.Getenv("MONGO_PASSWORD"),
+		DbHost:               os.Getenv("MONGO_HOST"),
+		DbPort:               os.Getenv("MONGO_PORT"),
+		Database:             os.Getenv("MONGO_DATABASE"),
+		OrchestratorDatabase: os.Getenv("MONGO_ORCHESTRATOR_DATABASE"),
 
 		KafkaUsername: os.Getenv("KAFKA_USERNAME"),
 		KafkaPassword: os.Getenv("KAFKA_PASSWORD"),
@@ -71,6 +73,7 @@ func InitAppConfig() error {
 		"  DbHost: " + AppConfig.DbHost + "\n" +
 		"  DbPort: " + AppConfig.DbPort + "\n" +
 		"  Database: " + AppConfig.Database + "\n" +
+		"  OrchestratorDatabase: " + AppConfig.OrchestratorDatabase + "\n" +
 		"  KafkaUsername: " + AppConfig.KafkaUsername + "\n" +
 		"  KafkaPassword: " + AppConfig.KafkaPassword + "\n" +
 		"  KafkaHost: " + AppConfig.KafkaHost + "\n" +

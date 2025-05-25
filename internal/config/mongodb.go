@@ -50,6 +50,11 @@ func GetMongoDatabase() *mongo.Database {
 	return mongoClient.Database(AppConfig.Database)
 }
 
+// returns the Orchestrator MongoDB database
+func GetOrchestratorMongoDatabase() *mongo.Database {
+	return mongoClient.Database(AppConfig.OrchestratorDatabase)
+}
+
 // inits MecSystem information in the database
 func InitMecSystemInformation() error {
 	collection := mongoClient.Database(AppConfig.Database).Collection("systems")

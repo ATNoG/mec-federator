@@ -40,3 +40,5 @@ func (k *KafkaService) Produce(topic string, message interface{}) error {
 	_, _, err = config.Producer.SendMessage(msg)
 	return err
 }
+
+

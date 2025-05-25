@@ -2,7 +2,8 @@ from kafka import KafkaConsumer
 import sys, os
 
 # List your topics here
-topics = ['new_app_pkg', 'delete_app_pkg', 'responses', 'cluster', 'mec-apps']
+# topics = ['new_app_pkg', 'delete_app_pkg', 'responses', 'cluster', 'mec-apps']
+topics = ['responses', 'new_app_pkg']
 
 # Kafka configuration
 bootstrap_servers = ['10.255.41.81:31999'] 
@@ -24,7 +25,7 @@ def main():
             sasl_mechanism=sasl_mechanism,
             sasl_plain_username=username,
             sasl_plain_password=password,
-            auto_offset_reset='earliest',
+            auto_offset_reset='latest',
             enable_auto_commit=True,
             group_id=group_id,
             value_deserializer=lambda m: m.decode('utf-8')
