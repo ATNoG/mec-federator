@@ -28,6 +28,23 @@ func NewArtefactManagementController(orchestratorService *services.OrchestratorS
 // @Summary Onboard an artefact
 // @Description Receives an artefact from origin OP. Artefact is a zip file containing scripts and/or packaging files
 // @Tags EWBI - ArtefactManagement
+// @Param federationContextId path string true "Federation Context ID"
+// @Accept multipart/form-data
+// @Produce json
+// @Param artefactFile formData file true "Artefact file"
+// @Param artefactId formData string true "Artefact ID"
+// @Param appProviderId formData string true "App Provider ID"
+// @Param artefactName formData string true "Artefact Name"
+// @Param artefactVersionInfo formData string true "Artefact Version Info"
+// @Param artefactDescription formData string true "Artefact Description"
+// @Param artefactVirtType formData string true "Artefact Virt Type"
+// @Param artefactDescriptorType formData string true "Artefact Descriptor Type"
+// @Param artefactFileFormat formData string true "Artefact File Format"
+// @Param artefactFileName formData string true "Artefact File Name"
+// @Success 200 {object} map[string]string "status: Artefact onboarded successfully"
+// @Failure 400 {object} models.ProblemDetails
+// @Failure 500 {object} models.ProblemDetails
+// @Router /ewbi/{federationContextId}/artefact [post]
 func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Context) {
 	log.Print("OnboardArtefactController - Onboarding artefact onto federator")
 
@@ -121,11 +138,19 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status":     "Artefact onboarded successfully",
-		"artefactId": artefactOnboardRequest.ArtefactId,
+		"status": "Artefact onboarded successfully",
 	})
 }
 
+// @Summary Get an artefact
+// @Description Get an artefact details by its id
+// @Tags EWBI - ArtefactManagement
+// @Param federationContextId path string true "Federation Context ID"
+// @Param artefactId path string true "Artefact ID"
+// @Success 200 {object} dto.GetArtefactResponse
+// @Failure 404 {object} models.ProblemDetails
+// @Failure 500 {object} models.ProblemDetails
+// @Router /ewbi/{federationContextId}/artefacts/{artefactId} [get]
 func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 	log.Print("GetArtefactController - Getting artefact details")
 
@@ -157,6 +182,15 @@ func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// @Summary Delete an artefact
+// @Description Delete an artefact by its id
+// @Tags EWBI - ArtefactManagement
+// @Param federationContextId path string true "Federation Context ID"
+// @Param artefactId path string true "Artefact ID"
+// @Success 200 {object} map[string]string "status: Artefact deleted successfully"
+// @Failure 404 {object} models.ProblemDetails
+// @Failure 500 {object} models.ProblemDetails
+// @Router /ewbi/{federationContextId}/artefact/{artefactId} [delete]
 func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context) {
 	log.Print("DeleteArtefactController - Deleting artefact")
 

@@ -154,6 +154,216 @@ const docTemplate = `{
                 }
             }
         },
+        "/ewbi/{federationContextId}/artefact": {
+            "post": {
+                "description": "Receives an artefact from origin OP. Artefact is a zip file containing scripts and/or packaging files",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ArtefactManagement"
+                ],
+                "summary": "Onboard an artefact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Artefact file",
+                        "name": "artefactFile",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact ID",
+                        "name": "artefactId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "App Provider ID",
+                        "name": "appProviderId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact Name",
+                        "name": "artefactName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact Version Info",
+                        "name": "artefactVersionInfo",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact Description",
+                        "name": "artefactDescription",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact Virt Type",
+                        "name": "artefactVirtType",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact Descriptor Type",
+                        "name": "artefactDescriptorType",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact File Format",
+                        "name": "artefactFileFormat",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact File Name",
+                        "name": "artefactFileName",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "status: Artefact onboarded successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/artefact/{artefactId}": {
+            "delete": {
+                "description": "Delete an artefact by its id",
+                "tags": [
+                    "EWBI - ArtefactManagement"
+                ],
+                "summary": "Delete an artefact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact ID",
+                        "name": "artefactId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "status: Artefact deleted successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/artefacts/{artefactId}": {
+            "get": {
+                "description": "Get an artefact details by its id",
+                "tags": [
+                    "EWBI - ArtefactManagement"
+                ],
+                "summary": "Get an artefact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artefact ID",
+                        "name": "artefactId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetArtefactResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/ewbi/{federationContextId}/health": {
             "get": {
                 "description": "Checks the health status of the federation",
@@ -395,6 +605,38 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.GetArtefactResponse": {
+            "type": "object",
+            "properties": {
+                "appProviderId": {
+                    "type": "string"
+                },
+                "artefactDescription": {
+                    "type": "string"
+                },
+                "artefactDescriptorFileFormat": {
+                    "$ref": "#/definitions/models.ArtefactFileFormat"
+                },
+                "artefactDescriptorType": {
+                    "$ref": "#/definitions/models.ArtefactDescriptorType"
+                },
+                "artefactId": {
+                    "type": "string"
+                },
+                "artefactName": {
+                    "type": "string"
+                },
+                "artefactVersionInfo": {
+                    "type": "string"
+                },
+                "artefactVirtType": {
+                    "$ref": "#/definitions/models.ArtefactVirtType"
+                },
+                "objectRepoLocation": {
+                    "$ref": "#/definitions/models.ObjectRepoLocation"
+                }
+            }
+        },
         "models.AccessToken": {
             "type": "object",
             "properties": {
@@ -405,6 +647,49 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "models.ArtefactDescriptorType": {
+            "type": "string",
+            "enum": [
+                "HELM",
+                "TERRAFORM",
+                "ANSIBLE",
+                "SHELL",
+                "COMPONENTSPEC"
+            ],
+            "x-enum-varnames": [
+                "HELM",
+                "TERRAFORM",
+                "ANSIBLE",
+                "SHELL",
+                "COMPONENTSPEC"
+            ]
+        },
+        "models.ArtefactFileFormat": {
+            "type": "string",
+            "enum": [
+                "ZIP",
+                "TAR",
+                "TEXT",
+                "TARGZ"
+            ],
+            "x-enum-varnames": [
+                "ZIP",
+                "TAR",
+                "TEXT",
+                "TARGZ"
+            ]
+        },
+        "models.ArtefactVirtType": {
+            "type": "string",
+            "enum": [
+                "VM_TYPE",
+                "CONTAINER_TYPE"
+            ],
+            "x-enum-varnames": [
+                "VM_TYPE",
+                "CONTAINER_TYPE"
+            ]
         },
         "models.FederationHealthInfo": {
             "type": "object",
@@ -609,6 +894,26 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "models.ObjectRepoLocation": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "description": "Password to access the repository",
+                    "type": "string"
+                },
+                "repoURL": {
+                    "type": "string"
+                },
+                "token": {
+                    "description": "Authorization token to access the repository",
+                    "type": "string"
+                },
+                "userName": {
+                    "description": "Username to access the repository",
+                    "type": "string"
                 }
             }
         },

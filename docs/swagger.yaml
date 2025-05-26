@@ -7,6 +7,27 @@ definitions:
       clientSecret:
         type: string
     type: object
+  dto.GetArtefactResponse:
+    properties:
+      appProviderId:
+        type: string
+      artefactDescription:
+        type: string
+      artefactDescriptorFileFormat:
+        $ref: '#/definitions/models.ArtefactFileFormat'
+      artefactDescriptorType:
+        $ref: '#/definitions/models.ArtefactDescriptorType'
+      artefactId:
+        type: string
+      artefactName:
+        type: string
+      artefactVersionInfo:
+        type: string
+      artefactVirtType:
+        $ref: '#/definitions/models.ArtefactVirtType'
+      objectRepoLocation:
+        $ref: '#/definitions/models.ObjectRepoLocation'
+    type: object
   models.AccessToken:
     properties:
       accessToken:
@@ -14,6 +35,40 @@ definitions:
       expiresAt:
         type: string
     type: object
+  models.ArtefactDescriptorType:
+    enum:
+    - HELM
+    - TERRAFORM
+    - ANSIBLE
+    - SHELL
+    - COMPONENTSPEC
+    type: string
+    x-enum-varnames:
+    - HELM
+    - TERRAFORM
+    - ANSIBLE
+    - SHELL
+    - COMPONENTSPEC
+  models.ArtefactFileFormat:
+    enum:
+    - ZIP
+    - TAR
+    - TEXT
+    - TARGZ
+    type: string
+    x-enum-varnames:
+    - ZIP
+    - TAR
+    - TEXT
+    - TARGZ
+  models.ArtefactVirtType:
+    enum:
+    - VM_TYPE
+    - CONTAINER_TYPE
+    type: string
+    x-enum-varnames:
+    - VM_TYPE
+    - CONTAINER_TYPE
   models.FederationHealthInfo:
     properties:
       federationStartTime:
@@ -156,6 +211,20 @@ definitions:
           type: string
         type: array
     type: object
+  models.ObjectRepoLocation:
+    properties:
+      password:
+        description: Password to access the repository
+        type: string
+      repoURL:
+        type: string
+      token:
+        description: Authorization token to access the repository
+        type: string
+      userName:
+        description: Username to access the repository
+        type: string
+    type: object
   models.ProblemDetails:
     properties:
       cause:
@@ -243,6 +312,150 @@ paths:
       summary: Issue Access Token
       tags:
       - Authentication
+  /ewbi/{federationContextId}/artefact:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Receives an artefact from origin OP. Artefact is a zip file containing
+        scripts and/or packaging files
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Artefact file
+        in: formData
+        name: artefactFile
+        required: true
+        type: file
+      - description: Artefact ID
+        in: formData
+        name: artefactId
+        required: true
+        type: string
+      - description: App Provider ID
+        in: formData
+        name: appProviderId
+        required: true
+        type: string
+      - description: Artefact Name
+        in: formData
+        name: artefactName
+        required: true
+        type: string
+      - description: Artefact Version Info
+        in: formData
+        name: artefactVersionInfo
+        required: true
+        type: string
+      - description: Artefact Description
+        in: formData
+        name: artefactDescription
+        required: true
+        type: string
+      - description: Artefact Virt Type
+        in: formData
+        name: artefactVirtType
+        required: true
+        type: string
+      - description: Artefact Descriptor Type
+        in: formData
+        name: artefactDescriptorType
+        required: true
+        type: string
+      - description: Artefact File Format
+        in: formData
+        name: artefactFileFormat
+        required: true
+        type: string
+      - description: Artefact File Name
+        in: formData
+        name: artefactFileName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'status: Artefact onboarded successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Onboard an artefact
+      tags:
+      - EWBI - ArtefactManagement
+  /ewbi/{federationContextId}/artefact/{artefactId}:
+    delete:
+      description: Delete an artefact by its id
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Artefact ID
+        in: path
+        name: artefactId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 'status: Artefact deleted successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Delete an artefact
+      tags:
+      - EWBI - ArtefactManagement
+  /ewbi/{federationContextId}/artefacts/{artefactId}:
+    get:
+      description: Get an artefact details by its id
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Artefact ID
+        in: path
+        name: artefactId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetArtefactResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get an artefact
+      tags:
+      - EWBI - ArtefactManagement
   /ewbi/{federationContextId}/health:
     get:
       consumes:
