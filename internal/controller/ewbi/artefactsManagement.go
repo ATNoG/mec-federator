@@ -151,12 +151,12 @@ func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context
 		return
 	}
 
-	// // delete artefact from the database
-	// err = amc.artefactService.RemoveArtefact(federationContextId, artefactId)
-	// if err != nil {
-	// 	utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting artefact from database")
-	// 	return
-	// }
+	// delete artefact from the database
+	err = amc.artefactService.RemoveArtefact(federationContextId, artefactId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting artefact from database")
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": "Artefact deleted successfully",
