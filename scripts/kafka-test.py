@@ -3,7 +3,7 @@ import sys, os
 
 # List your topics here
 # topics = ['new_app_pkg', 'delete_app_pkg', 'responses', 'cluster', 'mec-apps']
-topics = ['responses', 'new_app_pkg']
+topics = ['responses', 'new_app_pkg', 'delete_app_pkg']
 
 # Kafka configuration
 bootstrap_servers = ['10.255.41.81:31999'] 

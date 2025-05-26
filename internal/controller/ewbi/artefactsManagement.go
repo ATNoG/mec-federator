@@ -90,6 +90,13 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	}
 	appPkg.AppD = fileContent
 
+	// Onboard the artefact onto the orchestrator
+	appPkgId, err := amc.orchestratorService.OnboardAppPkg(appPkg)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	// Create artefact object
 	artefact := models.Artefact{
 		Id:                  artefactOnboardRequest.ArtefactId,
@@ -101,19 +108,13 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 		FileName:            artefactOnboardRequest.ArtefactFileName,
 		FileFormat:          artefactOnboardRequest.ArtefactFileFormat,
 		ArtefactFile:        &fileContent,
+		AppPkgId:            appPkgId,
 	}
 
 	// Save artefact object to database
 	err = amc.artefactService.SaveArtefact(artefact)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error saving artefact to database")
-		return
-	}
-
-	// Onboard the artefact onto the orchestrator
-	err = amc.orchestratorService.OnboardAppPkg(appPkg)
-	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -128,7 +129,38 @@ func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 }
 
 func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context) {
+	log.Print("DeleteArtefactController - Deleting artefact")
 
+	// get the artefact id from path
+	artefactId := c.Param("artefactId")
+
+	// get the federation context id from path
+	federationContextId := c.Param("federationContextId")
+
+	// check if the artefact exists
+	artefact, err := amc.artefactService.GetArtefact(federationContextId, artefactId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found")
+		return
+	}
+
+	// remove artefact from the orchestrator
+	err = amc.orchestratorService.RemoveAppPkg(artefact.AppPkgId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing artefact from orchestrator")
+		return
+	}
+
+	// // delete artefact from the database
+	// err = amc.artefactService.RemoveArtefact(federationContextId, artefactId)
+	// if err != nil {
+	// 	utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting artefact from database")
+	// 	return
+	// }
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "Artefact deleted successfully",
+	})
 }
 
 func (amc *ArtefactManagementController) UploadFileController(c *gin.Context) {

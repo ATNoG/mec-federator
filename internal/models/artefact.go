@@ -10,7 +10,9 @@ type Artefact struct {
 	FileName            string                 `json:"artefactFileName,omitempty" bson:"artefactFileName"`
 	FileFormat          ArtefactFileFormat     `json:"artefactFileFormat,omitempty" bson:"artefactFileFormat"`
 	ArtefactFile        *[]byte                `json:"artefactFile,omitempty" bson:"artefactFile"`
-	
-	ComponentSpec       []ComponentSpec        `json:"componentSpec,omitempty" bson:"componentSpec"`
-	ObjectRepoLocation  ObjectRepoLocation     `json:"objectRepoLocation,omitempty" bson:"objectRepoLocation"`
+
+	ComponentSpec      []ComponentSpec    `json:"componentSpec,omitempty" bson:"componentSpec"`
+	ObjectRepoLocation ObjectRepoLocation `json:"objectRepoLocation,omitempty" bson:"objectRepoLocation"`
+
+	AppPkgId string `json:"appPkgId,omitempty" bson:"appPkgId"`
 }

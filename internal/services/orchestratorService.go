@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -34,13 +33,13 @@ func (s *OrchestratorService) getOrchestratorAppPkgsCollection() *mongo.Collecti
 }
 
 // Onboards an artefact onto the orchestrator
-func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) error {
+func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) (string, error) {
 	slog.Info("Onboarding appPkg onto orchestrator")
 
 	// Insert the app_pkg into the database
 	result, err := s.getOrchestratorAppPkgsCollection().InsertOne(context.Background(), appPkg)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// get the app_pkg id as a string
@@ -48,12 +47,29 @@ func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) error {
 
 	// make a message to send to the kafka topic
 	message := dto.NewAppPkgMessage{
-		AppPkgId:  appPkgId.Hex(),
-		MessageId: uuid.New().String(),
+		AppPkgId: appPkgId.Hex(),
 	}
 
 	// send the message to the kafka topic
-	err = s.kafkaService.Produce("new_app_pkg", message)
+	_, err = s.kafkaService.Produce("new_app_pkg", message)
+	if err != nil {
+		return "", err
+	}
+
+	return appPkgId.Hex(), nil
+}
+
+// Remove an appPkg from the orchestrator
+func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
+	slog.Info("Removing appPkg from orchestrator", "appPkgId", appPkgId)
+
+	// remove the appPkg from the database
+	message := dto.DeleteAppPkgMessage{
+		AppPkgId: appPkgId,
+	}
+
+	// send the message to the kafka topic
+	_, err := s.kafkaService.Produce("delete_app_pkg", message)
 	if err != nil {
 		return err
 	}

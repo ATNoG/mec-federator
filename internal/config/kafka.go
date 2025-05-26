@@ -9,7 +9,7 @@ import (
 
 var (
 	Producer sarama.SyncProducer
-	Consumer sarama.ConsumerGroup
+	Consumer sarama.Consumer
 )
 
 func InitKafka() error {
@@ -41,7 +41,7 @@ func InitKafka() error {
 	consumerConfig.Net.SASL.User = username
 	consumerConfig.Net.SASL.Password = password
 
-	c, err := sarama.NewConsumerGroup(brokers, "federator-consumer-group", consumerConfig)
+	c, err := sarama.NewConsumer(brokers, consumerConfig)
 	if err != nil {
 		return err
 	}

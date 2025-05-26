@@ -1,6 +1,8 @@
 package router
 
 import (
+	"context"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -38,6 +40,12 @@ func Init() *gin.Engine {
 
 	// init services
 	kafkaServ := services.NewKafkaService()
+	err := kafkaServ.StartResponseConsumer(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to start response consumer: %v", err)
+	}
+
+	// init services
 	authServ := services.NewAuthService()
 	fedServ := services.NewFederationService()
 	mecServ := services.NewMecSystemService()
