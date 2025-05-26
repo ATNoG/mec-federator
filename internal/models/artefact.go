@@ -3,7 +3,9 @@ package models
 type Artefact struct {
 	Id                  string                 `json:"artefactId" bson:"artefactId"`
 	FederationContextId string                 `json:"federationContextId" bson:"federationContextId"`
+	AppProviderId       string                 `json:"appProviderId" bson:"appProviderId"`
 	Name                string                 `json:"artefactName" bson:"artefactName"`
+	VersionInfo         string                 `json:"artefactVersionInfo" bson:"artefactVersionInfo"`
 	Description         string                 `json:"artefactDescription" bson:"artefactDescription"`
 	VirtType            ArtefactVirtType       `json:"artefactVirtType" bson:"artefactVirtType"`
 	DescriptorType      ArtefactDescriptorType `json:"artefactDescriptorType" bson:"artefactDescriptorType"`

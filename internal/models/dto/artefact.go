@@ -59,3 +59,15 @@ func (a *ArtefactOnboardRequest) Validate() error {
 
 	return nil
 }
+
+type GetArtefactResponse struct {
+	ArtefactId             string                        `json:"artefactId"`
+	AppProviderId          string                        `json:"appProviderId"`
+	ArtefactVersionInfo    string                        `json:"artefactVersionInfo"`
+	ArtefactName           string                        `json:"artefactName"`
+	ArtefactDescription    string                        `json:"artefactDescription"`
+	ArtefactVirtType       models.ArtefactVirtType       `json:"artefactVirtType"`
+	ArtefactDescriptorType models.ArtefactDescriptorType `json:"artefactDescriptorType"`
+	ArtefactRepoLocation   models.ObjectRepoLocation     `json:"objectRepoLocation"`
+	ArtefactFileFormat     models.ArtefactFileFormat     `json:"artefactDescriptorFileFormat"`
+}

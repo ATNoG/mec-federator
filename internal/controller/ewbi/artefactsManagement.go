@@ -101,7 +101,9 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	artefact := models.Artefact{
 		Id:                  artefactOnboardRequest.ArtefactId,
 		FederationContextId: c.GetString("federationContextId"),
+		AppProviderId:       artefactOnboardRequest.AppProviderId,
 		Name:                artefactOnboardRequest.ArtefactName,
+		VersionInfo:         artefactOnboardRequest.ArtefactVersionInfo,
 		Description:         artefactOnboardRequest.ArtefactDescription,
 		VirtType:            artefactOnboardRequest.ArtefactVirtType,
 		DescriptorType:      artefactOnboardRequest.ArtefactDescriptorType,
@@ -126,6 +128,33 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 
 func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 	log.Print("GetArtefactController - Getting artefact details")
+
+	// get the artefact id from path
+	artefactId := c.Param("artefactId")
+
+	// get the federation context id from path
+	federationContextId := c.Param("federationContextId")
+
+	// get the artefact from the database
+	artefact, err := amc.artefactService.GetArtefact(federationContextId, artefactId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found")
+		return
+	}
+
+	// build the response
+	response := dto.GetArtefactResponse{
+		ArtefactId:             artefact.Id,
+		AppProviderId:          artefact.AppProviderId,
+		ArtefactVersionInfo:    artefact.VersionInfo,
+		ArtefactName:           artefact.Name,
+		ArtefactDescription:    artefact.Description,
+		ArtefactVirtType:       artefact.VirtType,
+		ArtefactDescriptorType: artefact.DescriptorType,
+		ArtefactFileFormat:     artefact.FileFormat,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context) {
@@ -147,14 +176,14 @@ func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context
 	// remove artefact from the orchestrator
 	err = amc.orchestratorService.RemoveAppPkg(artefact.AppPkgId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing artefact from orchestrator")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing artefact from orchestrator: "+err.Error())
 		return
 	}
 
 	// delete artefact from the database
 	err = amc.artefactService.RemoveArtefact(federationContextId, artefactId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting artefact from database")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting artefact from database: "+err.Error())
 		return
 	}
 
