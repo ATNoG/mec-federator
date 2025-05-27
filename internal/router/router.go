@@ -98,4 +98,5 @@ func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	initEwbiFederationManagementRoutes(router, svcs, mdws)
 	initZoneInfoSyncRoutes(router, svcs, mdws)
 	initEwbiArtefactManagementRoutes(router, svcs, mdws)
+	initEwbiApplicationInstanceLifecycleManagementRoutes(router, svcs, mdws)
 }

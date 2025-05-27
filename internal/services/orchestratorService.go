@@ -123,3 +123,38 @@ func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
 	slog.Info("appPkg deleted from database", "result", result)
 	return nil
 }
+
+// Instantiate an appPkg
+func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) error {
+	slog.Info("Instantiating appPkg", "appPkgId", appPkgId)
+
+	// make a message to send to the kafka topic
+	message := dto.NewAppInstanceMessage{
+		AppPkgId:    appPkgId,
+		Name:        "test",
+		Description: "test",
+	}
+
+	// send the message to the kafka topic
+	msgId, err := s.kafkaService.Produce("instantiate_app_pkg", message)
+	if err != nil {
+		return err
+	}
+
+	// wait for a response
+	rsp, err := s.kafkaService.WaitForResponse(msgId, 10*time.Second)
+	if err != nil {
+		slog.Warn("failed to get response from orchestrator", "error", err)
+		return err
+	}
+
+	// get status field from response
+	status := rsp["status"].(float64)
+
+	// if status is not 201, return an error
+	if status != 201 {
+		return errors.New("failed to instantiate appPkg")
+	}
+
+	return nil
+}

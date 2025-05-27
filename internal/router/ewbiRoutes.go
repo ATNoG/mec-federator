@@ -97,3 +97,22 @@ func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *
 		*mdws.FederationExistsMiddleware,
 		artefactManagementController.DeleteFileController)
 }
+
+func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
+	// ApplicationInstanceLifecycleManagement - Create and manage application instance lifecycle
+	ApplicationInstanceLifecycleManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
+
+	applicationInstanceLifecycleManagementController := ewbi.NewApplicationInstanceLifecycleManagementController(
+		svcs.OrchestratorService,
+		svcs.ArtefactService,
+	)
+
+	ApplicationInstanceLifecycleManagement.POST(
+		"/:federationContextId/application/lcm",
+		*mdws.FederationExistsMiddleware,
+		applicationInstanceLifecycleManagementController.CreateApplicationInstanceController)
+	ApplicationInstanceLifecycleManagement.DELETE(
+		"/:federationContextId/application/lcm/:appInstanceId",
+		*mdws.FederationExistsMiddleware,
+		applicationInstanceLifecycleManagementController.DeleteApplicationInstanceController)
+}
