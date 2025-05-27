@@ -8,3 +8,4 @@ type InstantiateApplicationRequest struct {
 	ZoneInfo            string `json:"zoneInfo"`
 	AppInstCallbackLink string `json:"appInstCallbackLink"`
 }
+

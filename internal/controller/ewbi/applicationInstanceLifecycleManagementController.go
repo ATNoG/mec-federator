@@ -43,13 +43,13 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateApplicationIn
 	}
 
 	// instantiate the appPkg
-	err = amc.orchestratorService.InstantiateAppPkg(artefact.AppPkgId)
+	appInstanceId, err := amc.orchestratorService.InstantiateAppPkg(artefact.AppPkgId)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Application instance created"})
+	c.JSON(http.StatusCreated, gin.H{"appInstanceId": appInstanceId})
 
 }
 
@@ -57,4 +57,17 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateApplicationIn
 // @Description Used by origin OP to delete an application instance
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
 func (amc *ApplicationInstanceLifecycleManagementController) DeleteApplicationInstanceController(c *gin.Context) {
+	log.Print("DeleteApplicationInstanceController - Deleting application instance")
+
+	// get the appInstanceId from the path
+	appInstanceId := c.Param("appInstanceId")
+
+	// delete the appInstance
+	err := amc.orchestratorService.TerminateAppPkg(appInstanceId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"appInstanceId": appInstanceId})
 }

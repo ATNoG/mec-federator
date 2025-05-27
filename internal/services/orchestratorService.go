@@ -125,11 +125,11 @@ func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
 }
 
 // Instantiate an appPkg
-func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) error {
+func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error) {
 	slog.Info("Instantiating appPkg", "appPkgId", appPkgId)
 
 	// make a message to send to the kafka topic
-	message := dto.NewAppInstanceMessage{
+	message := dto.InstantiateAppPkgMessage{
 		AppPkgId:    appPkgId,
 		Name:        "test",
 		Description: "test",
@@ -137,6 +137,43 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) error {
 
 	// send the message to the kafka topic
 	msgId, err := s.kafkaService.Produce("instantiate_app_pkg", message)
+	if err != nil {
+		return "", err
+	}
+
+	// wait for a response
+	rsp, err := s.kafkaService.WaitForResponse(msgId, 10*time.Second)
+	if err != nil {
+		slog.Warn("failed to get response from orchestrator", "error", err)
+		return "", err
+	}
+
+	// get status field from response
+	status := rsp["status"].(float64)
+
+	// if status is not 201, return an error
+	if status != 201 {
+		return "", errors.New("failed to instantiate appPkg")
+	}
+
+	// get the appInstanceId from the response
+	appInstanceId := rsp["appi_id"].(string)
+
+	// return the appInstanceId
+	return appInstanceId, nil
+}
+
+// Delete an application instance
+func (s *OrchestratorService) TerminateAppPkg(appInstanceId string) error {
+	slog.Info("Deleting application instance", "appInstanceId", appInstanceId)
+
+	// make a message to send to the kafka topic
+	message := dto.TerminateAppPkgMessage{
+		AppInstanceId: appInstanceId,
+	}
+
+	// send the message to the kafka topic
+	msgId, err := s.kafkaService.Produce("terminate_app_pkg", message)
 	if err != nil {
 		return err
 	}
@@ -151,9 +188,9 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) error {
 	// get status field from response
 	status := rsp["status"].(float64)
 
-	// if status is not 201, return an error
-	if status != 201 {
-		return errors.New("failed to instantiate appPkg")
+	// if status is not 204, return an error
+	if status != 204 {
+		return errors.New("failed to terminate appPkg")
 	}
 
 	return nil
