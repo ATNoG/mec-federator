@@ -90,6 +90,9 @@ func Init() *gin.Engine {
 }
 
 func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
+	// Health Routes
+	initHealthRoutes(router)
+
 	// Auth Routes
 	initAuthRoutes(router, svcs)
 

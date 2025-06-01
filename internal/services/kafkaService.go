@@ -163,26 +163,6 @@ func (k *KafkaService) WaitForResponse(msgID string, timeout time.Duration) (map
 	}
 }
 
-// CleanupOldResponses removes responses older than the specified duration
-func (k *KafkaService) CleanupOldResponses(maxAge time.Duration) {
-	k.mu.Lock()
-	defer k.mu.Unlock()
-
-	cutoff := time.Now().Add(-maxAge)
-
-	for msgID, response := range k.responses {
-		if timestamp, exists := response["timestamp"]; exists {
-			if timestampStr, ok := timestamp.(string); ok {
-				if t, err := time.Parse(time.RFC3339, timestampStr); err == nil {
-					if t.Before(cutoff) {
-						delete(k.responses, msgID)
-					}
-				}
-			}
-		}
-	}
-}
-
 // Custom errors
 var (
 	ErrTimeout = fmt.Errorf("timeout waiting for response")

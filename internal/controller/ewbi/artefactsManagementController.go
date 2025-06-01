@@ -3,7 +3,6 @@ package ewbi
 import (
 	"io"
 	"log"
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,15 +50,14 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	// Parse the multipart form
 	form, err := c.MultipartForm()
 	if err != nil {
-		utils.HandleProblem(c, http.StatusBadRequest, "Could not parse multipart form")
+		utils.HandleProblem(c, http.StatusBadRequest, "Error parsing multipart form: "+err.Error())
 		return
 	}
 
 	// Bind the form to the artefactOnboardRequest
 	var artefactOnboardRequest dto.ArtefactOnboardRequest
 	if err := c.ShouldBind(&artefactOnboardRequest); err != nil {
-		slog.Error("Could not bind form to artefactOnboardRequest", "error", err)
-		utils.HandleProblem(c, http.StatusBadRequest, "Could not bind form to artefactOnboardRequest")
+		utils.HandleProblem(c, http.StatusBadRequest, "Error binding form values: "+err.Error())
 		return
 	}
 
@@ -68,8 +66,6 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	slog.Info("Artefact onboarding request", "artefactOnboardRequest", artefactOnboardRequest)
 
 	// Get the file from the form
 	artefactFiles := form.File["artefactFile"]
@@ -81,28 +77,28 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	// Read the file content
 	file, err := artefactFiles[0].Open()
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error reading artefact file")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error reading file: "+err.Error())
 		return
 	}
 	defer file.Close()
 
 	fileContent, err := io.ReadAll(file)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error reading artefact file content")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error reading file content: "+err.Error())
 		return
 	}
 
 	// Get descriptor data from the tar ball
 	descriptorData, err := utils.GetDescriptorData(fileContent)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
+		utils.HandleProblem(c, http.StatusBadRequest, "Error getting descriptor data: "+err.Error())
 		return
 	}
 
 	// Validate the descriptor data
 	appPkg, err := utils.ValidateDescriptorData(descriptorData)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
+		utils.HandleProblem(c, http.StatusBadRequest, "Error validating descriptor data: "+err.Error())
 		return
 	}
 	appPkg.AppD = fileContent
@@ -110,7 +106,7 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	// Onboard the artefact onto the orchestrator
 	appPkgId, err := amc.orchestratorService.OnboardAppPkg(appPkg)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error onboarding artefact onto orchestrator: "+err.Error())
 		return
 	}
 
@@ -133,13 +129,11 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	// Save artefact object to database
 	err = amc.artefactService.SaveArtefact(artefact)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error saving artefact to database")
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error saving artefact to database: "+err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "Artefact onboarded successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"status": "Artefact onboarded successfully"})
 }
 
 // @Summary Get an artefact
@@ -163,7 +157,7 @@ func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 	// get the artefact from the database
 	artefact, err := amc.artefactService.GetArtefact(federationContextId, artefactId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found")
+		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found: "+err.Error())
 		return
 	}
 
@@ -203,7 +197,7 @@ func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context
 	// check if the artefact exists
 	artefact, err := amc.artefactService.GetArtefact(federationContextId, artefactId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found")
+		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found: "+err.Error())
 		return
 	}
 
@@ -221,9 +215,7 @@ func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "Artefact deleted successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"status": "Artefact deleted successfully"})
 }
 
 func (amc *ArtefactManagementController) UploadFileController(c *gin.Context) {

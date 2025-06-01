@@ -28,6 +28,7 @@ func NewApplicationInstanceLifecycleManagementController(orchestratorService *se
 func (amc *ApplicationInstanceLifecycleManagementController) CreateApplicationInstanceController(c *gin.Context) {
 	log.Print("CreateApplicationInstanceController - Creating application instance")
 
+	// get and bind the request body
 	var request dto.InstantiateApplicationRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
@@ -38,14 +39,14 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateApplicationIn
 	federationContextId := c.Param("federationContextId")
 	artefact, err := amc.artefactService.GetArtefact(federationContextId, request.AppId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found")
+		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found: "+err.Error())
 		return
 	}
 
 	// instantiate the appPkg
 	appInstanceId, err := amc.orchestratorService.InstantiateAppPkg(artefact.AppPkgId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error instantiating application instance: "+err.Error())
 		return
 	}
 
@@ -65,7 +66,7 @@ func (amc *ApplicationInstanceLifecycleManagementController) DeleteApplicationIn
 	// delete the appInstance
 	err := amc.orchestratorService.TerminateAppPkg(appInstanceId)
 	if err != nil {
-		utils.HandleProblem(c, http.StatusInternalServerError, err.Error())
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error terminating application instance: "+err.Error())
 		return
 	}
 
