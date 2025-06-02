@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mankings/mec-federator/internal/config"
+	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -59,7 +60,7 @@ func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) (string, error
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return "", err
@@ -90,7 +91,7 @@ func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return nil
@@ -142,7 +143,7 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error)
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return "", err
@@ -179,7 +180,7 @@ func (s *OrchestratorService) TerminateAppPkg(appInstanceId string) error {
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return err
@@ -194,4 +195,10 @@ func (s *OrchestratorService) TerminateAppPkg(appInstanceId string) error {
 	}
 
 	return nil
+}
+
+func (s *OrchestratorService) GetAppInstance(appInstanceId string) (models.AppInstInfo, error) {
+	slog.Info("Getting appInstance", "appInstanceId", appInstanceId)
+
+	return models.AppInstInfo{}, nil
 }

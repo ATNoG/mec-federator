@@ -72,3 +72,19 @@ func (amc *ApplicationInstanceLifecycleManagementController) DeleteApplicationIn
 
 	c.JSON(http.StatusOK, gin.H{"appInstanceId": appInstanceId})
 }
+
+func (amc *ApplicationInstanceLifecycleManagementController) GetAppInstanceController(c *gin.Context) {
+	log.Print("GetAppInstanceController - Getting application instance")
+
+	// get the appInstanceId from the path
+	appInstanceId := c.Param("appInstanceId")
+
+	// get the appInstance from the orchestrator
+	appInstance, err := amc.orchestratorService.GetAppInstance(appInstanceId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, appInstance)
+}

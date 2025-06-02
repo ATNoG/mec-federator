@@ -1,8 +1,6 @@
 package router
 
 import (
-	"context"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -38,12 +36,9 @@ func Init() *gin.Engine {
 	// init clients
 	httpClient := &http.Client{}
 
-	// init services
+	// init clients
+	httpServ := services.NewHttpClientService(httpClient)
 	kafkaServ := services.NewKafkaService()
-	err := kafkaServ.StartResponseConsumer(context.Background())
-	if err != nil {
-		log.Fatalf("Failed to start response consumer: %v", err)
-	}
 
 	// init services
 	authServ := services.NewAuthService()
@@ -52,7 +47,6 @@ func Init() *gin.Engine {
 	orchServ := services.NewOrchestratorService(kafkaServ)
 	artefactServ := services.NewArtefactService()
 	zoneServ := services.NewZoneService(orchServ, fedServ)
-	httpServ := services.NewHttpClientService(httpClient)
 
 	// bundle all services
 	services := &Services{

@@ -3,14 +3,12 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"log/slog"
-	"sync"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/google/uuid"
+	"github.com/mankings/mec-federator/internal/callbacks"
 	"github.com/mankings/mec-federator/internal/config"
 )
 
@@ -21,20 +19,33 @@ import (
 
 type KafkaServiceInterface interface {
 	Produce(topic string, message interface{}) error
-	StartResponseConsumer(ctx context.Context) error
-	GetResponse(msgID string) (map[string]interface{}, bool)
-	WaitForResponse(msgID string, timeout time.Duration) (map[string]interface{}, error)
+	StartConsumer(ctx context.Context, topic string, callback func(*sarama.ConsumerMessage)) error
 }
 
 type KafkaService struct {
-	responses map[string]map[string]interface{} // msgID -> response
-	mu        sync.RWMutex                      // protects responses map
+	responseCallback      *callbacks.ResponseCallback
+	newFederationCallback *callbacks.NewFederationCallback
 }
 
 func NewKafkaService() *KafkaService {
-	return &KafkaService{
-		responses: make(map[string]map[string]interface{}),
+	kafkaServ := &KafkaService{
+		responseCallback:      callbacks.NewResponseCallback(),
+		newFederationCallback: callbacks.NewNewFederationCallback(),
 	}
+
+	// start response consumer
+	err := kafkaServ.StartConsumer(context.Background(), "responses", kafkaServ.responseCallback.HandleMessage)
+	if err != nil {
+		log.Fatalf("Failed to start response consumer: %v", err)
+	}
+
+	// start new federation consumer
+	err = kafkaServ.StartConsumer(context.Background(), "new_federation", kafkaServ.newFederationCallback.HandleMessage)
+	if err != nil {
+		log.Fatalf("Failed to start new federation consumer: %v", err)
+	}
+
+	return kafkaServ
 }
 
 // Produce a message to a topic in kafka
@@ -76,11 +87,11 @@ func (k *KafkaService) Produce(topic string, message interface{}) (string, error
 	return jsonMessage["msg_id"].(string), nil
 }
 
-// StartResponseConsumer starts consuming messages from the "responses" topic
-func (k *KafkaService) StartResponseConsumer(ctx context.Context) error {
+// StartConsumer starts consuming messages from a topic with the provided callback
+func (k *KafkaService) StartConsumer(ctx context.Context, topic string, callback func(*sarama.ConsumerMessage)) error {
 	consumer := config.Consumer
 
-	partitionConsumer, err := consumer.ConsumePartition("responses", 0, sarama.OffsetNewest)
+	partitionConsumer, err := consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 	if err != nil {
 		consumer.Close()
 		return err
@@ -95,11 +106,11 @@ func (k *KafkaService) StartResponseConsumer(ctx context.Context) error {
 		for {
 			select {
 			case message := <-partitionConsumer.Messages():
-				k.handleResponse(message)
+				callback(message)
 			case err := <-partitionConsumer.Errors():
-				log.Printf("Error consuming from responses topic: %v", err)
+				log.Printf("Error consuming from %s topic: %v", topic, err)
 			case <-ctx.Done():
-				log.Println("Response consumer shutting down")
+				log.Printf("%s consumer shutting down", topic)
 				return
 			}
 		}
@@ -107,63 +118,3 @@ func (k *KafkaService) StartResponseConsumer(ctx context.Context) error {
 
 	return nil
 }
-
-// handleResponse processes incoming response messages
-func (k *KafkaService) handleResponse(message *sarama.ConsumerMessage) {
-	var response map[string]interface{}
-	if err := json.Unmarshal(message.Value, &response); err != nil {
-		log.Printf("Error unmarshaling response message: %v", err)
-		return
-	}
-
-	msgID, exists := response["msg_id"]
-	if !exists {
-		log.Println("Response message missing msg_id field")
-		return
-	}
-
-	msgIDStr, ok := msgID.(string)
-	if !ok {
-		log.Println("msg_id is not a string")
-		return
-	}
-
-	k.mu.Lock()
-	k.responses[msgIDStr] = response
-	k.mu.Unlock()
-
-	log.Printf("Stored response for msg_id: %s", msgIDStr)
-}
-
-// GetResponse retrieves a response by message ID (non-blocking)
-func (k *KafkaService) GetResponse(msgID string) (map[string]interface{}, bool) {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
-
-	response, exists := k.responses[msgID]
-	return response, exists
-}
-
-// WaitForResponse waits for a response with timeout (blocking)
-func (k *KafkaService) WaitForResponse(msgID string, timeout time.Duration) (map[string]interface{}, error) {
-	ticker := time.NewTicker(100 * time.Millisecond)
-	defer ticker.Stop()
-
-	timeoutChan := time.After(timeout)
-
-	for {
-		select {
-		case <-ticker.C:
-			if response, exists := k.GetResponse(msgID); exists {
-				return response, nil
-			}
-		case <-timeoutChan:
-			return nil, ErrTimeout
-		}
-	}
-}
-
-// Custom errors
-var (
-	ErrTimeout = fmt.Errorf("timeout waiting for response")
-)

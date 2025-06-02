@@ -53,6 +53,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 
 	log.Print("CreateFederationController - Creating federation object")
 	federationResponseData := models.FederationResponseData{
+		PartnerOPFederationId:        "federation-54321",
 		FederationContextId:          uuid.New().String(),
 		PlatformCaps:                 &[]string{"MEC"},
 		PartnerOPCountryCode:         "443",
