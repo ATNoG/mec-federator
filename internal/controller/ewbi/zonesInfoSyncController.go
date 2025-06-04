@@ -1,17 +1,22 @@
 package ewbi
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type ZonesInfoSyncController struct {
-	zoneService *services.ZoneService
+	zoneService         *services.ZoneService
+	orchestratorService *services.OrchestratorService
 }
 
-func NewZonesInfoSyncController(zoneService *services.ZoneService) *ZonesInfoSyncController {
+func NewZonesInfoSyncController(zoneService *services.ZoneService, orchestratorService *services.OrchestratorService) *ZonesInfoSyncController {
 	return &ZonesInfoSyncController{
-		zoneService: zoneService,
+		zoneService:         zoneService,
+		orchestratorService: orchestratorService,
 	}
 }
 
@@ -31,4 +36,18 @@ func (zisc *ZonesInfoSyncController) UnsubscribeZoneController(c *gin.Context) {
 // @Description Used by origin OP to get details of a zone that belongs to a partner OP
 // @Tags EWBI - ZonesInfoSync
 func (zisc *ZonesInfoSyncController) GetZoneController(c *gin.Context) {
+}
+
+// @Summary Get All Local Zones
+// @Description Used by origin OP to get all zones that belong to a partner OP
+// @Tags EWBI - ZonesInfoSync
+func (zisc *ZonesInfoSyncController) GetAllLocalZonesController(c *gin.Context) {
+	// ensure latest zones are up to date
+	localZones, err := zisc.orchestratorService.GetAvailableZones()
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting available zones")
+		return
+	}
+
+	c.JSON(http.StatusOK, localZones)
 }

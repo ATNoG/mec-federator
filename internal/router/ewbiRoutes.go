@@ -41,12 +41,13 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws
 		federationManagementController.RenewFederationController)
 }
 
-func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
+func initEwbiZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ZoneInfoSync - Sync zone information
 	ZoneInfoSync := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
 	zoneInfoSyncController := ewbi.NewZonesInfoSyncController(
 		svcs.ZoneService,
+		svcs.OrchestratorService,
 	)
 
 	ZoneInfoSync.POST(
@@ -61,6 +62,11 @@ func initZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middleware
 		"/:federationContextId/zones/:zoneId",
 		*mdws.FederationExistsMiddleware,
 		zoneInfoSyncController.GetZoneController)
+
+	ZoneInfoSync.GET(
+		"/:federationContextId/zones",
+		*mdws.FederationExistsMiddleware,
+		zoneInfoSyncController.GetAllLocalZonesController)
 }
 
 func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {

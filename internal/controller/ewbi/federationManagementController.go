@@ -61,6 +61,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		LcmServiceEndPoint:           &models.ServiceEndpoint{Fqdn: "lcm-service.com", Port: 443},
 		FederationExpiryDate:         time.Now().AddDate(1, 0, 0),
 		FederationRenewalDate:        time.Now().AddDate(0, 6, 0),
+		OfferedAvailabilityZones:     []models.ZoneDetails{},
 	}
 
 	healthInfo := models.FederationHealthInfo{

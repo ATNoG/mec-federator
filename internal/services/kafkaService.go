@@ -23,14 +23,16 @@ type KafkaServiceInterface interface {
 }
 
 type KafkaService struct {
-	responseCallback      *callbacks.ResponseCallback
-	newFederationCallback *callbacks.NewFederationCallback
+	responseCallback           *callbacks.ResponseCallback
+	newFederationCallback      *callbacks.NewFederationCallback
+	infrastructureInfoCallback *callbacks.InfrastructureInfoCallback
 }
 
 func NewKafkaService() *KafkaService {
 	kafkaServ := &KafkaService{
-		responseCallback:      callbacks.NewResponseCallback(),
-		newFederationCallback: callbacks.NewNewFederationCallback(),
+		responseCallback:           callbacks.NewResponseCallback(),
+		newFederationCallback:      callbacks.NewNewFederationCallback(),
+		infrastructureInfoCallback: callbacks.NewInfrastructureInfoCallback(),
 	}
 
 	// start response consumer
@@ -43,6 +45,12 @@ func NewKafkaService() *KafkaService {
 	err = kafkaServ.StartConsumer(context.Background(), "new_federation", kafkaServ.newFederationCallback.HandleMessage)
 	if err != nil {
 		log.Fatalf("Failed to start new federation consumer: %v", err)
+	}
+
+	// start cluster info consumer
+	err = kafkaServ.StartConsumer(context.Background(), "infrastructure-info", kafkaServ.infrastructureInfoCallback.HandleMessage)
+	if err != nil {
+		log.Fatalf("Failed to start cluster info consumer: %v", err)
 	}
 
 	return kafkaServ
@@ -91,6 +99,8 @@ func (k *KafkaService) Produce(topic string, message interface{}) (string, error
 func (k *KafkaService) StartConsumer(ctx context.Context, topic string, callback func(*sarama.ConsumerMessage)) error {
 	consumer := config.Consumer
 
+	log.Println("Starting consumer for topic", topic)
+
 	partitionConsumer, err := consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 	if err != nil {
 		consumer.Close()
@@ -115,6 +125,8 @@ func (k *KafkaService) StartConsumer(ctx context.Context, topic string, callback
 			}
 		}
 	}()
+
+	log.Println("Consumer started for topic", topic)
 
 	return nil
 }

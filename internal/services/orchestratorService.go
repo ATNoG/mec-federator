@@ -35,6 +35,14 @@ func (s *OrchestratorService) getOrchestratorAppPkgsCollection() *mongo.Collecti
 	return config.GetOrchestratorMongoDatabase().Collection("app_pkgs")
 }
 
+// Get available zones from the orchestrator
+func (s *OrchestratorService) GetAvailableZones() ([]models.ZoneDetails, error) {
+	slog.Info("Getting available zones from orchestrator")
+
+	// get the latest message from the kafka topic
+	return s.kafkaService.infrastructureInfoCallback.GetLatestZones(), nil
+}
+
 // Onboards an artefact onto the orchestrator
 func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) (string, error) {
 	slog.Info("Onboarding appPkg onto orchestrator")

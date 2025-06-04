@@ -46,7 +46,7 @@ func Init() *gin.Engine {
 	mecServ := services.NewMecSystemService()
 	orchServ := services.NewOrchestratorService(kafkaServ)
 	artefactServ := services.NewArtefactService()
-	zoneServ := services.NewZoneService(orchServ, fedServ)
+	zoneServ := services.NewZoneService(orchServ, fedServ, kafkaServ)
 
 	// bundle all services
 	services := &Services{
@@ -93,7 +93,7 @@ func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// EWBI Routes
 	// initFederationAPIManagementRoutes(router, svcs, authMiddleware)
 	initEwbiFederationManagementRoutes(router, svcs, mdws)
-	initZoneInfoSyncRoutes(router, svcs, mdws)
+	initEwbiZoneInfoSyncRoutes(router, svcs, mdws)
 	initEwbiArtefactManagementRoutes(router, svcs, mdws)
 	initEwbiApplicationInstanceLifecycleManagementRoutes(router, svcs, mdws)
 }
