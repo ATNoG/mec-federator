@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mankings/mec-federator/docs"
+	"github.com/mankings/mec-federator/internal/callbacks"
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/middleware"
 	"github.com/mankings/mec-federator/internal/services"
@@ -19,6 +20,7 @@ type Services struct {
 	OrchestratorService *services.OrchestratorService
 	ZoneService         *services.ZoneService
 	ArtefactService     *services.ArtefactService
+	AppInstanceService  *services.AppInstanceService
 
 	HttpClientService *services.HttpClientService
 	KafkaService      *services.KafkaService
@@ -27,6 +29,10 @@ type Services struct {
 type Middlewares struct {
 	AuthMiddleware             *gin.HandlerFunc
 	FederationExistsMiddleware *gin.HandlerFunc
+}
+
+type Callbacks struct {
+	InfrastructureInfoCallback *callbacks.InfrastructureInfoCallback
 }
 
 func Init() *gin.Engine {
@@ -46,6 +52,7 @@ func Init() *gin.Engine {
 	mecServ := services.NewMecSystemService()
 	orchServ := services.NewOrchestratorService(kafkaServ)
 	artefactServ := services.NewArtefactService()
+	appInstanceServ := services.NewAppInstanceService(kafkaServ)
 	zoneServ := services.NewZoneService(orchServ, fedServ, kafkaServ)
 
 	// bundle all services
@@ -56,6 +63,7 @@ func Init() *gin.Engine {
 		OrchestratorService: orchServ,
 		ZoneService:         zoneServ,
 		ArtefactService:     artefactServ,
+		AppInstanceService:  appInstanceServ,
 
 		HttpClientService: httpServ,
 		KafkaService:      kafkaServ,

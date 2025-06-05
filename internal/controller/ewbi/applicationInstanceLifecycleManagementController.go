@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/services"
 	"github.com/mankings/mec-federator/internal/utils"
@@ -13,12 +14,14 @@ import (
 type ApplicationInstanceLifecycleManagementController struct {
 	orchestratorService *services.OrchestratorService
 	artefactService     *services.ArtefactService
+	appInstanceService  *services.AppInstanceService
 }
 
-func NewApplicationInstanceLifecycleManagementController(orchestratorService *services.OrchestratorService, artefactService *services.ArtefactService) *ApplicationInstanceLifecycleManagementController {
+func NewApplicationInstanceLifecycleManagementController(orchestratorService *services.OrchestratorService, artefactService *services.ArtefactService, appInstanceService *services.AppInstanceService) *ApplicationInstanceLifecycleManagementController {
 	return &ApplicationInstanceLifecycleManagementController{
 		orchestratorService: orchestratorService,
 		artefactService:     artefactService,
+		appInstanceService:  appInstanceService,
 	}
 }
 
@@ -47,6 +50,22 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateApplicationIn
 	appInstanceId, err := amc.orchestratorService.InstantiateAppPkg(artefact.AppPkgId)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error instantiating application instance: "+err.Error())
+		return
+	}
+
+	// create the appInstance
+	appInstance := models.AppInstance{
+		Id:                  appInstanceId,
+		FederationContextId: federationContextId,
+		Name:                request.AppId,
+		Description:         request.AppVersion,
+		AppPkgId:            artefact.AppPkgId,
+	}
+
+	// save the appInstance to the database
+	err = amc.appInstanceService.RegisterAppInstance(appInstance)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error creating application instance: "+err.Error())
 		return
 	}
 

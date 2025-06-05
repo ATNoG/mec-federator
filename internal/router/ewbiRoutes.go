@@ -111,6 +111,7 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 	applicationInstanceLifecycleManagementController := ewbi.NewApplicationInstanceLifecycleManagementController(
 		svcs.OrchestratorService,
 		svcs.ArtefactService,
+		svcs.AppInstanceService,
 	)
 
 	ApplicationInstanceLifecycleManagement.POST(
