@@ -6,6 +6,11 @@ import (
 	"net/http"
 )
 
+/*
+ * HttpClientService
+ *	responsible for making HTTP requests
+ */
+
 type HttpClientServiceInterface interface {
 	DoRequest(ctx context.Context, method string, url string, body io.Reader, headers map[string]string, auth AuthStrategy) (*http.Response, error)
 }
@@ -14,9 +19,9 @@ type HttpClientService struct {
 	httpClient *http.Client
 }
 
-func NewHttpClientService(httpClient *http.Client) *HttpClientService {
+func NewHttpClientService() *HttpClientService {
 	return &HttpClientService{
-		httpClient: httpClient,
+		httpClient: &http.Client{},
 	}
 }
 

@@ -9,17 +9,22 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+/*
+ * AppInstanceService
+ *	responsible for managing app instances
+ */
+
 type AppInstanceServiceInterface interface {
 	RegisterAppInstance(appInstance models.AppInstance) error
 }
 
 type AppInstanceService struct {
-	KafkaService *KafkaService
+	kafkaClientService *KafkaClientService
 }
 
-func NewAppInstanceService(kafkaService *KafkaService) *AppInstanceService {
+func NewAppInstanceService(kafkaClientService *KafkaClientService) *AppInstanceService {
 	return &AppInstanceService{
-		KafkaService: kafkaService,
+		kafkaClientService: kafkaClientService,
 	}
 }
 

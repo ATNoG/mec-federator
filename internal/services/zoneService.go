@@ -10,6 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+/*
+ * ZoneService
+ *	responsible for managing zones
+ */
+
 type ZoneServiceInterface interface {
 	GetAllZones() ([]models.ZoneDetails, error)
 	GetAllLocalZones() ([]models.ZoneDetails, error)
@@ -18,13 +23,13 @@ type ZoneServiceInterface interface {
 
 type ZoneService struct {
 	orchestratorService *OrchestratorService
-	kafkaService        *KafkaService
+	kafkaClientService  *KafkaClientService
 }
 
-func NewZoneService(orchestratorService *OrchestratorService, federationService *FederationService, kafkaService *KafkaService) *ZoneService {
+func NewZoneService(orchestratorService *OrchestratorService, federationService *FederationService, kafkaClientService *KafkaClientService) *ZoneService {
 	return &ZoneService{
 		orchestratorService: orchestratorService,
-		kafkaService:        kafkaService,
+		kafkaClientService:  kafkaClientService,
 	}
 }
 
@@ -35,7 +40,7 @@ func (z *ZoneService) getZoneDetailsCollection() *mongo.Collection {
 // Updates the database with the local available zones
 func (z *ZoneService) UpdateLocalZones(zones []models.ZoneDetails) error {
 	// get the latest zones from the orchestrator
-	availableZones, err := z.orchestratorService.GetAvailableZones()
+	availableZones, err := z.GetAllLocalZones()
 	if err != nil {
 		return err
 	}

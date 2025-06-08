@@ -9,7 +9,6 @@ import (
 
 var (
 	Producer sarama.SyncProducer
-	Consumer sarama.Consumer
 )
 
 func InitKafka() error {
@@ -35,17 +34,6 @@ func InitKafka() error {
 		return err
 	}
 	Producer = p
-
-	consumerConfig := sarama.NewConfig()
-	consumerConfig.Net.SASL.Enable = true
-	consumerConfig.Net.SASL.User = username
-	consumerConfig.Net.SASL.Password = password
-
-	c, err := sarama.NewConsumer(brokers, consumerConfig)
-	if err != nil {
-		return err
-	}
-	Consumer = c
 
 	log.Println("Kafka initialized successfully")
 

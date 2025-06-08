@@ -1,7 +1,7 @@
 package router
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mankings/mec-federator/docs"
@@ -22,8 +22,8 @@ type Services struct {
 	ArtefactService     *services.ArtefactService
 	AppInstanceService  *services.AppInstanceService
 
-	HttpClientService *services.HttpClientService
-	KafkaService      *services.KafkaService
+	HttpClientService  *services.HttpClientService
+	KafkaClientService *services.KafkaClientService
 }
 
 type Middlewares struct {
@@ -32,21 +32,19 @@ type Middlewares struct {
 }
 
 type Callbacks struct {
+	ResponseCallback           *callbacks.ResponseCallback
 	InfrastructureInfoCallback *callbacks.InfrastructureInfoCallback
+	NewFederationCallback      *callbacks.NewFederationCallback
 }
 
 func Init() *gin.Engine {
 	// start gin with default settings
 	router := gin.Default()
 
-	// init clients
-	httpClient := &http.Client{}
-
-	// init clients
-	httpServ := services.NewHttpClientService(httpClient)
-	kafkaServ := services.NewKafkaService()
-
 	// init services
+	httpServ := services.NewHttpClientService()
+	kafkaServ := services.NewKafkaClientService()
+
 	authServ := services.NewAuthService()
 	fedServ := services.NewFederationService()
 	mecServ := services.NewMecSystemService()
@@ -54,6 +52,20 @@ func Init() *gin.Engine {
 	artefactServ := services.NewArtefactService()
 	appInstanceServ := services.NewAppInstanceService(kafkaServ)
 	zoneServ := services.NewZoneService(orchServ, fedServ, kafkaServ)
+
+	// init middlewares
+	authMiddleware := middleware.AuthMiddleware(authServ)
+	federationExistsMiddleware := middleware.FederationExistsMiddleware(fedServ)
+
+	// init kafka callbacks
+	responseCallback := callbacks.NewResponseCallback()
+	newFederationCallback := callbacks.NewNewFederationCallback()
+	infrastructureInfoCallback := callbacks.NewInfrastructureInfoCallback(zoneServ)
+
+	// start kafka consumers with callbacks
+	kafkaServ.StartConsumer(context.Background(), "responses", nil)
+	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage)
+	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage)
 
 	// bundle all services
 	services := &Services{
@@ -65,13 +77,9 @@ func Init() *gin.Engine {
 		ArtefactService:     artefactServ,
 		AppInstanceService:  appInstanceServ,
 
-		HttpClientService: httpServ,
-		KafkaService:      kafkaServ,
+		HttpClientService:  httpServ,
+		KafkaClientService: kafkaServ,
 	}
-
-	// init middlewares
-	authMiddleware := middleware.AuthMiddleware(services.AuthService)
-	federationExistsMiddleware := middleware.FederationExistsMiddleware(services.FederationService)
 
 	// bundle middlewares
 	middlewares := &Middlewares{
@@ -79,8 +87,15 @@ func Init() *gin.Engine {
 		FederationExistsMiddleware: &federationExistsMiddleware,
 	}
 
+	// bundle callbacks
+	callbacks := &Callbacks{
+		ResponseCallback:           responseCallback,
+		InfrastructureInfoCallback: infrastructureInfoCallback,
+		NewFederationCallback:      newFederationCallback,
+	}
+
 	// init routes
-	initRoutes(router, services, middlewares)
+	initRoutes(router, services, middlewares, callbacks)
 
 	// init swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -91,7 +106,7 @@ func Init() *gin.Engine {
 	return router
 }
 
-func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
+func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares, cbs *Callbacks) {
 	// Health Routes
 	initHealthRoutes(router)
 
@@ -99,9 +114,8 @@ func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	initAuthRoutes(router, svcs)
 
 	// EWBI Routes
-	// initFederationAPIManagementRoutes(router, svcs, authMiddleware)
-	initEwbiFederationManagementRoutes(router, svcs, mdws)
-	initEwbiZoneInfoSyncRoutes(router, svcs, mdws)
-	initEwbiArtefactManagementRoutes(router, svcs, mdws)
-	initEwbiApplicationInstanceLifecycleManagementRoutes(router, svcs, mdws)
+	initEwbiFederationManagementRoutes(router, svcs, mdws, cbs)
+	initEwbiZoneInfoSyncRoutes(router, svcs, mdws, cbs)
+	initEwbiArtefactManagementRoutes(router, svcs, mdws, cbs)
+	initEwbiApplicationInstanceLifecycleManagementRoutes(router, svcs, mdws, cbs)
 }

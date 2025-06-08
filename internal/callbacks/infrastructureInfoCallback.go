@@ -2,11 +2,13 @@ package callbacks
 
 import (
 	"log"
+	"log/slog"
 	"sync"
 
 	"github.com/IBM/sarama"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
+	"github.com/mankings/mec-federator/internal/services"
 )
 
 // InfrastructureInfoCallback handles incoming infrastructure information messages from Kafka
@@ -14,48 +16,33 @@ type InfrastructureInfoCallback struct {
 	latestMessage []byte
 	latestZones   []models.ZoneDetails
 	mu            sync.RWMutex
+
+	zoneService *services.ZoneService
 }
 
 // NewInfrastructureInfoCallback creates a new InfrastructureInfoCallback instance
-func NewInfrastructureInfoCallback() *InfrastructureInfoCallback {
-	return &InfrastructureInfoCallback{}
+func NewInfrastructureInfoCallback(zoneService *services.ZoneService) *InfrastructureInfoCallback {
+	return &InfrastructureInfoCallback{
+		zoneService: zoneService,
+	}
 }
 
 // HandleMessage processes incoming cluster information messages
 func (cc *InfrastructureInfoCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	cc.mu.Lock()
+	defer cc.mu.Unlock()
+
+	// Store the latest message
 	cc.latestMessage = message.Value
 
-	result, err := cc.UnmarshalInfrastructureInfo()
-	if err != nil {
+	// Unmarshal the message directly
+	var infraInfo dto.InfrastructureInfo
+	if err := infraInfo.UnmarshalJSON(message.Value); err != nil {
 		log.Println("Error unmarshalling infrastructure info:", err)
 		return
 	}
 
-	cc.latestZones = result
-
-	cc.mu.Unlock()
-}
-
-// GetLatestZones returns the latest zones
-func (cc *InfrastructureInfoCallback) GetLatestZones() []models.ZoneDetails {
-	cc.mu.RLock()
-	defer cc.mu.RUnlock()
-	return cc.latestZones
-}
-
-// UnmarshalInfrastructureInfo unmarshals the latest cluster information message
-func (cc *InfrastructureInfoCallback) UnmarshalInfrastructureInfo() ([]models.ZoneDetails, error) {
-	if cc.latestMessage == nil {
-		return nil, nil
-	}
-
-	var infraInfo dto.InfrastructureInfo
-	if err := infraInfo.UnmarshalJSON(cc.latestMessage); err != nil {
-		return nil, err
-	}
-
-	// extract the zones from the message
+	// Extract the zones from the message
 	availableZones := make([]models.ZoneDetails, 0)
 
 	// The message format is {cluster1Id: {clusterInfo}, cluster2Id: {clusterInfo}, ...}
@@ -64,9 +51,17 @@ func (cc *InfrastructureInfoCallback) UnmarshalInfrastructureInfo() ([]models.Zo
 			ZoneId: clusterId,
 			VimId:  clusterInfo.VIMAccount,
 		}
-
 		availableZones = append(availableZones, zone)
 	}
 
-	return availableZones, nil
+	// Update the zones in the database
+	if err := cc.zoneService.UpdateLocalZones(availableZones); err != nil {
+		log.Println("Error updating local zones:", err)
+		return
+	}
+
+	slog.Info("Updated local zones", "zones", availableZones)
+
+	// Store the latest zones
+	cc.latestZones = availableZones
 }

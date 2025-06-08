@@ -11,6 +11,11 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+/*
+ * AuthService
+ *	responsible for managing access tokens
+ */
+
 // interface for authentication service
 type AuthServiceInterface interface {
 	SaveAccessToken(accessToken models.AccessToken) error

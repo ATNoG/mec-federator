@@ -15,32 +15,24 @@ import (
 
 /*
  * OrchestratorService
- *	responsible for interacting with the registered orchestrator
+ *	responsible for sending messages and orders to the orchestrator
  */
 
 type OrchestratorServiceInterface interface {
 }
 
 type OrchestratorService struct {
-	kafkaService *KafkaService
+	kafkaClientService *KafkaClientService
 }
 
-func NewOrchestratorService(kafkaService *KafkaService) *OrchestratorService {
+func NewOrchestratorService(kafkaClientService *KafkaClientService) *OrchestratorService {
 	return &OrchestratorService{
-		kafkaService: kafkaService,
+		kafkaClientService: kafkaClientService,
 	}
 }
 
 func (s *OrchestratorService) getOrchestratorAppPkgsCollection() *mongo.Collection {
 	return config.GetOrchestratorMongoDatabase().Collection("app_pkgs")
-}
-
-// Get available zones from the orchestrator
-func (s *OrchestratorService) GetAvailableZones() ([]models.ZoneDetails, error) {
-	slog.Info("Getting available zones from orchestrator")
-
-	// get the latest message from the kafka topic
-	return s.kafkaService.infrastructureInfoCallback.GetLatestZones(), nil
 }
 
 // Onboards an artefact onto the orchestrator
@@ -62,13 +54,13 @@ func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) (string, error
 	}
 
 	// send the message to the kafka topic
-	msgId, err := s.kafkaService.Produce("new_app_pkg", message)
+	msgId, err := s.kafkaClientService.Produce("new_app_pkg", message)
 	if err != nil {
 		return "", err
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return "", err
@@ -93,13 +85,13 @@ func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
 	}
 
 	// send the message to the kafka topic
-	msgId, err := s.kafkaService.Produce("delete_app_pkg", message)
+	msgId, err := s.kafkaClientService.Produce("delete_app_pkg", message)
 	if err != nil {
 		return err
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return nil
@@ -145,13 +137,13 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error)
 	}
 
 	// send the message to the kafka topic
-	msgId, err := s.kafkaService.Produce("instantiate_app_pkg", message)
+	msgId, err := s.kafkaClientService.Produce("instantiate_app_pkg", message)
 	if err != nil {
 		return "", err
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return "", err
@@ -182,13 +174,13 @@ func (s *OrchestratorService) TerminateAppPkg(appInstanceId string) error {
 	}
 
 	// send the message to the kafka topic
-	msgId, err := s.kafkaService.Produce("terminate_app_pkg", message)
+	msgId, err := s.kafkaClientService.Produce("terminate_app_pkg", message)
 	if err != nil {
 		return err
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaService.responseCallback.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return err
