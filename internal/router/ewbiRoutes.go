@@ -5,7 +5,7 @@ import (
 	"github.com/mankings/mec-federator/internal/controller/ewbi"
 )
 
-func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares, cbs *Callbacks) {
+func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// FederationManagement - Create and manage directed federation relationship with a partner OP
 	FederationManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
@@ -41,7 +41,7 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws
 		federationManagementController.RenewFederationController)
 }
 
-func initEwbiZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares, cbs *Callbacks) {
+func initEwbiZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ZoneInfoSync - Sync zone information
 	ZoneInfoSync := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
@@ -69,7 +69,7 @@ func initEwbiZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middle
 		zoneInfoSyncController.GetAllLocalZonesController)
 }
 
-func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares, cbs *Callbacks) {
+func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ArtefactManagement - Create and manage artefacts
 	ArtefactManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
@@ -104,7 +104,7 @@ func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *
 		artefactManagementController.DeleteFileController)
 }
 
-func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares, cbs *Callbacks) {
+func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ApplicationInstanceLifecycleManagement - Create and manage application instance lifecycle
 	ApplicationInstanceLifecycleManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
@@ -117,9 +117,13 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 	ApplicationInstanceLifecycleManagement.POST(
 		"/:federationContextId/application/lcm",
 		*mdws.FederationExistsMiddleware,
-		applicationInstanceLifecycleManagementController.CreateApplicationInstanceController)
+		applicationInstanceLifecycleManagementController.CreateAppInstanceController)
 	ApplicationInstanceLifecycleManagement.DELETE(
 		"/:federationContextId/application/lcm/:appInstanceId",
 		*mdws.FederationExistsMiddleware,
-		applicationInstanceLifecycleManagementController.DeleteApplicationInstanceController)
+		applicationInstanceLifecycleManagementController.DeleteAppInstanceController)
+	ApplicationInstanceLifecycleManagement.GET(
+		"/:federationContextId/application/lcm/:appInstanceId",
+		*mdws.FederationExistsMiddleware,
+		applicationInstanceLifecycleManagementController.GetAppInstanceDetailsController)
 }

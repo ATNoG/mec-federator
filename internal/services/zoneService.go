@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"slices"
 
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
@@ -17,19 +16,17 @@ import (
 
 type ZoneServiceInterface interface {
 	GetAllZones() ([]models.ZoneDetails, error)
-	GetAllLocalZones() ([]models.ZoneDetails, error)
+	GetLocalZones() ([]models.ZoneDetails, error)
 	GetSubscribedZones(federationContextId string) ([]models.ZoneDetails, error)
 }
 
 type ZoneService struct {
-	orchestratorService *OrchestratorService
-	kafkaClientService  *KafkaClientService
+	kafkaClientService *KafkaClientService
 }
 
-func NewZoneService(orchestratorService *OrchestratorService, federationService *FederationService, kafkaClientService *KafkaClientService) *ZoneService {
+func NewZoneService(kafkaClientService *KafkaClientService) *ZoneService {
 	return &ZoneService{
-		orchestratorService: orchestratorService,
-		kafkaClientService:  kafkaClientService,
+		kafkaClientService: kafkaClientService,
 	}
 }
 
@@ -39,21 +36,24 @@ func (z *ZoneService) getZoneDetailsCollection() *mongo.Collection {
 
 // Updates the database with the local available zones
 func (z *ZoneService) UpdateLocalZones(zones []models.ZoneDetails) error {
-	// get the latest zones from the orchestrator
-	availableZones, err := z.GetAllLocalZones()
-	if err != nil {
-		return err
-	}
-
 	// get the local zones from the database
-	localZones, err := z.GetAllLocalZones()
+	localZones, err := z.GetLocalZones()
 	if err != nil {
 		return err
 	}
 
 	// compare the available zones with the local zones
-	for _, zone := range availableZones {
-		if !slices.Contains(localZones, zone) {
+	for _, zone := range zones {
+		// Check if a zone with the same ZoneId and VimId already exists
+		zoneExists := false
+		for _, localZone := range localZones {
+			if localZone.ZoneId == zone.ZoneId && localZone.VimId == zone.VimId {
+				zoneExists = true
+				break
+			}
+		}
+
+		if !zoneExists {
 			// add the zone to the database
 			_, err = z.getZoneDetailsCollection().InsertOne(context.Background(), zone)
 			if err != nil {
@@ -66,7 +66,7 @@ func (z *ZoneService) UpdateLocalZones(zones []models.ZoneDetails) error {
 }
 
 // Returns all the local zones that are registered for federation
-func (z *ZoneService) GetAllLocalZones() ([]models.ZoneDetails, error) {
+func (z *ZoneService) GetLocalZones() ([]models.ZoneDetails, error) {
 
 	// get the local zones from the database
 	localZones, err := z.getZoneDetailsCollection().Find(context.Background(), bson.M{})

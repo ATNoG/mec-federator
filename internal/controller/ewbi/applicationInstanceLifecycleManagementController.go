@@ -28,7 +28,7 @@ func NewApplicationInstanceLifecycleManagementController(orchestratorService *se
 // @Summary Create an application instance
 // @Description Used by origin OP to create an application instance
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
-func (amc *ApplicationInstanceLifecycleManagementController) CreateApplicationInstanceController(c *gin.Context) {
+func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceController(c *gin.Context) {
 	log.Print("CreateApplicationInstanceController - Creating application instance")
 
 	// get and bind the request body
@@ -70,20 +70,19 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateApplicationIn
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"appInstanceId": appInstanceId})
-
 }
 
 // @Summary Delete an application instance
 // @Description Used by origin OP to delete an application instance
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
-func (amc *ApplicationInstanceLifecycleManagementController) DeleteApplicationInstanceController(c *gin.Context) {
+func (amc *ApplicationInstanceLifecycleManagementController) DeleteAppInstanceController(c *gin.Context) {
 	log.Print("DeleteApplicationInstanceController - Deleting application instance")
 
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
 
 	// delete the appInstance
-	err := amc.orchestratorService.TerminateAppPkg(appInstanceId)
+	err := amc.orchestratorService.TerminateAppInstance(appInstanceId)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error terminating application instance: "+err.Error())
 		return
@@ -92,8 +91,11 @@ func (amc *ApplicationInstanceLifecycleManagementController) DeleteApplicationIn
 	c.JSON(http.StatusOK, gin.H{"appInstanceId": appInstanceId})
 }
 
-func (amc *ApplicationInstanceLifecycleManagementController) GetAppInstanceController(c *gin.Context) {
-	log.Print("GetAppInstanceController - Getting application instance")
+// @Summary Get details about an application instance
+// @Description Used by origin OP to get details about an application instance
+// @Tags EWBI - ApplicationInstanceLifecycleManagement
+func (amc *ApplicationInstanceLifecycleManagementController) GetAppInstanceDetailsController(c *gin.Context) {
+	log.Print("GetAppInstanceDetailsController - Getting application instance details")
 
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")

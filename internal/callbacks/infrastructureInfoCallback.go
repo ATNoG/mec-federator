@@ -2,7 +2,6 @@ package callbacks
 
 import (
 	"log"
-	"log/slog"
 	"sync"
 
 	"github.com/IBM/sarama"
@@ -59,8 +58,6 @@ func (cc *InfrastructureInfoCallback) HandleMessage(message *sarama.ConsumerMess
 		log.Println("Error updating local zones:", err)
 		return
 	}
-
-	slog.Info("Updated local zones", "zones", availableZones)
 
 	// Store the latest zones
 	cc.latestZones = availableZones

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/mankings/mec-federator/internal/config"
-	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -33,6 +32,10 @@ func NewOrchestratorService(kafkaClientService *KafkaClientService) *Orchestrato
 
 func (s *OrchestratorService) getOrchestratorAppPkgsCollection() *mongo.Collection {
 	return config.GetOrchestratorMongoDatabase().Collection("app_pkgs")
+}
+
+func (s *OrchestratorService) getOrchestratorAppInstancesCollection() *mongo.Collection {
+	return config.GetOrchestratorMongoDatabase().Collection("appis")
 }
 
 // Onboards an artefact onto the orchestrator
@@ -165,11 +168,11 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error)
 }
 
 // Delete an application instance
-func (s *OrchestratorService) TerminateAppPkg(appInstanceId string) error {
+func (s *OrchestratorService) TerminateAppInstance(appInstanceId string) error {
 	slog.Info("Deleting application instance", "appInstanceId", appInstanceId)
 
 	// make a message to send to the kafka topic
-	message := dto.TerminateAppPkgMessage{
+	message := dto.TerminateAppiMessage{
 		AppInstanceId: appInstanceId,
 	}
 
@@ -197,8 +200,37 @@ func (s *OrchestratorService) TerminateAppPkg(appInstanceId string) error {
 	return nil
 }
 
-func (s *OrchestratorService) GetAppInstance(appInstanceId string) (models.AppInstInfo, error) {
+// Get app instance details from the orchestrator db
+func (s *OrchestratorService) GetAppInstance(appInstanceId string) (dto.OrchAppI, error) {
 	slog.Info("Getting appInstance", "appInstanceId", appInstanceId)
 
-	return models.AppInstInfo{}, nil
+	collection := s.getOrchestratorAppInstancesCollection()
+	filter := bson.M{"appi_id": appInstanceId}
+	var appInstInfo dto.OrchAppI
+	err := collection.FindOne(context.Background(), filter).Decode(&appInstInfo)
+	if err != nil {
+		return dto.OrchAppI{}, err
+	}
+
+	return appInstInfo, nil
+}
+
+// Get app instances from the orchestrator db from a list of appi ids
+func (s *OrchestratorService) GetAppInstances(appInstanceIds []string) ([]dto.OrchAppI, error) {
+	slog.Info("Getting appInstances", "appInstanceIds", appInstanceIds)
+
+	collection := s.getOrchestratorAppInstancesCollection()
+	filter := bson.M{"appi_id": bson.M{"$in": appInstanceIds}}
+	var appInsts []dto.OrchAppI
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.All(context.Background(), &appInsts)
+	if err != nil {
+		return nil, err
+	}
+
+	return appInsts, nil
 }

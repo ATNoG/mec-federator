@@ -43,7 +43,7 @@ func (zisc *ZonesInfoSyncController) GetZoneController(c *gin.Context) {
 // @Tags EWBI - ZonesInfoSync
 func (zisc *ZonesInfoSyncController) GetAllLocalZonesController(c *gin.Context) {
 	// ensure latest zones are up to date
-	localZones, err := zisc.zoneService.GetAllLocalZones()
+	localZones, err := zisc.zoneService.GetLocalZones()
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting local zones")
 		return

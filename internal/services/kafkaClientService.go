@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"log/slog"
 	"sync"
 	"time"
 
@@ -52,8 +51,6 @@ func (k *KafkaClientService) Produce(topic string, message interface{}) (string,
 		return "", err
 	}
 
-	slog.Info("Producing message to topic", "topic", topic, "message", jsonMessage)
-
 	if _, exists := jsonMessage["msg_id"]; !exists {
 		jsonMessage["msg_id"] = uuid.New().String()
 		// Re-marshal with the new msg_id
@@ -62,8 +59,6 @@ func (k *KafkaClientService) Produce(topic string, message interface{}) (string,
 			return "", err
 		}
 	}
-
-	slog.Info("Message after unmarshalling", "message", jsonMessage)
 
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
