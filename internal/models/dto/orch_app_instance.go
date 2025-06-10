@@ -34,10 +34,10 @@ type TerminateAppiMessage struct {
 
 // periodic message to list federated app instances
 type FederatedAppisMessage struct {
-	Appis  map[string]AppiDetails `json:"appis"`
-	Domain string                 `json:"domain"`
+	Appis map[string]AppiDetails `json:"appis"`
 }
 
 type AppiDetails struct {
+	Domain    string              `json:"domain"`
 	Instances map[string]Instance `json:"instances"`
 }

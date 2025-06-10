@@ -96,7 +96,6 @@ func main() {
 	// Initialize the scheduler
 	sched := scheduler.NewScheduler(services)
 	scheduler.CreateTasks(sched)
-
 	sched.Start()
 
 	// Initialize the router

@@ -33,10 +33,10 @@ func CreateTasks(scheduler *Scheduler) {
 
 			// make message to send to kafka
 			var message dto.FederatedAppisMessage
-			message.Domain = orchAppis[0].Domain
 			message.Appis = make(map[string]dto.AppiDetails)
 			for _, appi := range orchAppis {
 				message.Appis[appi.AppiId] = dto.AppiDetails{
+					Domain:    appi.Domain,
 					Instances: appi.Instances[appi.Domain],
 				}
 			}
