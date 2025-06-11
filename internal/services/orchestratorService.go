@@ -40,8 +40,6 @@ func (s *OrchestratorService) getOrchestratorAppInstancesCollection() *mongo.Col
 
 // Onboards an artefact onto the orchestrator
 func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) (string, error) {
-	slog.Info("Onboarding appPkg onto orchestrator")
-
 	// Insert the app_pkg into the database
 	result, err := s.getOrchestratorAppPkgsCollection().InsertOne(context.Background(), appPkg)
 	if err != nil {
@@ -80,8 +78,6 @@ func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) (string, error
 
 // Remove an appPkg from the orchestrator
 func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
-	slog.Info("Removing appPkg from orchestrator", "appPkgId", appPkgId)
-
 	// remove the appPkg from the database
 	message := dto.DeleteAppPkgMessage{
 		AppPkgId: appPkgId,
@@ -97,7 +93,7 @@ func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
 	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
-		return nil
+		return err
 	}
 
 	// get status field from response
@@ -124,14 +120,11 @@ func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
 		return errors.New("appPkg not found")
 	}
 
-	slog.Info("appPkg deleted from database", "result", result)
 	return nil
 }
 
 // Instantiate an appPkg
 func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error) {
-	slog.Info("Instantiating appPkg", "appPkgId", appPkgId)
-
 	// make a message to send to the kafka topic
 	message := dto.InstantiateAppPkgMessage{
 		AppPkgId:    appPkgId,
@@ -169,8 +162,6 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error)
 
 // Delete an application instance
 func (s *OrchestratorService) TerminateAppInstance(appInstanceId string) error {
-	slog.Info("Deleting application instance", "appInstanceId", appInstanceId)
-
 	// make a message to send to the kafka topic
 	message := dto.TerminateAppiMessage{
 		AppInstanceId: appInstanceId,
@@ -202,8 +193,6 @@ func (s *OrchestratorService) TerminateAppInstance(appInstanceId string) error {
 
 // Get app instance details from the orchestrator db
 func (s *OrchestratorService) GetAppInstance(appInstanceId string) (dto.OrchAppI, error) {
-	slog.Info("Getting appInstance", "appInstanceId", appInstanceId)
-
 	collection := s.getOrchestratorAppInstancesCollection()
 	filter := bson.M{"appi_id": appInstanceId}
 	var appInstInfo dto.OrchAppI
@@ -217,8 +206,6 @@ func (s *OrchestratorService) GetAppInstance(appInstanceId string) (dto.OrchAppI
 
 // Get app instances from the orchestrator db from a list of appi ids
 func (s *OrchestratorService) GetAppInstances(appInstanceIds []string) ([]dto.OrchAppI, error) {
-	slog.Info("Getting appInstances", "appInstanceIds", appInstanceIds)
-
 	collection := s.getOrchestratorAppInstancesCollection()
 	filter := bson.M{"appi_id": bson.M{"$in": appInstanceIds}}
 	var appInsts []dto.OrchAppI

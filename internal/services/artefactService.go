@@ -83,6 +83,14 @@ func (as *ArtefactService) GetArtefactById(artefactId string) (models.Artefact, 
 	return artefact, err
 }
 
+// Get a list of artefacts from the local database using the federationContextId
+func (as *ArtefactService) GetArtefactsByFederationContextId(federationContextId string) ([]models.Artefact, error) {
+	collection := as.getArtefactCollection()
+	filter := bson.M{"federationContextId": federationContextId}
+	artefacts, err := utils.FetchEntitiesFromDatabase[models.Artefact](collection, filter)
+	return artefacts, err
+}
+
 // Remove an artefact from the local database using the federationContextId and artefactId
 func (as *ArtefactService) RemoveArtefact(federationContextId string, artefactId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

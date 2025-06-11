@@ -21,13 +21,19 @@ import (
 )
 
 type FederationManagementController struct {
-	federationService *services.FederationService
+	federationService  *services.FederationService
+	zoneService        *services.ZoneService
+	artefactService    *services.ArtefactService
+	appInstanceService *services.AppInstanceService
 }
 
 // NewFederationManagementController creates a new instance of the FederationManagementController
-func NewFederationManagementController(federationService *services.FederationService) *FederationManagementController {
+func NewFederationManagementController(federationService *services.FederationService, zoneService *services.ZoneService, artefactService *services.ArtefactService, appInstanceService *services.AppInstanceService) *FederationManagementController {
 	return &FederationManagementController{
-		federationService: federationService,
+		federationService:  federationService,
+		zoneService:        zoneService,
+		artefactService:    artefactService,
+		appInstanceService: appInstanceService,
 	}
 }
 
@@ -51,6 +57,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		return
 	}
 
+	// Create the federation response data
 	log.Print("CreateFederationController - Creating federation object")
 	federationResponseData := models.FederationResponseData{
 		PartnerOPFederationId:        "federation-54321",
@@ -61,8 +68,17 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		LcmServiceEndPoint:           &models.ServiceEndpoint{Fqdn: "lcm-service.com", Port: 443},
 		FederationExpiryDate:         time.Now().AddDate(1, 0, 0),
 		FederationRenewalDate:        time.Now().AddDate(0, 6, 0),
-		OfferedAvailabilityZones:     []models.ZoneDetails{},
 	}
+
+	// Get the local available zones
+	localZones, err := fmc.zoneService.GetLocalZones()
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving local zones")
+		return
+	}
+
+	// Add zones to the federation response data
+	federationResponseData.OfferedAvailabilityZones = localZones
 
 	healthInfo := models.FederationHealthInfo{
 		FederationStatus:    &models.State{AlarmState: "CLEAR"},
@@ -82,7 +98,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 
 	log.Print("CreateFederationController - Federation object created, storing in database")
 	// Store the federation object in the database
-	federation, err := fmc.federationService.CreateFederation(federation)
+	federation, err = fmc.federationService.CreateFederation(federation)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error creating the Federation object")
 		return
@@ -104,9 +120,35 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
 	log.Print("RemoveFederationRelationshipController - Removing federation relationship")
 
-	// Delete the federation object from the database
+	// Get the federation context id
 	federationContextId := c.Param("federationContextId")
-	err := fmc.federationService.DeleteFederation(federationContextId)
+
+	// Check if there are any app instances running in the federation
+	appInstances, err := fmc.appInstanceService.GetAppInstancesByFederationContextId(federationContextId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving app instances")
+		return
+	}
+
+	if len(appInstances) > 0 {
+		utils.HandleProblem(c, http.StatusBadRequest, "There are still app instances running in the federation")
+		return
+	}
+
+	// Check if there are any artefacts stored in the federation
+	artefacts, err := fmc.artefactService.GetArtefactsByFederationContextId(federationContextId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving artefacts")
+		return
+	}
+
+	if len(artefacts) > 0 {
+		utils.HandleProblem(c, http.StatusBadRequest, "There are still artefacts stored in the federation")
+		return
+	}
+
+	// Delete the federation object from the database
+	err = fmc.federationService.DeleteFederation(federationContextId)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing the Federation object from database")
 		return

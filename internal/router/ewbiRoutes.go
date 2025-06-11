@@ -11,6 +11,9 @@ func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws
 
 	federationManagementController := ewbi.NewFederationManagementController(
 		svcs.FederationService,
+		svcs.ZoneService,
+		svcs.ArtefactService,
+		svcs.AppInstanceService,
 	)
 
 	FederationManagement.POST(

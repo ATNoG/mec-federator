@@ -81,10 +81,20 @@ func (amc *ApplicationInstanceLifecycleManagementController) DeleteAppInstanceCo
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
 
+	// get the federationContextId from the path
+	federationContextId := c.Param("federationContextId")
+
 	// delete the appInstance
 	err := amc.orchestratorService.TerminateAppInstance(appInstanceId)
 	if err != nil {
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error terminating application instance: "+err.Error())
+		return
+	}
+
+	// delete the appInstance from the database
+	err = amc.appInstanceService.RemoveAppInstance(federationContextId, appInstanceId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing application instance: "+err.Error())
 		return
 	}
 

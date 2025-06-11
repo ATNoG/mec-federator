@@ -53,12 +53,13 @@ func (cc *InfrastructureInfoCallback) HandleMessage(message *sarama.ConsumerMess
 		availableZones = append(availableZones, zone)
 	}
 
+	// Store the latest zones
+	cc.latestZones = availableZones
+
 	// Update the zones in the database
 	if err := cc.zoneService.UpdateLocalZones(availableZones); err != nil {
 		log.Println("Error updating local zones:", err)
 		return
 	}
 
-	// Store the latest zones
-	cc.latestZones = availableZones
 }
