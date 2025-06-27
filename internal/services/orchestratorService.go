@@ -123,13 +123,33 @@ func (s *OrchestratorService) RemoveAppPkg(appPkgId string) error {
 	return nil
 }
 
+// Get an app pkg from the orchestrator db using its mongo object id
+func (s *OrchestratorService) GetAppPkg(objectId string) (dto.OrchAppPkg, error) {
+	collection := s.getOrchestratorAppPkgsCollection()
+	id, err := bson.ObjectIDFromHex(objectId)
+	if err != nil {
+		return dto.OrchAppPkg{}, err
+	}
+	filter := bson.M{"_id": id}
+
+	var appPkg dto.OrchAppPkg
+	err = collection.FindOne(context.Background(), filter).Decode(&appPkg)
+	if err != nil {
+		return dto.OrchAppPkg{}, err
+	}
+
+	return appPkg, nil
+}
+
 // Instantiate an appPkg
-func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error) {
+func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, config string) (string, error) {
 	// make a message to send to the kafka topic
 	message := dto.InstantiateAppPkgMessage{
 		AppPkgId:    appPkgId,
 		Name:        "test",
 		Description: "test",
+		VimId:       vimId,
+		Config:      config,
 	}
 
 	// send the message to the kafka topic
@@ -161,7 +181,7 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string) (string, error)
 }
 
 // Delete an application instance
-func (s *OrchestratorService) TerminateAppInstance(appInstanceId string) error {
+func (s *OrchestratorService) TerminateAppi(appInstanceId string) error {
 	// make a message to send to the kafka topic
 	message := dto.TerminateAppiMessage{
 		AppInstanceId: appInstanceId,
@@ -191,8 +211,75 @@ func (s *OrchestratorService) TerminateAppInstance(appInstanceId string) error {
 	return nil
 }
 
+// Enable a KDU of an app instance
+func (s *OrchestratorService) EnableAppInstanceKDU(appdId string, kduId string, nsId string, node string) error {
+	// make a message to send to the kafka topic
+	message := dto.EnableAppInstanceKDUMessage{
+		AppdId: appdId,
+		KDUId:  kduId,
+		NSId:   nsId,
+		Node:   node,
+	}
+
+	// send the message to the kafka topic
+	msgId, err := s.kafkaClientService.Produce("enable_kdu", message)
+	if err != nil {
+		return err
+	}
+
+	// wait for a response
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
+	if err != nil {
+		slog.Warn("failed to get response from orchestrator", "error", err)
+		return err
+	}
+
+	// get status field from response
+	status := rsp["status"].(string)
+
+	// if status is not success, return an error
+	if status != "success" {
+		return errors.New("failed to enable app instance KDU")
+	}
+
+	return nil
+}
+
+// Disable a KDU of an app instance
+func (s *OrchestratorService) DisableAppiKDU(appdId string, kduId string, nsId string) error {
+	// make a message to send to the kafka topic
+	message := dto.DisableAppInstanceKDUMessage{
+		AppdId: appdId,
+		KDUId:  kduId,
+		NSId:   nsId,
+	}
+
+	// send the message to the kafka topic
+	msgId, err := s.kafkaClientService.Produce("disable_kdu", message)
+	if err != nil {
+		return err
+	}
+
+	// wait for a response
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
+	if err != nil {
+		slog.Warn("failed to get response from orchestrator", "error", err)
+		return err
+	}
+
+	// get status field from response
+	status := rsp["status"].(string)
+
+	// if status is not success, return an error
+	if status != "success" {
+		return errors.New("failed to disable app instance KDU")
+	}
+
+	return nil
+}
+
 // Get app instance details from the orchestrator db
-func (s *OrchestratorService) GetAppInstance(appInstanceId string) (dto.OrchAppI, error) {
+func (s *OrchestratorService) GetAppi(appInstanceId string) (dto.OrchAppI, error) {
 	collection := s.getOrchestratorAppInstancesCollection()
 	filter := bson.M{"appi_id": appInstanceId}
 	var appInstInfo dto.OrchAppI
@@ -205,7 +292,7 @@ func (s *OrchestratorService) GetAppInstance(appInstanceId string) (dto.OrchAppI
 }
 
 // Get app instances from the orchestrator db from a list of appi ids
-func (s *OrchestratorService) GetAppInstances(appInstanceIds []string) ([]dto.OrchAppI, error) {
+func (s *OrchestratorService) GetAppis(appInstanceIds []string) ([]dto.OrchAppI, error) {
 	collection := s.getOrchestratorAppInstancesCollection()
 	filter := bson.M{"appi_id": bson.M{"$in": appInstanceIds}}
 	var appInsts []dto.OrchAppI

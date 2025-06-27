@@ -115,6 +115,7 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 		svcs.OrchestratorService,
 		svcs.ArtefactService,
 		svcs.AppInstanceService,
+		svcs.ZoneService,
 	)
 
 	ApplicationInstanceLifecycleManagement.POST(
@@ -129,4 +130,13 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 		"/:federationContextId/application/lcm/:appInstanceId",
 		*mdws.FederationExistsMiddleware,
 		applicationInstanceLifecycleManagementController.GetAppInstanceDetailsController)
+
+	ApplicationInstanceLifecycleManagement.PATCH(
+		"/:federationContextId/application/lcm/:appInstanceId/kdu/enable",
+		*mdws.FederationExistsMiddleware,
+		applicationInstanceLifecycleManagementController.EnableAppInstanceKDUController)
+	ApplicationInstanceLifecycleManagement.PATCH(
+		"/:federationContextId/application/lcm/:appInstanceId/kdu/disable",
+		*mdws.FederationExistsMiddleware,
+		applicationInstanceLifecycleManagementController.DisableAppInstanceKDUController)
 }

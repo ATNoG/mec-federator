@@ -26,7 +26,7 @@ func CreateTasks(scheduler *Scheduler) {
 			}
 
 			// get app instances from orchestrator db
-			orchAppis, err := scheduler.services.OrchestratorService.GetAppInstances(appiIds)
+			orchAppis, err := scheduler.services.OrchestratorService.GetAppis(appiIds)
 			if err != nil {
 				return err
 			}

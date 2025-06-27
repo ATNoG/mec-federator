@@ -51,6 +51,20 @@ func (ais *AppInstanceService) RemoveAppInstance(federationContextId string, app
 	return err
 }
 
+// Gets an app instance from the database
+func (ais *AppInstanceService) GetAppInstance(federationContextId string, appInstanceId string) (models.AppInstance, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := ais.getAppInstanceCollection()
+	filter := bson.M{"federationContextId": federationContextId, "appInstanceId": appInstanceId}
+	var appInstance models.AppInstance
+	err := collection.FindOne(ctx, filter).Decode(&appInstance)
+	if err != nil {
+		return models.AppInstance{}, err
+	}
+	return appInstance, nil
+}
+
 // Provides a list of instances for a given federationContextId
 func (ais *AppInstanceService) GetAppInstancesByFederationContextId(fedContextId string) ([]models.AppInstance, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -93,3 +107,4 @@ func (ais *AppInstanceService) GetAllAppInstances() ([]models.AppInstance, error
 	}
 	return appInstances, nil
 }
+

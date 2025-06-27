@@ -5,6 +5,7 @@ type OrchAppI struct {
 	AppiId    string                         `json:"appi_id" bson:"appi_id"`
 	Domain    string                         `json:"domain" bson:"domain"`
 	Instances map[string]map[string]Instance `json:"instances" bson:"instances"`
+	AppPkgId  string                         `json:"app_pkg_id" bson:"app_pkg_id"`
 	NsPkgId   string                         `json:"ns_pkg_id" bson:"ns_pkg_id"`
 	VnfPkgId  string                         `json:"vnf_pkg_id" bson:"vnf_pkg_id"`
 }
@@ -16,7 +17,7 @@ type Instance struct {
 }
 
 //
-// kafka messages
+// kafka messages to be sent
 //
 
 // instantiate a new app instance
@@ -25,6 +26,7 @@ type InstantiateAppPkgMessage struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	VimId       string `json:"vim_id"`
+	Config      string `json:"config"`
 }
 
 // terminate an app instance
@@ -40,4 +42,28 @@ type FederatedAppisMessage struct {
 type AppiDetails struct {
 	Domain    string              `json:"domain"`
 	Instances map[string]Instance `json:"instances"`
+}
+
+// enable a kdu of an app instance
+type EnableAppInstanceKDUMessage struct {
+	AppdId string `json:"mec_appd_id"`
+	KDUId  string `json:"kdu_id"`
+	NSId   string `json:"ns_id"`
+	Node   string `json:"node"`
+}
+
+// disable a kdu of an app instance
+type DisableAppInstanceKDUMessage struct {
+	AppdId string `json:"mec_appd_id"`
+	KDUId  string `json:"kdu_id"`
+	NSId   string `json:"ns_id"`
+}
+
+//
+// kafka messages to be received
+//
+
+// new app instance
+type NewAppInstanceMessage struct {
+	AppInstanceId string `json:"appi_id"`
 }

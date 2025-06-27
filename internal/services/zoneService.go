@@ -5,6 +5,7 @@ import (
 
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -89,6 +90,14 @@ func (z *ZoneService) GetLocalZones() ([]models.ZoneDetails, error) {
 	return zones, nil
 }
 
+// Returns a zone by its id
+func (z *ZoneService) GetLocalZoneById(zoneId string) (models.ZoneDetails, error) {
+	collection := z.getZoneDetailsCollection()
+	filter := bson.M{"zoneId": zoneId}
+	zone, err := utils.FetchEntityFromDatabase[models.ZoneDetails](collection, filter)
+	return zone, err
+}
+
 // Returns all the zones that are registered for federation
 func (z *ZoneService) GetAllZones() ([]models.ZoneDetails, error) {
 	return nil, nil
@@ -98,4 +107,12 @@ func (z *ZoneService) GetAllZones() ([]models.ZoneDetails, error) {
 func (z *ZoneService) GetSubscribedZones(federationContextId string) ([]models.ZoneDetails, error) {
 	// Implementation to get all subscribed zones
 	return nil, nil
+}
+
+// Get the vim id of a zone
+func (z *ZoneService) GetVimId(zoneId string) (string, error) {
+	collection := z.getZoneDetailsCollection()
+	filter := bson.M{"zoneId": zoneId}
+	zone, err := utils.FetchEntityFromDatabase[models.ZoneDetails](collection, filter)
+	return zone.VimId, err
 }
