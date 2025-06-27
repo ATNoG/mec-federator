@@ -9,20 +9,27 @@ password = os.getenv('KAFKA_PASSWORD', 'password')
 sasl_mechanism = 'PLAIN' 
 security_protocol = 'SASL_PLAINTEXT' 
 
-# Hardcoded message to send
-message = {
-    "client_id": "operator-b",
-    "client_secret": "78H0JMNA7FyyS2waNL13omQEsmWvEHyA",
-    "federation_endpoint": "http://federator-po:8000",
-    "auth_endpoint": "http://federator-po:8000/federation/v1/auth/token",
+# Hardcoded messages to send
+messages = {
+    "new_federation": {
+        "msg_id": "1",
+        "client_id": "operator-b",
+        "client_secret": "78H0JMNA7FyyS2waNL13omQEsmWvEHyA",
+        "federation_endpoint": "http://federator-po:8000",
+        "auth_endpoint": "http://federator-po:8000/federation/v1/auth/token",
+    },
+    "remove_federation": {
+        "msg_id": "2",
+        "federation_context_id": "762bd5f8-151e-4af6-8ae0-f9e948119e5d",
+    }
 }
 
 # Target topic to send message to
-target_topic = 'new_federation'  # Change this to send to different topics
+target_topic = 'remove_federation'  # Change this to send to different topics
 
 print(f"Username: {username}")
 print(f"Target topic: {target_topic}")
-print(f"Message to send: {json.dumps(message, indent=2)}")
+print(f"Message to send: {json.dumps(messages[target_topic], indent=2)}")
 
 def main():
     try:
@@ -42,7 +49,7 @@ def main():
         print(f"\nSending message to topic: {target_topic}")
         
         # Send the message
-        future = producer.send(target_topic, message)
+        future = producer.send(target_topic, messages[target_topic])
         
         # Wait for the message to be sent
         record_metadata = future.get(timeout=10)

@@ -17,33 +17,35 @@ import (
 
 // NewFederationCallback handles incoming new federation messages from Kafka
 type NewFederationCallback struct {
-	authService       *services.AuthService
-	httpClientService *services.HttpClientService
-	federationService *services.FederationService
+	authService        *services.AuthService
+	httpClientService  *services.HttpClientService
+	kafkaClientService *services.KafkaClientService
+	federationService  *services.FederationService
 }
 
 // NewNewFederationCallback creates a new NewFederationCallback instance
-func NewNewFederationCallback(authService *services.AuthService, httpClientService *services.HttpClientService, federationService *services.FederationService) *NewFederationCallback {
+func NewNewFederationCallback(authService *services.AuthService, httpClientService *services.HttpClientService, kafkaClientService *services.KafkaClientService, federationService *services.FederationService) *NewFederationCallback {
 	return &NewFederationCallback{
-		authService:       authService,
-		httpClientService: httpClientService,
-		federationService: federationService,
+		authService:        authService,
+		httpClientService:  httpClientService,
+		kafkaClientService: kafkaClientService,
+		federationService:  federationService,
 	}
 }
 
 // HandleMessage processes incoming new federation messages
 func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	// unmarshal the message
-	var response map[string]interface{}
-	if err := json.Unmarshal(message.Value, &response); err != nil {
+	var msg map[string]interface{}
+	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling response message: %v", err)
 		return
 	}
 
-	federationEndpoint := response["federation_endpoint"].(string)
-	authEndpoint := response["auth_endpoint"].(string)
-	clientId := response["client_id"].(string)
-	clientSecret := response["client_secret"].(string)
+	federationEndpoint := msg["federation_endpoint"].(string)
+	authEndpoint := msg["auth_endpoint"].(string)
+	clientId := msg["client_id"].(string)
+	clientSecret := msg["client_secret"].(string)
 
 	// fetch access token from the provided auth endpoint
 	accessToken, err := nc.authService.FetchAccessTokenFromAuthEndpoint(authEndpoint, clientId, clientSecret)
@@ -105,4 +107,13 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	}
 
 	log.Printf("Federation established successfully with partner %s", federationResponseData.PartnerOPFederationId)
+	// send response to kafka
+	_, err = nc.kafkaClientService.Produce("responses", map[string]string{
+		"msg_id": msg["msg_id"].(string),
+		"status": "200",
+	})
+	if err != nil {
+		log.Printf("Error sending response to kafka: %v", err)
+		return
+	}
 }

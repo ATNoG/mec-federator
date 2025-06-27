@@ -68,10 +68,12 @@ func main() {
 
 	// start kafka consumers with callbacks
 	kafkaServ.StartConsumer(context.Background(), "responses", nil) // use default callback for responses, might change in the future
-	newFederationCallback := callbacks.NewNewFederationCallback(authServ, httpServ, fedServ)
+	newFederationCallback := callbacks.NewNewFederationCallback(authServ, httpServ, kafkaServ, fedServ)
 	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage)
 	infrastructureInfoCallback := callbacks.NewInfrastructureInfoCallback(zoneServ)
 	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage)
+	removeFederationCallback := callbacks.NewRemoveFederationCallback(authServ, httpServ, kafkaServ, fedServ)
+	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage)
 
 	// bundle all services
 	services := &router.Services{

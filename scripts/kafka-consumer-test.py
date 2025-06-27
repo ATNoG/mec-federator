@@ -2,8 +2,7 @@ from kafka import KafkaConsumer
 import sys, os
 
 # List your topics here
-# topics = ['new_app_pkg', 'delete_app_pkg', 'responses', 'cluster', 'mec-apps']
-topics = ['enable_kdu', 'responses', 'instantiate_app_pkg', 'terminate_app_pkg', 'new_federation']
+topics = ['responses', 'remove_federation']
 
 # Kafka configuration
 bootstrap_servers = ['10.255.41.81:31999'] 
