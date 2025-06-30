@@ -72,7 +72,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	authStrat := services.NewBearerTokenAuth(accessToken.AccessToken)
 	headers := map[string]string{"Content-Type": "application/json"}
 	resp, err := nc.httpClientService.DoRequest(
-		context.TODO(),
+		context.Background(),
 		http.MethodPost,
 		createFederationUrl,
 		bytes.NewBuffer(payload),
@@ -84,6 +84,11 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Error creating federation: %v", resp.StatusCode)
+		return
+	}
 
 	var federationResponseData models.FederationResponseData
 	err = json.NewDecoder(resp.Body).Decode(&federationResponseData)
