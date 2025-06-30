@@ -10,6 +10,9 @@ sasl_mechanism = 'PLAIN'
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
+federation_context_id = "dccf4231-e08f-4302-8157-0ead06bddcab"
+app_pkg_id = "685f2596232d0ef0a39b7506"
+
 messages = {
     "new_federation": {
         "msg_id": "1",
@@ -20,12 +23,17 @@ messages = {
     },
     "remove_federation": {
         "msg_id": "2",
-        "federation_context_id": "762bd5f8-151e-4af6-8ae0-f9e948119e5d",
+        "federation_context_id": federation_context_id,
+    },
+    "federation_new_artefact": {
+        "msg_id": "3",
+        "federation_context_id": federation_context_id,
+        "app_pkg_id": app_pkg_id,
     }
 }
 
 # Target topic to send message to
-target_topic = 'remove_federation'  # Change this to send to different topics
+target_topic = 'federation_new_artefact'  # Change this to send to different topics
 
 print(f"Username: {username}")
 print(f"Target topic: {target_topic}")

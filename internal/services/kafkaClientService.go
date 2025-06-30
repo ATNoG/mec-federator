@@ -192,7 +192,6 @@ func (k *KafkaClientService) CleanupOldMessages(messageTTL time.Duration) {
 		if now.Sub(timestamp) > messageTTL {
 			delete(k.responses, msgID)
 			delete(k.timestamps, msgID)
-			log.Printf("Cleaned up old message: %s", msgID)
 		}
 	}
 }

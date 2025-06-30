@@ -20,7 +20,7 @@ type ArtefactOnboardRequest struct {
 	ArtefactFileFormat   models.ArtefactFileFormat `json:"artefactFileFormat,omitempty" form:"artefactFileFormat,omitempty"`
 	RepoType             models.RepoType           `json:"repoType,omitempty" form:"repoType,omitempty"`
 	ArtefactRepoLocation models.ObjectRepoLocation `json:"objectRepoLocation,omitempty" form:"objectRepoLocation,omitempty"`
-	// ArtefactFile         models.File               `json:"artefactFile,omitempty"`
+	// ArtefactFile         *[]byte                   `json:"artefactFile,omitempty" form:"artefactFile,omitempty"`
 }
 
 func (a *ArtefactOnboardRequest) Validate() error {
