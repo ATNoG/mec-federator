@@ -25,11 +25,16 @@ func NewFederationRemoveAppiCallback(services *router.Services) *FederationRemov
 }
 
 func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMessage) {
+	log.Printf("Received remove app instance message from topic %s, partition %d, offset %d", 
+		message.Topic, message.Partition, message.Offset)
+	
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
+
+	log.Printf("Processing remove app instance request with message ID: %s", msg["msg_id"])
 
 	msgId := msg["msg_id"].(string)
 
@@ -48,6 +53,7 @@ func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMes
 		return
 	}
 
+	log.Printf("Retrieving federation with context ID: %s", federationContextId)
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
@@ -55,20 +61,25 @@ func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMes
 		return
 	}
 
+	log.Printf("Looking for app instance: %s in federation: %s", appInstanceId, federationContextId)
 	_, err = f.services.AppInstanceService.GetAppInstance(federationContextId, appInstanceId)
 	if err != nil {
 		log.Printf("Error getting app instance: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "404", "App instance not found")
 		return
 	}
+	log.Printf("Found app instance: %s", appInstanceId)
 
+	log.Printf("Sending delete request to partner for app instance: %s", appInstanceId)
 	err = f.sendDeleteRequestToPartner(&federation, appInstanceId)
 	if err != nil {
 		log.Printf("Error sending delete request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to delete app instance from partner: %v", err))
 		return
 	}
+	log.Printf("Successfully deleted app instance from partner")
 
+	log.Printf("Removing app instance %s from local database", appInstanceId)
 	err = f.services.AppInstanceService.RemoveAppInstance(federationContextId, appInstanceId)
 	if err != nil {
 		log.Printf("Error deleting app instance from local database: %v", err)

@@ -28,11 +28,16 @@ func NewFederationAppiNewCallback(services *router.Services) *FederationAppiNewC
 }
 
 func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
+	log.Printf("Received new app instance message from topic %s, partition %d, offset %d", 
+		message.Topic, message.Partition, message.Offset)
+	
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
+
+	log.Printf("Processing new app instance request with message ID: %s", msg["msg_id"])
 
 	msgId := msg["msg_id"].(string)
 
@@ -66,6 +71,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	}
 
 	// get the federation context
+	log.Printf("Retrieving federation with context ID: %s", federationContextId)
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
@@ -74,6 +80,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	}
 
 	// check if the artefact exists in the given federation context
+	log.Printf("Looking for artefact with app package ID: %s in federation: %s", appPkgId, federationContextId)
 	artefact, err := f.services.ArtefactService.GetArtefactByAppPkgId(federationContextId, appPkgId)
 	if err != nil {
 		log.Printf("Error getting artefact: %v", err)

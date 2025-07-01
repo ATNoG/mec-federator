@@ -27,12 +27,17 @@ func NewFederationArtefactRemoveCallback(services *router.Services) *FederationA
 
 // receives info about an artefact to remove from a certain federation
 func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.ConsumerMessage) {
+	log.Printf("Received remove artefact message from topic %s, partition %d, offset %d", 
+		message.Topic, message.Partition, message.Offset)
+	
 	// unmarshal the message
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
+
+	log.Printf("Processing remove artefact request with message ID: %s", msg["msg_id"])
 
 	msgId := msg["msg_id"].(string)
 
@@ -52,6 +57,7 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	}
 
 	// get the federation context
+	log.Printf("Retrieving federation with context ID: %s", federationContextId)
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
@@ -60,22 +66,27 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	}
 
 	// check if an artefact with this appPkgId exists in the federation
+	log.Printf("Looking for artefact with appPkgId: %s in federation: %s", appPkgId, federationContextId)
 	artefact, err := f.services.ArtefactService.GetArtefactByAppPkgId(federationContextId, appPkgId)
 	if err != nil {
 		log.Printf("No artefact found with appPkgId %s in federation %s: %v", appPkgId, federationContextId, err)
 		f.services.KafkaClientService.SendResponse(msgId, "404", "Artefact not found")
 		return
 	}
+	log.Printf("Found artefact with ID: %s", artefact.Id)
 
 	// remove the artefact from the partner operator
+	log.Printf("Removing artefact %s from partner operator", artefact.Id)
 	err = f.removeArtefactFromPartner(&federation, artefact.Id)
 	if err != nil {
 		log.Printf("Error removing artefact from partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to remove artefact from partner: %v", err))
 		return
 	}
+	log.Printf("Successfully removed artefact from partner operator")
 
 	// remove the artefact locally
+	log.Printf("Removing artefact %s from local database", artefact.Id)
 	err = f.services.ArtefactService.RemoveArtefact(federationContextId, artefact.Id)
 	if err != nil {
 		log.Printf("Error removing artefact locally: %v", err)
@@ -106,6 +117,7 @@ func (f *FederationArtefactRemoveCallback) removeArtefactFromPartner(federation 
 
 	// construct the partner's artefact endpoint URL for deletion
 	partnerEndpoint := fmt.Sprintf("%s/federation/v1/ewbi/%s/artefact/%s", federation.FederationEndpoint, federation.PartnerOP.FederationContextId, artefactId)
+	log.Printf("Sending delete request to partner endpoint: %s", partnerEndpoint)
 
 	// create HTTP request
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -137,6 +149,7 @@ func (f *FederationArtefactRemoveCallback) removeArtefactFromPartner(federation 
 	}
 
 	// check response status
+	log.Printf("Received response from partner with status: %d", resp.StatusCode)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("partner returned error status %d: %s", resp.StatusCode, string(respBody))
 	}

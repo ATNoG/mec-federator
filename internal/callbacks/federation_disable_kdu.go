@@ -27,11 +27,16 @@ func NewDisableAppInstanceKDUCallback(services *router.Services) *FederationKduD
 }
 
 func (f *FederationKduDisableCallback) HandleMessage(message *sarama.ConsumerMessage) {
+	log.Printf("Received disable KDU message from topic %s, partition %d, offset %d", 
+		message.Topic, message.Partition, message.Offset)
+	
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
+
+	log.Printf("Processing disable KDU request with message ID: %s", msg["msg_id"])
 
 	msgId := msg["msg_id"].(string)
 
@@ -61,6 +66,7 @@ func (f *FederationKduDisableCallback) HandleMessage(message *sarama.ConsumerMes
 		federationContextId, appInstanceId, kduId)
 
 	// Get the federation context
+	log.Printf("Retrieving federation with context ID: %s", federationContextId)
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
@@ -69,6 +75,7 @@ func (f *FederationKduDisableCallback) HandleMessage(message *sarama.ConsumerMes
 	}
 
 	// Send disable KDU request to partner
+	log.Printf("Sending disable KDU request to partner for KDU: %s", kduId)
 	err = f.sendDisableKDURequestToPartner(&federation, appInstanceId, kduId)
 	if err != nil {
 		log.Printf("Error sending disable KDU request to partner: %v", err)
@@ -93,6 +100,7 @@ func (f *FederationKduDisableCallback) sendDisableKDURequestToPartner(federation
 	// Construct the partner's disable KDU endpoint URL
 	partnerEndpoint := fmt.Sprintf("%s/federation/v1/ewbi/%s/application/lcm/%s/kdu/disable",
 		federation.FederationEndpoint, federation.PartnerOP.FederationContextId, appInstanceId)
+	log.Printf("Sending disable KDU request to partner endpoint: %s", partnerEndpoint)
 
 	// Create the disable request
 	request := dto.DisableAppInstanceKDURequest{
@@ -129,6 +137,7 @@ func (f *FederationKduDisableCallback) sendDisableKDURequestToPartner(federation
 	defer resp.Body.Close()
 
 	// Check response status
+	log.Printf("Received response from partner with status: %d", resp.StatusCode)
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}

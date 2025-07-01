@@ -27,11 +27,16 @@ func NewEnableAppInstanceKDUCallback(services *router.Services) *FederationKduEn
 }
 
 func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMessage) {
+	log.Printf("Received enable KDU message from topic %s, partition %d, offset %d", 
+		message.Topic, message.Partition, message.Offset)
+	
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
+
+	log.Printf("Processing enable KDU request with message ID: %s", msg["msg_id"])
 
 	msgId := msg["msg_id"].(string)
 
@@ -65,6 +70,7 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 	}
 
 	// Get the federation context
+	log.Printf("Retrieving federation with context ID: %s", federationContextId)
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
@@ -73,6 +79,7 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 	}
 
 	// Send enable KDU request to partner
+	log.Printf("Sending enable KDU request to partner for KDU: %s on node: %s", kduId, nodeName)
 	err = f.sendEnableKDURequestToPartner(&federation, appInstanceId, kduId, nodeName)
 	if err != nil {
 		log.Printf("Error sending enable KDU request to partner: %v", err)

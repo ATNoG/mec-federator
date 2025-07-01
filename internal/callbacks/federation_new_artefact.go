@@ -31,12 +31,17 @@ func NewFederationArtefactNewCallback(services *router.Services) *FederationArte
 
 // receives info about an artefact to make available to a certain federation
 func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
+	log.Printf("Received new artefact message from topic %s, partition %d, offset %d", 
+		message.Topic, message.Partition, message.Offset)
+	
 	// unmarshal the message
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
+
+	log.Printf("Processing new artefact request with message ID: %s", msg["msg_id"])
 
 	msgId := msg["msg_id"].(string)
 
@@ -56,6 +61,7 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 	}
 
 	// get the federation context
+	log.Printf("Retrieving federation with context ID: %s", federationContextId)
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
@@ -64,12 +70,14 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 	}
 
 	// get the app package from the orchestrator
+	log.Printf("Retrieving app package from orchestrator: %s", appPkgId)
 	appPkg, err := f.services.OrchestratorService.GetAppPkg(appPkgId)
 	if err != nil {
 		log.Printf("Error getting app package from orchestrator: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "404", "App package not found")
 		return
 	}
+	log.Printf("Successfully retrieved app package: %s", appPkg.Name)
 
 	// create the artefact
 	artefact := &models.Artefact{
@@ -87,14 +95,17 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 	}
 
 	// send the artefact to the partner operator
+	log.Printf("Sending artefact %s to partner operator", artefact.Id)
 	err = f.sendArtefactToPartner(&federation, artefact)
 	if err != nil {
 		log.Printf("Error sending artefact to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to send artefact to partner: %v", err))
 		return
 	}
+	log.Printf("Successfully sent artefact to partner operator")
 
 	// save the artefact locally
+	log.Printf("Saving artefact %s to local database", artefact.Id)
 	artefact.FederationContextId = federationContextId
 	err = f.services.ArtefactService.SaveArtefact(*artefact)
 	if err != nil {
@@ -126,6 +137,7 @@ func (f *FederationArtefactNewCallback) sendArtefactToPartner(federation *models
 
 	// construct the partner's artefact endpoint URL
 	partnerEndpoint := fmt.Sprintf("%s/federation/v1/ewbi/%s/artefact", federation.FederationEndpoint, federation.PartnerOP.FederationContextId)
+	log.Printf("Sending artefact to partner endpoint: %s", partnerEndpoint)
 
 	// create temporary file for the artefact
 	tempFile, err := os.CreateTemp("", "artefact_*.tar.gz")
