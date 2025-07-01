@@ -21,6 +21,7 @@ import (
 type KafkaClientServiceInterface interface {
 	Produce(topic string, message interface{}) error
 	StartConsumer(ctx context.Context, topic string, callback func(*sarama.ConsumerMessage)) error
+	SendResponse(msgId, status, message string) error
 }
 
 type KafkaClientService struct {
@@ -197,4 +198,25 @@ func (k *KafkaClientService) CleanupOldMessages(messageTTL time.Duration) {
 			delete(k.timestamps, msgID)
 		}
 	}
+}
+
+// SendResponse sends a standardized response message to the responses topic
+func (k *KafkaClientService) SendResponse(msgId, status, message string) error {
+	response := map[string]string{
+		"msg_id": msgId,
+		"status": status,
+	}
+
+	// Add message field if it's not empty
+	if message != "" {
+		response["message"] = message
+	}
+
+	_, err := k.Produce("responses", response)
+	if err != nil {
+		log.Printf("Error sending response to kafka: %v", err)
+		return err
+	}
+
+	return nil
 }

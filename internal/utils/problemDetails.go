@@ -1,11 +1,14 @@
 package utils
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mankings/mec-federator/internal/models"
 )
 
 func HandleProblem(c *gin.Context, code int, detail string) {
+	log.Printf("Handling problem: %d, %s", code, detail)
 	problemDetails := NewProblemDetails(code, detail)
 	c.AbortWithStatusJSON(code, problemDetails)
 }

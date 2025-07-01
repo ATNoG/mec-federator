@@ -27,43 +27,58 @@ func NewFederationRemoveAppiCallback(services *router.Services) *FederationRemov
 func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling response message: %v", err)
+		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
 
-	federationContextId := msg["federation_context_id"].(string)
-	appInstanceId := msg["app_instance_id"].(string)
+	msgId := msg["msg_id"].(string)
+
+	// Extract and validate required fields from the message
+	federationContextId, ok := msg["federation_context_id"].(string)
+	if !ok {
+		log.Printf("Error: federation_context_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "federation_context_id is required")
+		return
+	}
+
+	appInstanceId, ok := msg["app_instance_id"].(string)
+	if !ok {
+		log.Printf("Error: app_instance_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "app_instance_id is required")
+		return
+	}
 
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Federation not found")
 		return
 	}
 
 	_, err = f.services.AppInstanceService.GetAppInstance(federationContextId, appInstanceId)
 	if err != nil {
 		log.Printf("Error getting app instance: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "App instance not found")
 		return
 	}
 
 	err = f.sendDeleteRequestToPartner(&federation, appInstanceId)
 	if err != nil {
 		log.Printf("Error sending delete request to partner: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to delete app instance from partner: %v", err))
 		return
 	}
 
 	err = f.services.AppInstanceService.RemoveAppInstance(federationContextId, appInstanceId)
 	if err != nil {
 		log.Printf("Error deleting app instance from local database: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", "Failed to delete app instance from local database")
 		return
 	}
 
 	log.Printf("Successfully deleted app instance %s from partner and local database", appInstanceId)
 
-	_, err = f.services.KafkaClientService.Produce("responses", map[string]string{
-		"msg_id": msg["msg_id"].(string),
-		"status": "200",
-	})
+	err = f.services.KafkaClientService.SendResponse(msgId, "200", "App instance removed successfully")
 	if err != nil {
 		log.Printf("Error sending response to kafka: %v", err)
 		return

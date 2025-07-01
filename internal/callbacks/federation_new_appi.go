@@ -30,20 +30,46 @@ func NewFederationAppiNewCallback(services *router.Services) *FederationAppiNewC
 func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling response message: %v", err)
+		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
 
-	// get the values from the message
-	federationContextId := msg["federation_context_id"].(string)
-	appPkgId := msg["app_pkg_id"].(string)
-	vimId := msg["vim_id"].(string)
-	config := msg["config"].(string)
+	msgId := msg["msg_id"].(string)
+
+	// Extract and validate required fields from the message
+	federationContextId, ok := msg["federation_context_id"].(string)
+	if !ok {
+		log.Printf("Error: federation_context_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "federation_context_id is required")
+		return
+	}
+
+	appPkgId, ok := msg["app_pkg_id"].(string)
+	if !ok {
+		log.Printf("Error: app_pkg_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "app_pkg_id is required")
+		return
+	}
+
+	vimId, ok := msg["vim_id"].(string)
+	if !ok {
+		log.Printf("Error: vim_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "vim_id is required")
+		return
+	}
+
+	config, ok := msg["config"].(string)
+	if !ok {
+		log.Printf("Error: config not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "config is required")
+		return
+	}
 
 	// get the federation context
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Federation not found")
 		return
 	}
 
@@ -51,6 +77,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	artefact, err := f.services.ArtefactService.GetArtefactByAppPkgId(federationContextId, appPkgId)
 	if err != nil {
 		log.Printf("Error getting artefact: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Artefact not found")
 		return
 	}
 
@@ -65,6 +92,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 
 	if zoneId == "" {
 		log.Printf("No zone found for vimId: %s", vimId)
+		f.services.KafkaClientService.SendResponse(msgId, "404", fmt.Sprintf("Zone not found for vimId: %s", vimId))
 		return
 	}
 
@@ -82,6 +110,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	appInstanceId, err := f.sendAppInstanceRequestToPartner(&federation, &request)
 	if err != nil {
 		log.Printf("Error sending app instance request to partner: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to create app instance: %v", err))
 		return
 	}
 
@@ -98,22 +127,25 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	err = f.services.AppInstanceService.RegisterAppInstance(appInstance)
 	if err != nil {
 		log.Printf("Error saving app instance locally: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", "Failed to save app instance locally")
 		return
 	}
 
 	log.Printf("Successfully created app instance %s with partner operator and saved locally", appInstanceId)
 
-	// send response to kafka
-	_, err = f.services.KafkaClientService.Produce("responses", map[string]string{
-		"msg_id":          msg["msg_id"].(string),
+	// send response to kafka with app instance ID
+	response := map[string]string{
+		"msg_id":          msgId,
 		"app_instance_id": appInstance.Id,
 		"status":          "201",
-	})
+		"message":         "App instance created successfully",
+	}
+
+	_, err = f.services.KafkaClientService.Produce("responses", response)
 	if err != nil {
 		log.Printf("Error sending response to kafka: %v", err)
 		return
 	}
-
 }
 
 func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *models.Federation, request *dto.InstantiateApplicationRequest) (string, error) {

@@ -30,17 +30,32 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	// unmarshal the message
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling response message: %v", err)
+		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
 
-	appPkgId := msg["app_pkg_id"].(string)
-	federationContextId := msg["federation_context_id"].(string)
+	msgId := msg["msg_id"].(string)
+
+	// Extract and validate required fields from the message
+	appPkgId, ok := msg["app_pkg_id"].(string)
+	if !ok {
+		log.Printf("Error: app_pkg_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "app_pkg_id is required")
+		return
+	}
+
+	federationContextId, ok := msg["federation_context_id"].(string)
+	if !ok {
+		log.Printf("Error: federation_context_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "federation_context_id is required")
+		return
+	}
 
 	// get the federation context
 	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Federation not found")
 		return
 	}
 
@@ -48,6 +63,7 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	artefact, err := f.services.ArtefactService.GetArtefactByAppPkgId(federationContextId, appPkgId)
 	if err != nil {
 		log.Printf("No artefact found with appPkgId %s in federation %s: %v", appPkgId, federationContextId, err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Artefact not found")
 		return
 	}
 
@@ -55,6 +71,7 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	err = f.removeArtefactFromPartner(&federation, artefact.Id)
 	if err != nil {
 		log.Printf("Error removing artefact from partner: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to remove artefact from partner: %v", err))
 		return
 	}
 
@@ -62,17 +79,21 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	err = f.services.ArtefactService.RemoveArtefact(federationContextId, artefact.Id)
 	if err != nil {
 		log.Printf("Error removing artefact locally: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", "Failed to remove artefact locally")
 		return
 	}
 
 	log.Printf("Successfully removed artefact %s from partner operator and locally", appPkgId)
 
-	// send response to kafka
-	_, err = f.services.KafkaClientService.Produce("responses", map[string]string{
-		"msg_id":      msg["msg_id"].(string),
+	// send response to kafka with artefact ID
+	response := map[string]string{
+		"msg_id":      msgId,
 		"artefact_id": artefact.Id,
 		"status":      "200",
-	})
+		"message":     "Artefact removed successfully",
+	}
+	
+	_, err = f.services.KafkaClientService.Produce("responses", response)
 	if err != nil {
 		log.Printf("Error sending response to kafka: %v", err)
 		return

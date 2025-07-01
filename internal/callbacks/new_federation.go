@@ -33,19 +33,46 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	// unmarshal the message
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling response message: %v", err)
+		log.Printf("Error unmarshaling message: %v", err)
 		return
 	}
 
-	federationEndpoint := msg["federation_endpoint"].(string)
-	authEndpoint := msg["auth_endpoint"].(string)
-	clientId := msg["client_id"].(string)
-	clientSecret := msg["client_secret"].(string)
+	msgId := msg["msg_id"].(string)
+
+	// Extract and validate required fields from the message
+	federationEndpoint, ok := msg["federation_endpoint"].(string)
+	if !ok {
+		log.Printf("Error: federation_endpoint not found or not a string")
+		nc.services.KafkaClientService.SendResponse(msgId, "400", "federation_endpoint is required")
+		return
+	}
+
+	authEndpoint, ok := msg["auth_endpoint"].(string)
+	if !ok {
+		log.Printf("Error: auth_endpoint not found or not a string")
+		nc.services.KafkaClientService.SendResponse(msgId, "400", "auth_endpoint is required")
+		return
+	}
+
+	clientId, ok := msg["client_id"].(string)
+	if !ok {
+		log.Printf("Error: client_id not found or not a string")
+		nc.services.KafkaClientService.SendResponse(msgId, "400", "client_id is required")
+		return
+	}
+
+	clientSecret, ok := msg["client_secret"].(string)
+	if !ok {
+		log.Printf("Error: client_secret not found or not a string")
+		nc.services.KafkaClientService.SendResponse(msgId, "400", "client_secret is required")
+		return
+	}
 
 	// fetch access token from the provided auth endpoint
 	accessToken, err := nc.services.AuthService.FetchAccessTokenFromAuthEndpoint(authEndpoint, clientId, clientSecret)
 	if err != nil {
 		log.Printf("Error fetching access token: %v", err)
+		nc.services.KafkaClientService.SendResponse(msgId, "401", "Failed to fetch access token")
 		return
 	}
 
@@ -60,6 +87,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	payload, err := json.Marshal(federationRequestData)
 	if err != nil {
 		log.Printf("Error marshalling federation request data: %v", err)
+		nc.services.KafkaClientService.SendResponse(msgId, "500", "Failed to marshal federation request")
 		return
 	}
 
@@ -75,6 +103,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 		authStrat)
 	if err != nil {
 		log.Printf("Error sending federation request: %v", err)
+		nc.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to send federation request: %v", err))
 		return
 	}
 
@@ -82,6 +111,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Error creating federation: %v", resp.StatusCode)
+		nc.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Partner returned error status %d", resp.StatusCode))
 		return
 	}
 
@@ -89,6 +119,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	err = json.NewDecoder(resp.Body).Decode(&federationResponseData)
 	if err != nil {
 		log.Printf("Error decoding federation response: %v", err)
+		nc.services.KafkaClientService.SendResponse(msgId, "500", "Failed to decode federation response")
 		return
 	}
 
@@ -103,16 +134,14 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	_, err = nc.services.FederationService.CreateFederation(federation)
 	if err != nil {
 		log.Printf("Error creating federation: %v", err)
+		nc.services.KafkaClientService.SendResponse(msgId, "500", "Failed to save federation locally")
 		return
 	}
 
 	log.Printf("Federation established successfully with partner %s", federationResponseData.PartnerOPFederationId)
 
 	// send response to kafka
-	_, err = nc.services.KafkaClientService.Produce("responses", map[string]string{
-		"msg_id": msg["msg_id"].(string),
-		"status": "200",
-	})
+	err = nc.services.KafkaClientService.SendResponse(msgId, "200", "Federation established successfully")
 	if err != nil {
 		log.Printf("Error sending response to kafka: %v", err)
 		return

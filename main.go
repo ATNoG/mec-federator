@@ -103,6 +103,10 @@ func main() {
 	kafkaServ.StartConsumer(context.Background(), "federation_new_appi", newFederationAppiCallback.HandleMessage, true)
 	removeFederationAppiCallback := callbacks.NewFederationRemoveAppiCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_remove_appi", removeFederationAppiCallback.HandleMessage, true)
+	enableAppInstKDUCallback := callbacks.NewEnableAppInstanceKDUCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_enable_kdu", enableAppInstKDUCallback.HandleMessage, true)
+	disableAppInstKDUCallback := callbacks.NewDisableAppInstanceKDUCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_disable_kdu", disableAppInstKDUCallback.HandleMessage, true)
 
 	// Initialize the scheduler
 	sched := scheduler.NewScheduler(services)

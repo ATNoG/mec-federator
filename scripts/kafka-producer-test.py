@@ -14,7 +14,8 @@ security_protocol = 'SASL_PLAINTEXT'
 federation_context_id = "92853657-76ec-4dd7-860b-829f6047e520"
 app_pkg_id = "686403a4232d0ef0a39b7508"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
-app_instance_id = "86e8c18d-0434-46fd-b2c4-6811217542fa"
+app_instance_id = "ab3ecfa3-dfd4-415c-a8b7-e9da6c15fa2c"
+kdu_id = "mec-test-server"
 
 messages = {
     "new_federation": {
@@ -49,6 +50,19 @@ messages = {
         "msg_id": "6",
         "federation_context_id": federation_context_id,
         "app_instance_id": app_instance_id,
+    },
+    "federation_enable_kdu": {
+        "msg_id": "7",
+        "federation_context_id": federation_context_id,
+        "app_instance_id": app_instance_id,
+        "kdu_id": kdu_id,
+        "node": "node1",
+    },
+    "federation_disable_kdu": {
+        "msg_id": "8",
+        "federation_context_id": federation_context_id,
+        "app_instance_id": app_instance_id,
+        "kdu_id": kdu_id,
     },
 }
 
