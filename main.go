@@ -101,6 +101,8 @@ func main() {
 	kafkaServ.StartConsumer(context.Background(), "federation_remove_artefact", removeFederationArtefactCallback.HandleMessage, true)
 	newFederationAppiCallback := callbacks.NewFederationAppiNewCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_new_appi", newFederationAppiCallback.HandleMessage, true)
+	removeFederationAppiCallback := callbacks.NewFederationRemoveAppiCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_remove_appi", removeFederationAppiCallback.HandleMessage, true)
 
 	// Initialize the scheduler
 	sched := scheduler.NewScheduler(services)

@@ -107,6 +107,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	}
 
 	log.Printf("Federation established successfully with partner %s", federationResponseData.PartnerOPFederationId)
+
 	// send response to kafka
 	_, err = nc.services.KafkaClientService.Produce("responses", map[string]string{
 		"msg_id": msg["msg_id"].(string),

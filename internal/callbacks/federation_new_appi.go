@@ -90,6 +90,8 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 		Id:                  appInstanceId,
 		FederationContextId: federationContextId,
 		ArtefactId:          artefact.Id,
+		Name:                "federated-instance",
+		Description:         "not-local",
 	}
 
 	// save appinstance to database
@@ -100,6 +102,18 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	}
 
 	log.Printf("Successfully created app instance %s with partner operator and saved locally", appInstanceId)
+
+	// send response to kafka
+	_, err = f.services.KafkaClientService.Produce("responses", map[string]string{
+		"msg_id":          msg["msg_id"].(string),
+		"app_instance_id": appInstance.Id,
+		"status":          "201",
+	})
+	if err != nil {
+		log.Printf("Error sending response to kafka: %v", err)
+		return
+	}
+
 }
 
 func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *models.Federation, request *dto.InstantiateApplicationRequest) (string, error) {

@@ -86,6 +86,17 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 	}
 
 	log.Printf("Successfully sent artefact %s to partner operator and saved locally", appPkgId)
+
+	// send response to kafka
+	_, err = f.services.KafkaClientService.Produce("responses", map[string]string{
+		"msg_id":      msg["msg_id"].(string),
+		"artefact_id": artefact.Id,
+		"status":      "200",
+	})
+	if err != nil {
+		log.Printf("Error sending response to kafka: %v", err)
+		return
+	}
 }
 
 func (f *FederationArtefactNewCallback) sendArtefactToPartner(federation *models.Federation, artefact *models.Artefact) error {

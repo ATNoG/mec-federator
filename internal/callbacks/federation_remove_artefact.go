@@ -66,6 +66,17 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	}
 
 	log.Printf("Successfully removed artefact %s from partner operator and locally", appPkgId)
+
+	// send response to kafka
+	_, err = f.services.KafkaClientService.Produce("responses", map[string]string{
+		"msg_id":      msg["msg_id"].(string),
+		"artefact_id": artefact.Id,
+		"status":      "200",
+	})
+	if err != nil {
+		log.Printf("Error sending response to kafka: %v", err)
+		return
+	}
 }
 
 func (f *FederationArtefactRemoveCallback) removeArtefactFromPartner(federation *models.Federation, artefactId string) error {
