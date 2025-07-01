@@ -1,6 +1,7 @@
 from kafka import KafkaProducer
 import sys, os
 import json
+import argparse
 
 # Kafka configuration
 bootstrap_servers = ['10.255.41.81:31999'] 
@@ -10,14 +11,14 @@ sasl_mechanism = 'PLAIN'
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
-federation_context_id = "dccf4231-e08f-4302-8157-0ead06bddcab"
-app_pkg_id = "685f2596232d0ef0a39b7506"
+federation_context_id = "92853657-76ec-4dd7-860b-829f6047e520"
+app_pkg_id = "686403a4232d0ef0a39b7508"
 
 messages = {
     "new_federation": {
         "msg_id": "1",
-        "client_id": "operator-b",
-        "client_secret": "78H0JMNA7FyyS2waNL13omQEsmWvEHyA",
+        "client_id": "operator-a",
+        "client_secret": "FkEZE8twp5sMn3qcVqvm3nZKzy9sLAr8",
         "federation_endpoint": "http://federator-po:8000",
         "auth_endpoint": "http://federator-po:8000/federation/v1/auth/token",
     },
@@ -29,17 +30,26 @@ messages = {
         "msg_id": "3",
         "federation_context_id": federation_context_id,
         "app_pkg_id": app_pkg_id,
+    },
+    "federation_remove_artefact": {
+        "msg_id": "4",
+        "federation_context_id": federation_context_id,
+        "app_pkg_id": app_pkg_id,
     }
 }
 
-# Target topic to send message to
-target_topic = 'federation_new_artefact'  # Change this to send to different topics
-
-print(f"Username: {username}")
-print(f"Target topic: {target_topic}")
-print(f"Message to send: {json.dumps(messages[target_topic], indent=2)}")
-
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Send test messages to Kafka topics')
+    parser.add_argument('topic', help='Topic name to send message to', 
+                       choices=list(messages.keys()))
+    
+    args = parser.parse_args()
+    target_topic = args.topic
+
+    print(f"Username: {username}")
+    print(f"Target topic: {target_topic}")
+    print(f"Message to send: {json.dumps(messages[target_topic], indent=2)}")
     try:
         producer = KafkaProducer(
             bootstrap_servers=bootstrap_servers,

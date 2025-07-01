@@ -67,13 +67,19 @@ func main() {
 	federationExistsMiddleware := middleware.FederationExistsMiddleware(fedServ)
 
 	// start kafka consumers with callbacks
-	kafkaServ.StartConsumer(context.Background(), "responses", nil) // use default callback for responses, might change in the future
-	newFederationCallback := callbacks.NewNewFederationCallback(authServ, httpServ, kafkaServ, fedServ)
-	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage)
+	kafkaServ.StartConsumer(context.Background(), "responses", nil, false) // use default callback for responses, might change in the future
+
 	infrastructureInfoCallback := callbacks.NewInfrastructureInfoCallback(zoneServ)
-	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage)
+	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage, false)
+	newFederationCallback := callbacks.NewNewFederationCallback(authServ, httpServ, kafkaServ, fedServ)
+	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage, true)
 	removeFederationCallback := callbacks.NewRemoveFederationCallback(authServ, httpServ, kafkaServ, fedServ)
-	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage)
+	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage, true)
+	newFederationArtefactCallback := callbacks.NewFederationArtefactNewCallback(authServ, httpServ, kafkaServ, fedServ, orchServ, artefactServ)
+	kafkaServ.StartConsumer(context.Background(), "federation_new_artefact", newFederationArtefactCallback.HandleMessage, true)
+	removeFederationArtefactCallback := callbacks.NewFederationArtefactRemoveCallback(authServ, httpServ, kafkaServ, fedServ, artefactServ)
+	kafkaServ.StartConsumer(context.Background(), "federation_remove_artefact", removeFederationArtefactCallback.HandleMessage, true)
+
 
 	// bundle all services
 	services := &router.Services{

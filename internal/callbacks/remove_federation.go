@@ -49,7 +49,7 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 	headers := map[string]string{"Content-Type": "application/json"}
 
 	// remove the federation
-	removeFederationUrl := fmt.Sprintf("%s%s%s%s", federation.FederationEndpoint, "/federation/v1/ewbi/", federation.PartnerOP.FederationContextId, "/partner")
+	removeFederationUrl := fmt.Sprintf("%s/federation/v1/ewbi/%s/partner", federation.FederationEndpoint, federation.PartnerOP.FederationContextId)
 	resp, err := r.httpClientService.DoRequest(
 		context.TODO(),
 		http.MethodDelete,

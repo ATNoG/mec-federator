@@ -74,7 +74,7 @@ func (k *KafkaClientService) Produce(topic string, message interface{}) (string,
 }
 
 // StartConsumer starts consuming messages from a topic with the provided callback
-func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, callback func(*sarama.ConsumerMessage)) error {
+func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, callback func(*sarama.ConsumerMessage), logs bool) error {
 	brokers := []string{config.AppConfig.KafkaHost + ":" + config.AppConfig.KafkaPort}
 	consumerConfig := sarama.NewConfig()
 	consumerConfig.Net.SASL.Enable = true
@@ -141,6 +141,9 @@ func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, ca
 		for {
 			select {
 			case message := <-partitionConsumer.Messages():
+				if logs {
+					log.Printf("Received message from topic '%s': %s", topic, string(message.Value))
+				}
 				callback(message)
 			case err := <-partitionConsumer.Errors():
 				log.Printf("Error consuming from %s topic: %v", topic, err)

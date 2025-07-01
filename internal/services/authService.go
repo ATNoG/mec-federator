@@ -79,6 +79,44 @@ func (s *AuthService) QueryAccessTokenByClientId(clientId string) (models.Access
 	return result, nil
 }
 
+// GetValidAccessToken returns a valid access token, refreshing if necessary
+func (s *AuthService) GetValidAccessToken(authEndpoint string, clientId string, clientSecret string) (string, error) {
+	// try to get existing token from database
+	existingToken, err := s.QueryAccessTokenByClientId(clientId)
+	if err == nil {
+		// check if token is still valid (not expired)
+		if existingToken.ExpiresAt.UTC().After(time.Now().UTC()) {
+			return existingToken.AccessToken, nil
+		}
+		// token exists but is expired, remove it
+		s.removeExpiredToken(clientId)
+	}
+
+	// fetch new token
+	newToken, err := s.FetchAccessTokenFromAuthEndpoint(authEndpoint, clientId, clientSecret)
+	if err != nil {
+		return "", err
+	}
+
+	// save the new token
+	err = s.SaveAccessToken(newToken)
+	if err != nil {
+		log.Printf("Warning: Failed to save new access token: %v", err)
+	}
+
+	return newToken.AccessToken, nil
+}
+
+// removeExpiredToken removes an expired token from the database
+func (s *AuthService) removeExpiredToken(clientId string) {
+	collection := s.getAccessTokenCollection()
+	filter := bson.M{"clientId": clientId}
+	_, err := collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		log.Printf("Warning: Failed to remove expired token: %v", err)
+	}
+}
+
 // fetch an access token from the config auth endpoint
 func (s *AuthService) FetchAccessTokenFromAuthEndpoint(authEndpoint string, clientId string, clientSecret string) (models.AccessToken, error) {
 	tokenRequest := dto.AccessTokenRequestData{

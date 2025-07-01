@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: federator-po
+  namespace: osm-mec
+  labels:
+    app: federator
+    role: partner-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: federator
+      role: partner-operator
+  template:
+    metadata:
+      labels:
+        app: federator
+        role: partner-operator
+    spec:
+      containers:
+      - name: federator
+        image: federator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: OPERATOR_ID
+          value: "PO"
+        - name: API_PORT
+          value: "8080"
+        - name: BASE_URL
+          value: "federator-po"
+        - name: MONGO_HOST
+          value: "10.255.41.81"
+        - name: MONGO_PORT
+          value: "27017"
+        - name: MONGO_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: federator-secrets
+              key: mongo-username-po
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: federator-secrets
+              key: mongo-password-po
+        - name: MONGO_DATABASE
+          value: "federator"
+        - name: MONGO_ORCHESTRATOR_DATABASE
+          value: "orchestrator"
+        - name: KAFKA_HOST
+          value: "10.255.41.64"
+        - name: KAFKA_PORT
+          value: "9092"
+        - name: KAFKA_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: federator-secrets
+              key: kafka-username-po
+        - name: KAFKA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: federator-secrets
+              key: kafka-password-po
+        - name: OAUTH2_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: federator-secrets
+              key: oauth2-client-id-po
+        - name: OAUTH2_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: federator-secrets
+              key: oauth2-client-secret-po
+        - name: OAUTH2_TOKEN_ENDPOINT
+          value: "https://your-oauth2-endpoint/token"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: federator-po-service
+  namespace: osm-mec
+  labels:
+    app: federator
+    role: partner-operator
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30081
+    protocol: TCP
+    name: http
+  selector:
+    app: federator
+    role: partner-operator

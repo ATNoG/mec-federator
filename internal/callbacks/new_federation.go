@@ -68,7 +68,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 		return
 	}
 
-	createFederationUrl := fmt.Sprintf("%s%s", federationEndpoint, "/federation/v1/ewbi/partner")
+	createFederationUrl := fmt.Sprintf("%s/federation/v1/ewbi/partner", federationEndpoint)
 	authStrat := services.NewBearerTokenAuth(accessToken.AccessToken)
 	headers := map[string]string{"Content-Type": "application/json"}
 	resp, err := nc.httpClientService.DoRequest(

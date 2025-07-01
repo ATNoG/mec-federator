@@ -23,6 +23,7 @@ type ArtefactServiceInterface interface {
 	RegisterArtefact(artefact models.Artefact) error
 	GetArtefact(federationContextId string, artefactId string) (models.Artefact, error)
 	GetArtefactById(artefactId string) (models.Artefact, error)
+	GetArtefactByAppPkgId(federationContextId string, appPkgId string) (models.Artefact, error)
 	RemoveArtefact(federationContextId string, artefactId string) error
 	RegisterFile(file models.File) error
 	GetFile(federationContextId string, fileId string) (models.File, error)
@@ -89,6 +90,17 @@ func (as *ArtefactService) GetArtefactsByFederationContextId(federationContextId
 	filter := bson.M{"federationContextId": federationContextId}
 	artefacts, err := utils.FetchEntitiesFromDatabase[models.Artefact](collection, filter)
 	return artefacts, err
+}
+
+// Get an artefact by appPkgId and federationContextId
+func (as *ArtefactService) GetArtefactByAppPkgId(federationContextId string, appPkgId string) (models.Artefact, error) {
+	collection := as.getArtefactCollection()
+	filter := bson.M{"federationContextId": federationContextId, "appPkgId": appPkgId}
+	artefact, err := utils.FetchEntityFromDatabase[models.Artefact](collection, filter)
+	if err != nil {
+		return models.Artefact{}, fmt.Errorf("no artefact found with appPkgId %s in federation %s: %v", appPkgId, federationContextId, err)
+	}
+	return artefact, nil
 }
 
 // Remove an artefact from the local database using the federationContextId and artefactId

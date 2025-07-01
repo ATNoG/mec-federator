@@ -2,7 +2,7 @@ from kafka import KafkaConsumer
 import sys, os
 
 # List your topics here
-topics = ['responses', 'new_federation']
+topics = ['responses', 'federation_new_artefact', 'federation_remove_artefact']
 
 # Kafka configuration
 bootstrap_servers = ['10.255.41.64:31999'] 
