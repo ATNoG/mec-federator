@@ -56,7 +56,7 @@ messages = {
         "federation_context_id": federation_context_id,
         "app_instance_id": app_instance_id,
         "kdu_id": kdu_id,
-        "node": "node1",
+        "node": "cluster2-96720290",
     },
     "federation_disable_kdu": {
         "msg_id": "8",
