@@ -62,25 +62,6 @@ func main() {
 	appInstanceServ := services.NewAppInstanceService(kafkaServ)
 	zoneServ := services.NewZoneService(kafkaServ)
 
-	// init middlewares
-	authMiddleware := middleware.AuthMiddleware(authServ)
-	federationExistsMiddleware := middleware.FederationExistsMiddleware(fedServ)
-
-	// start kafka consumers with callbacks
-	kafkaServ.StartConsumer(context.Background(), "responses", nil, false) // use default callback for responses, might change in the future
-
-	infrastructureInfoCallback := callbacks.NewInfrastructureInfoCallback(zoneServ)
-	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage, false)
-	newFederationCallback := callbacks.NewNewFederationCallback(authServ, httpServ, kafkaServ, fedServ)
-	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage, true)
-	removeFederationCallback := callbacks.NewRemoveFederationCallback(authServ, httpServ, kafkaServ, fedServ)
-	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage, true)
-	newFederationArtefactCallback := callbacks.NewFederationArtefactNewCallback(authServ, httpServ, kafkaServ, fedServ, orchServ, artefactServ)
-	kafkaServ.StartConsumer(context.Background(), "federation_new_artefact", newFederationArtefactCallback.HandleMessage, true)
-	removeFederationArtefactCallback := callbacks.NewFederationArtefactRemoveCallback(authServ, httpServ, kafkaServ, fedServ, artefactServ)
-	kafkaServ.StartConsumer(context.Background(), "federation_remove_artefact", removeFederationArtefactCallback.HandleMessage, true)
-
-
 	// bundle all services
 	services := &router.Services{
 		KafkaClientService: kafkaServ,
@@ -95,11 +76,31 @@ func main() {
 		AppInstanceService:  appInstanceServ,
 	}
 
+	// init middlewares
+	authMiddleware := middleware.AuthMiddleware(authServ)
+	federationExistsMiddleware := middleware.FederationExistsMiddleware(fedServ)
+
 	// bundle middlewares
 	middlewares := &router.Middlewares{
 		AuthMiddleware:             &authMiddleware,
 		FederationExistsMiddleware: &federationExistsMiddleware,
 	}
+
+	// start kafka consumers with callbacks
+	kafkaServ.StartConsumer(context.Background(), "responses", nil, false) // use default callback for responses, might change in the future
+
+	infrastructureInfoCallback := callbacks.NewInfrastructureInfoCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage, false)
+	newFederationCallback := callbacks.NewNewFederationCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage, true)
+	removeFederationCallback := callbacks.NewRemoveFederationCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage, true)
+	newFederationArtefactCallback := callbacks.NewFederationArtefactNewCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_new_artefact", newFederationArtefactCallback.HandleMessage, true)
+	removeFederationArtefactCallback := callbacks.NewFederationArtefactRemoveCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_remove_artefact", removeFederationArtefactCallback.HandleMessage, true)
+	newFederationAppiCallback := callbacks.NewFederationAppiNewCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_new_appi", newFederationAppiCallback.HandleMessage, true)
 
 	// Initialize the scheduler
 	sched := scheduler.NewScheduler(services)

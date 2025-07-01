@@ -13,6 +13,7 @@ security_protocol = 'SASL_PLAINTEXT'
 # Hardcoded messages to send
 federation_context_id = "92853657-76ec-4dd7-860b-829f6047e520"
 app_pkg_id = "686403a4232d0ef0a39b7508"
+partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
 
 messages = {
     "new_federation": {
@@ -35,6 +36,13 @@ messages = {
         "msg_id": "4",
         "federation_context_id": federation_context_id,
         "app_pkg_id": app_pkg_id,
+    },
+    "federation_new_appi": {
+        "msg_id": "5",
+        "federation_context_id": federation_context_id,
+        "app_pkg_id": app_pkg_id,
+        "vim_id": partner_vim_id,
+        "config": "",
     }
 }
 

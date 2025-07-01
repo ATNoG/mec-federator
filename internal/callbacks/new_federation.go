@@ -12,24 +12,19 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
 )
 
 // NewFederationCallback handles incoming new federation messages from Kafka
 type NewFederationCallback struct {
-	authService        *services.AuthService
-	httpClientService  *services.HttpClientService
-	kafkaClientService *services.KafkaClientService
-	federationService  *services.FederationService
+	services *router.Services
 }
 
 // NewNewFederationCallback creates a new NewFederationCallback instance
-func NewNewFederationCallback(authService *services.AuthService, httpClientService *services.HttpClientService, kafkaClientService *services.KafkaClientService, federationService *services.FederationService) *NewFederationCallback {
+func NewNewFederationCallback(services *router.Services) *NewFederationCallback {
 	return &NewFederationCallback{
-		authService:        authService,
-		httpClientService:  httpClientService,
-		kafkaClientService: kafkaClientService,
-		federationService:  federationService,
+		services: services,
 	}
 }
 
@@ -48,7 +43,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	clientSecret := msg["client_secret"].(string)
 
 	// fetch access token from the provided auth endpoint
-	accessToken, err := nc.authService.FetchAccessTokenFromAuthEndpoint(authEndpoint, clientId, clientSecret)
+	accessToken, err := nc.services.AuthService.FetchAccessTokenFromAuthEndpoint(authEndpoint, clientId, clientSecret)
 	if err != nil {
 		log.Printf("Error fetching access token: %v", err)
 		return
@@ -71,7 +66,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	createFederationUrl := fmt.Sprintf("%s/federation/v1/ewbi/partner", federationEndpoint)
 	authStrat := services.NewBearerTokenAuth(accessToken.AccessToken)
 	headers := map[string]string{"Content-Type": "application/json"}
-	resp, err := nc.httpClientService.DoRequest(
+	resp, err := nc.services.HttpClientService.DoRequest(
 		context.Background(),
 		http.MethodPost,
 		createFederationUrl,
@@ -105,7 +100,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	federation.FederationEndpoint = federationEndpoint
 	federation.IsOriginOP = true
 
-	_, err = nc.federationService.CreateFederation(federation)
+	_, err = nc.services.FederationService.CreateFederation(federation)
 	if err != nil {
 		log.Printf("Error creating federation: %v", err)
 		return
@@ -113,7 +108,7 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 
 	log.Printf("Federation established successfully with partner %s", federationResponseData.PartnerOPFederationId)
 	// send response to kafka
-	_, err = nc.kafkaClientService.Produce("responses", map[string]string{
+	_, err = nc.services.KafkaClientService.Produce("responses", map[string]string{
 		"msg_id": msg["msg_id"].(string),
 		"status": "200",
 	})

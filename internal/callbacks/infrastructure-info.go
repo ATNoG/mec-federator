@@ -7,7 +7,7 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
-	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/router"
 )
 
 // InfrastructureInfoCallback handles incoming infrastructure information messages from Kafka
@@ -16,13 +16,13 @@ type InfrastructureInfoCallback struct {
 	latestZones   []models.ZoneDetails
 	mu            sync.RWMutex
 
-	zoneService *services.ZoneService
+	services *router.Services
 }
 
 // NewInfrastructureInfoCallback creates a new InfrastructureInfoCallback instance
-func NewInfrastructureInfoCallback(zoneService *services.ZoneService) *InfrastructureInfoCallback {
+func NewInfrastructureInfoCallback(services *router.Services) *InfrastructureInfoCallback {
 	return &InfrastructureInfoCallback{
-		zoneService: zoneService,
+		services: services,
 	}
 }
 
@@ -57,7 +57,7 @@ func (cc *InfrastructureInfoCallback) HandleMessage(message *sarama.ConsumerMess
 	cc.latestZones = availableZones
 
 	// Update the zones in the database
-	if err := cc.zoneService.UpdateLocalZones(availableZones); err != nil {
+	if err := cc.services.ZoneService.UpdateLocalZones(availableZones); err != nil {
 		log.Println("Error updating local zones:", err)
 		return
 	}

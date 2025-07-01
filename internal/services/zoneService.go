@@ -116,3 +116,11 @@ func (z *ZoneService) GetVimId(zoneId string) (string, error) {
 	zone, err := utils.FetchEntityFromDatabase[models.ZoneDetails](collection, filter)
 	return zone.VimId, err
 }
+
+// Returns the zone for a given vim id
+func (z *ZoneService) GetZoneFromVimId(vimId string) (models.ZoneDetails, error) {
+	collection := z.getZoneDetailsCollection()
+	filter := bson.M{"vimId": vimId}
+	zone, err := utils.FetchEntityFromDatabase[models.ZoneDetails](collection, filter)
+	return zone, err
+}

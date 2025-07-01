@@ -5,5 +5,6 @@ type AppInstance struct {
 	FederationContextId string `json:"federationContextId" bson:"federationContextId"`
 	Name                string `json:"name" bson:"name"`
 	Description         string `json:"description" bson:"description"`
+	ArtefactId          string `json:"artefactId" bson:"artefactId"`
 	AppPkgId            string `json:"appPkgId,omitempty" bson:"appPkgId"`
 }

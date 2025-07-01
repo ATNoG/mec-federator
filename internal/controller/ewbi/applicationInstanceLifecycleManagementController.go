@@ -69,6 +69,7 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 		FederationContextId: federationContextId,
 		Name:                request.AppId,
 		Description:         request.AppVersion,
+		ArtefactId:          artefact.Id,
 		AppPkgId:            artefact.AppPkgId,
 	}
 

@@ -35,7 +35,7 @@ func (ais *AppInstanceService) getAppInstanceCollection() *mongo.Collection {
 
 // Registers an app instance to the database
 func (ais *AppInstanceService) RegisterAppInstance(appInstance models.AppInstance) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := ais.getAppInstanceCollection()
 	_, err := collection.InsertOne(ctx, appInstance)
@@ -44,7 +44,7 @@ func (ais *AppInstanceService) RegisterAppInstance(appInstance models.AppInstanc
 
 // Removes an app instance from the database
 func (ais *AppInstanceService) RemoveAppInstance(federationContextId string, appInstanceId string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := ais.getAppInstanceCollection()
 	_, err := collection.DeleteOne(ctx, bson.M{"federationContextId": federationContextId, "appInstanceId": appInstanceId})
@@ -53,7 +53,7 @@ func (ais *AppInstanceService) RemoveAppInstance(federationContextId string, app
 
 // Gets an app instance from the database
 func (ais *AppInstanceService) GetAppInstance(federationContextId string, appInstanceId string) (models.AppInstance, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := ais.getAppInstanceCollection()
 	filter := bson.M{"federationContextId": federationContextId, "appInstanceId": appInstanceId}
@@ -67,7 +67,7 @@ func (ais *AppInstanceService) GetAppInstance(federationContextId string, appIns
 
 // Provides a list of instances for a given federationContextId
 func (ais *AppInstanceService) GetAppInstancesByFederationContextId(fedContextId string) ([]models.AppInstance, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := ais.getAppInstanceCollection()
 	filter := bson.M{"federationContextId": fedContextId}
@@ -89,7 +89,7 @@ func (ais *AppInstanceService) GetAppInstancesByFederationContextId(fedContextId
 
 // Provides a list of all app instances resulting from any federation
 func (ais *AppInstanceService) GetAllAppInstances() ([]models.AppInstance, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := ais.getAppInstanceCollection()
 	cursor, err := collection.Find(ctx, bson.M{})
@@ -107,4 +107,3 @@ func (ais *AppInstanceService) GetAllAppInstances() ([]models.AppInstance, error
 	}
 	return appInstances, nil
 }
-

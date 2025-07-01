@@ -11,19 +11,18 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
 )
 
 type FederationArtefactRemoveCallback struct {
-	authService        *services.AuthService
-	httpClientService  *services.HttpClientService
-	kafkaClientService *services.KafkaClientService
-	federationService  *services.FederationService
-	artefactService    *services.ArtefactService
+	services *router.Services
 }
 
-func NewFederationArtefactRemoveCallback(authService *services.AuthService, httpClientService *services.HttpClientService, kafkaClientService *services.KafkaClientService, federationService *services.FederationService, artefactService *services.ArtefactService) *FederationArtefactRemoveCallback {
-	return &FederationArtefactRemoveCallback{authService: authService, httpClientService: httpClientService, kafkaClientService: kafkaClientService, federationService: federationService, artefactService: artefactService}
+func NewFederationArtefactRemoveCallback(services *router.Services) *FederationArtefactRemoveCallback {
+	return &FederationArtefactRemoveCallback{
+		services: services,
+	}
 }
 
 // receives info about an artefact to remove from a certain federation
@@ -39,14 +38,14 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	federationContextId := msg["federation_context_id"].(string)
 
 	// get the federation context
-	federation, err := f.federationService.GetFederation(federationContextId)
+	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
 		return
 	}
 
 	// check if an artefact with this appPkgId exists in the federation
-	artefact, err := f.artefactService.GetArtefactByAppPkgId(federationContextId, appPkgId)
+	artefact, err := f.services.ArtefactService.GetArtefactByAppPkgId(federationContextId, appPkgId)
 	if err != nil {
 		log.Printf("No artefact found with appPkgId %s in federation %s: %v", appPkgId, federationContextId, err)
 		return
@@ -60,7 +59,7 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 	}
 
 	// remove the artefact locally
-	err = f.artefactService.RemoveArtefact(federationContextId, artefact.Id)
+	err = f.services.ArtefactService.RemoveArtefact(federationContextId, artefact.Id)
 	if err != nil {
 		log.Printf("Error removing artefact locally: %v", err)
 		return
@@ -87,7 +86,7 @@ func (f *FederationArtefactRemoveCallback) removeArtefactFromPartner(federation 
 	auth := services.NewBearerTokenAuth(accessToken)
 
 	// make the HTTP DELETE request
-	resp, err := f.httpClientService.DoRequest(
+	resp, err := f.services.HttpClientService.DoRequest(
 		ctx,
 		http.MethodDelete,
 		partnerEndpoint,

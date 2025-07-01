@@ -8,22 +8,17 @@ import (
 	"net/http"
 
 	"github.com/IBM/sarama"
+	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
 )
 
 type RemoveFederationCallback struct {
-	authService        *services.AuthService
-	httpClientService  *services.HttpClientService
-	kafkaClientService *services.KafkaClientService
-	federationService  *services.FederationService
+	services *router.Services
 }
 
-func NewRemoveFederationCallback(authService *services.AuthService, httpClientService *services.HttpClientService, kafkaClientService *services.KafkaClientService, federationService *services.FederationService) *RemoveFederationCallback {
+func NewRemoveFederationCallback(services *router.Services) *RemoveFederationCallback {
 	return &RemoveFederationCallback{
-		authService:        authService,
-		httpClientService:  httpClientService,
-		kafkaClientService: kafkaClientService,
-		federationService:  federationService,
+		services: services,
 	}
 }
 
@@ -38,7 +33,7 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 	federationContextId := msg["federation_context_id"].(string)
 
 	// get the federation from the database
-	federation, err := r.federationService.GetFederation(federationContextId)
+	federation, err := r.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
 		return
@@ -50,7 +45,7 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 
 	// remove the federation
 	removeFederationUrl := fmt.Sprintf("%s/federation/v1/ewbi/%s/partner", federation.FederationEndpoint, federation.PartnerOP.FederationContextId)
-	resp, err := r.httpClientService.DoRequest(
+	resp, err := r.services.HttpClientService.DoRequest(
 		context.TODO(),
 		http.MethodDelete,
 		removeFederationUrl,
@@ -68,7 +63,7 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 	}
 
 	// delete the federation from the database
-	err = r.federationService.DeleteFederation(federationContextId)
+	err = r.services.FederationService.DeleteFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error deleting federation from database: %v", err)
 		return
@@ -76,7 +71,7 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 
 	log.Printf("Federation removed successfully")
 	// send response to kafka
-	_, err = r.kafkaClientService.Produce("responses", map[string]string{
+	_, err = r.services.KafkaClientService.Produce("responses", map[string]string{
 		"msg_id": msg["msg_id"].(string),
 		"status": "200",
 	})

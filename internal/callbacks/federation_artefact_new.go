@@ -15,20 +15,18 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
 )
 
 type FederationArtefactNewCallback struct {
-	authService         *services.AuthService
-	httpClientService   *services.HttpClientService
-	kafkaClientService  *services.KafkaClientService
-	federationService   *services.FederationService
-	orchestratorService *services.OrchestratorService
-	artefactService     *services.ArtefactService
+	services *router.Services
 }
 
-func NewFederationArtefactNewCallback(authService *services.AuthService, httpClientService *services.HttpClientService, kafkaClientService *services.KafkaClientService, federationService *services.FederationService, orchestratorService *services.OrchestratorService, artefactService *services.ArtefactService) *FederationArtefactNewCallback {
-	return &FederationArtefactNewCallback{authService: authService, httpClientService: httpClientService, kafkaClientService: kafkaClientService, federationService: federationService, orchestratorService: orchestratorService, artefactService: artefactService}
+func NewFederationArtefactNewCallback(services *router.Services) *FederationArtefactNewCallback {
+	return &FederationArtefactNewCallback{
+		services: services,
+	}
 }
 
 // receives info about an artefact to make available to a certain federation
@@ -44,14 +42,14 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 	federationContextId := msg["federation_context_id"].(string)
 
 	// get the federation context
-	federation, err := f.federationService.GetFederation(federationContextId)
+	federation, err := f.services.FederationService.GetFederation(federationContextId)
 	if err != nil {
 		log.Printf("Error getting federation: %v", err)
 		return
 	}
 
 	// get the app package from the orchestrator
-	appPkg, err := f.orchestratorService.GetAppPkg(appPkgId)
+	appPkg, err := f.services.OrchestratorService.GetAppPkg(appPkgId)
 	if err != nil {
 		log.Printf("Error getting app package from orchestrator: %v", err)
 		return
@@ -81,7 +79,7 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 
 	// save the artefact locally
 	artefact.FederationContextId = federationContextId
-	err = f.artefactService.SaveArtefact(*artefact)
+	err = f.services.ArtefactService.SaveArtefact(*artefact)
 	if err != nil {
 		log.Printf("Error saving artefact locally: %v", err)
 		return
@@ -162,7 +160,7 @@ func (f *FederationArtefactNewCallback) sendArtefactToPartner(federation *models
 	auth := services.NewBearerTokenAuth(accessToken)
 
 	// make the HTTP request
-	resp, err := f.httpClientService.DoRequest(
+	resp, err := f.services.HttpClientService.DoRequest(
 		ctx,
 		http.MethodPost,
 		partnerEndpoint,
