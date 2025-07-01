@@ -1,118 +1,101 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: federator-oo
+  name: mef
   namespace: osm-mec
   labels:
-    app: federator
-    role: origin-operator
+    app: mef
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: federator
-      role: origin-operator
+      app: mef
   template:
     metadata:
       labels:
-        app: federator
-        role: origin-operator
+        app: mef
     spec:
       containers:
-      - name: federator
-        image: federator:latest
+      - name: mef
+        image: mankings/federator:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
-          name: http
+        - containerPort: 8440
         env:
         - name: OPERATOR_ID
-          value: "OO"
+          value: "IT_AVEIRO"
         - name: API_PORT
-          value: "8080"
+          value: "8440"
         - name: BASE_URL
-          value: "federator-oo"
+          value: "mef"
         - name: MONGO_HOST
-          value: "10.255.41.81"
+          value: "mongo"
         - name: MONGO_PORT
           value: "27017"
         - name: MONGO_USERNAME
           valueFrom:
             secretKeyRef:
               name: federator-secrets
-              key: mongo-username-oo
+              key: mongo-username
         - name: MONGO_PASSWORD
           valueFrom:
             secretKeyRef:
               name: federator-secrets
-              key: mongo-password-oo
+              key: mongo-password
         - name: MONGO_DATABASE
-          value: "federator"
+          value: "federation"
         - name: MONGO_ORCHESTRATOR_DATABASE
-          value: "orchestrator"
+          value: "db"
         - name: KAFKA_HOST
-          value: "10.255.41.64"
+          value: "kafka-controller-headless.osm.svc.cluster.local"
         - name: KAFKA_PORT
-          value: "9092"
+          value: "9094"
         - name: KAFKA_USERNAME
           valueFrom:
             secretKeyRef:
               name: federator-secrets
-              key: kafka-username-oo
+              key: kafka-username
         - name: KAFKA_PASSWORD
           valueFrom:
             secretKeyRef:
               name: federator-secrets
-              key: kafka-password-oo
+              key: kafka-password
         - name: OAUTH2_CLIENT_ID
           valueFrom:
             secretKeyRef:
               name: federator-secrets
-              key: oauth2-client-id-oo
+              key: oauth2-client-id
         - name: OAUTH2_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name: federator-secrets
-              key: oauth2-client-secret-oo
+              key: oauth2-client-secret
         - name: OAUTH2_TOKEN_ENDPOINT
-          value: "https://your-oauth2-endpoint/token"
-        resources:
-          limits:
-            cpu: 500m
-            memory: 512Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
+          value: "http://10.255.42.47:8080/realms/federation-realm/protocol/openid-connect/token"
         livenessProbe:
           httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
+            path: /healthcheck
+            port: 8440
+          initialDelaySeconds: 60
+          periodSeconds: 120
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
+            path: /healthcheck
+            port: 8440
+          initialDelaySeconds: 10
+          periodSeconds: 10
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: federator-oo-service
+  name: mef-external
   namespace: osm-mec
-  labels:
-    app: federator
-    role: origin-operator
 spec:
   type: NodePort
-  ports:
-  - port: 8080
-    targetPort: 8080
-    nodePort: 30080
-    protocol: TCP
-    name: http
   selector:
-    app: federator
-    role: origin-operator
+    app: mef
+  ports:
+  - port: 8440
+    targetPort: 8440
+    nodePort: 32440

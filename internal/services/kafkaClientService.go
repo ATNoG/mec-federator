@@ -124,8 +124,6 @@ func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, ca
 			k.timestamps[msgIDStr] = time.Now()
 			k.mu.Unlock()
 
-			log.Printf("Stored response for msg_id: %s", msgIDStr)
-
 			// Call original callback if provided
 			if originalCallback != nil {
 				originalCallback(message)

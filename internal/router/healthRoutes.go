@@ -7,7 +7,7 @@ import (
 
 // HealthAPIManagement - Health check of the partner OP
 func initHealthRoutes(router *gin.Engine) {
-	HealthAPIManagement := router.Group("/federation/v1/")
+	HealthAPIManagement := router.Group("")
 
 	healthController := controller.NewHealthController()
 

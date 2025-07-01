@@ -1,3 +1,8 @@
+# Variables
+DOCKER_IMAGE_NAME = mankings/federator
+DOCKER_TAG ?= latest
+DOCKERFILE_PATH = deployment/docker/Dockerfile
+
 tidy:
 	go mod tidy
 
@@ -8,19 +13,24 @@ build:
 start: build
 	./bin/federator
 
-dev-up:
-	docker compose \
-		--project-directory . \
-		-f deployment/docker/docker-compose.dev.yml \
-		--env-file .env \
-		up -d
+# Docker build rules
+docker-build:
+	docker build -t $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) -f $(DOCKERFILE_PATH) .
 
-dev-down:
-	docker compose \
-		--project-directory . \
-		-f deployment/docker/docker-compose.dev.yml \
-		--env-file .env \
-		down -v
+docker-build-latest: docker-build
+
+docker-tag:
+	docker tag $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) $(DOCKER_IMAGE_NAME):latest
+
+docker-push:
+	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_TAG)
+
+docker-push-latest:
+	docker push $(DOCKER_IMAGE_NAME):latest
+
+docker-build-and-push: docker-build docker-push
+
+docker-build-and-push-latest: docker-build docker-tag docker-push-latest
 
 half-up:
 	docker compose \

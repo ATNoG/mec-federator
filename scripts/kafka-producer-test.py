@@ -22,8 +22,8 @@ messages = {
         "msg_id": "1",
         "client_id": "operator-a",
         "client_secret": "FkEZE8twp5sMn3qcVqvm3nZKzy9sLAr8",
-        "federation_endpoint": "http://federator-po:8000",
-        "auth_endpoint": "http://federator-po:8000/federation/v1/auth/token",
+        "federation_endpoint": "http://10.255.41.64:32440",
+        "auth_endpoint": "http://10.255.41.64:32440/federation/v1/auth/token",
     },
     "remove_federation": {
         "msg_id": "2",

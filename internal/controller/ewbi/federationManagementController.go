@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/services"
@@ -60,7 +61,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 	// Create the federation response data
 	log.Print("CreateFederationController - Creating federation object")
 	federationResponseData := models.FederationResponseData{
-		PartnerOPFederationId:        "federation-54321",
+		PartnerOPFederationId:        config.AppConfig.OperatorId,
 		FederationContextId:          uuid.New().String(),
 		PlatformCaps:                 &[]string{"MEC"},
 		PartnerOPCountryCode:         "443",
