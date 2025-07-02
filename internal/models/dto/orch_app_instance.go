@@ -31,7 +31,7 @@ type InstantiateAppPkgMessage struct {
 
 // terminate an app instance
 type TerminateAppiMessage struct {
-	AppInstanceId string `json:"appi_id"`
+	AppiId string `json:"appi_id"`
 }
 
 // periodic message to list federated app instances

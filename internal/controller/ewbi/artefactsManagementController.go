@@ -45,38 +45,49 @@ func NewArtefactManagementController(orchestratorService *services.OrchestratorS
 // @Failure 500 {object} models.ProblemDetails
 // @Router /ewbi/{federationContextId}/artefact [post]
 func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Context) {
-	log.Print("OnboardArtefactController - Onboarding artefact onto federator")
+	federationContextId := c.Param("federationContextId")
+	log.Printf("OnboardArtefactController - Starting artefact onboarding for federation: %s", federationContextId)
 
 	// Parse the multipart form
+	log.Printf("OnboardArtefactController - Parsing multipart form for federation: %s", federationContextId)
 	form, err := c.MultipartForm()
 	if err != nil {
+		log.Printf("OnboardArtefactController - Error parsing multipart form for federation %s: %v", federationContextId, err)
 		utils.HandleProblem(c, http.StatusBadRequest, "Error parsing multipart form: "+err.Error())
 		return
 	}
 
 	// Bind the form to the artefactOnboardRequest
+	log.Printf("OnboardArtefactController - Binding form values for federation: %s", federationContextId)
 	var artefactOnboardRequest dto.ArtefactOnboardRequest
 	if err := c.ShouldBind(&artefactOnboardRequest); err != nil {
+		log.Printf("OnboardArtefactController - Error binding form values for federation %s: %v", federationContextId, err)
 		utils.HandleProblem(c, http.StatusBadRequest, "Error binding form values: "+err.Error())
 		return
 	}
 
 	// Validate the artefactOnboardRequest
+	log.Printf("OnboardArtefactController - Validating artefact onboard request for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	if err := artefactOnboardRequest.Validate(); err != nil {
+		log.Printf("OnboardArtefactController - Validation failed for artefact %s in federation %s: %v", artefactOnboardRequest.ArtefactId, federationContextId, err)
 		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Get the file from the form
+	log.Printf("OnboardArtefactController - Extracting artefact file for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	artefactFiles := form.File["artefactFile"]
 	if len(artefactFiles) == 0 {
+		log.Printf("OnboardArtefactController - Missing artefact file for federation %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 		utils.HandleProblem(c, http.StatusBadRequest, "Missing artefact file")
 		return
 	}
 
 	// Read the file content
+	log.Printf("OnboardArtefactController - Reading artefact file content for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	file, err := artefactFiles[0].Open()
 	if err != nil {
+		log.Printf("OnboardArtefactController - Error opening artefact file for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error reading file: "+err.Error())
 		return
 	}
@@ -84,36 +95,46 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 
 	fileContent, err := io.ReadAll(file)
 	if err != nil {
+		log.Printf("OnboardArtefactController - Error reading file content for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error reading file content: "+err.Error())
 		return
 	}
 
 	// Get descriptor data from the tar ball
+	log.Printf("OnboardArtefactController - Extracting descriptor data for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	descriptorData, err := utils.GetDescriptorData(fileContent)
 	if err != nil {
+		log.Printf("OnboardArtefactController - Error getting descriptor data for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
 		utils.HandleProblem(c, http.StatusBadRequest, "Error getting descriptor data: "+err.Error())
 		return
 	}
 
 	// Validate the descriptor data
+	log.Printf("OnboardArtefactController - Validating descriptor data for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	appPkg, err := utils.ValidateDescriptorData(descriptorData)
 	if err != nil {
+		log.Printf("OnboardArtefactController - Error validating descriptor data for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
 		utils.HandleProblem(c, http.StatusBadRequest, "Error validating descriptor data: "+err.Error())
 		return
 	}
 	appPkg.AppD = fileContent
 
 	// Onboard the artefact onto the orchestrator
+	log.Printf("OnboardArtefactController - Onboarding artefact to orchestrator for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	appPkgId, err := amc.orchestratorService.OnboardAppPkg(appPkg)
 	if err != nil {
+		log.Printf("OnboardArtefactController - Error onboarding artefact to orchestrator for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error onboarding artefact onto orchestrator: "+err.Error())
 		return
 	}
 
+	log.Printf("OnboardArtefactController - Artefact onboarded to orchestrator successfully for federation: %s, artefactId: %s, appPkgId: %s", federationContextId, artefactOnboardRequest.ArtefactId, appPkgId)
+
 	// Create artefact object
+	log.Printf("OnboardArtefactController - Creating artefact object for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	artefact := models.Artefact{
 		Id:                  artefactOnboardRequest.ArtefactId,
-		FederationContextId: c.GetString("federationContextId"),
+		FederationContextId: federationContextId,
 		AppProviderId:       artefactOnboardRequest.AppProviderId,
 		Name:                artefactOnboardRequest.ArtefactName,
 		VersionInfo:         artefactOnboardRequest.ArtefactVersionInfo,
@@ -127,12 +148,15 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	}
 
 	// Save artefact object to database
+	log.Printf("OnboardArtefactController - Saving artefact to database for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	err = amc.artefactService.SaveArtefact(artefact)
 	if err != nil {
+		log.Printf("OnboardArtefactController - Error saving artefact to database for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error saving artefact to database: "+err.Error())
 		return
 	}
 
+	log.Printf("OnboardArtefactController - Artefact onboarded successfully for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
 	c.JSON(http.StatusOK, gin.H{"status": "Artefact onboarded successfully"})
 }
 
@@ -146,22 +170,25 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 // @Failure 500 {object} models.ProblemDetails
 // @Router /ewbi/{federationContextId}/artefacts/{artefactId} [get]
 func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
-	log.Print("GetArtefactController - Getting artefact details")
-
 	// get the artefact id from path
 	artefactId := c.Param("artefactId")
 
 	// get the federation context id from path
 	federationContextId := c.Param("federationContextId")
 
+	log.Printf("GetArtefactController - Getting artefact details for federation: %s, artefactId: %s", federationContextId, artefactId)
+
 	// get the artefact from the database
+	log.Printf("GetArtefactController - Retrieving artefact from database for federation: %s, artefactId: %s", federationContextId, artefactId)
 	artefact, err := amc.artefactService.GetArtefact(federationContextId, artefactId)
 	if err != nil {
+		log.Printf("GetArtefactController - Artefact not found for federation %s, artefactId %s: %v", federationContextId, artefactId, err)
 		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found: "+err.Error())
 		return
 	}
 
 	// build the response
+	log.Printf("GetArtefactController - Building response for federation: %s, artefactId: %s", federationContextId, artefactId)
 	response := dto.GetArtefactResponse{
 		ArtefactId:             artefact.Id,
 		AppProviderId:          artefact.AppProviderId,
@@ -173,6 +200,7 @@ func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 		ArtefactFileFormat:     artefact.FileFormat,
 	}
 
+	log.Printf("GetArtefactController - Successfully retrieved artefact details for federation: %s, artefactId: %s", federationContextId, artefactId)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -186,35 +214,42 @@ func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 // @Failure 500 {object} models.ProblemDetails
 // @Router /ewbi/{federationContextId}/artefact/{artefactId} [delete]
 func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context) {
-	log.Print("DeleteArtefactController - Deleting artefact")
-
 	// get the artefact id from path
 	artefactId := c.Param("artefactId")
 
 	// get the federation context id from path
 	federationContextId := c.Param("federationContextId")
 
+	log.Printf("DeleteArtefactController - Starting artefact deletion for federation: %s, artefactId: %s", federationContextId, artefactId)
+
 	// check if the artefact exists
+	log.Printf("DeleteArtefactController - Checking if artefact exists for federation: %s, artefactId: %s", federationContextId, artefactId)
 	artefact, err := amc.artefactService.GetArtefact(federationContextId, artefactId)
 	if err != nil {
+		log.Printf("DeleteArtefactController - Artefact not found for federation %s, artefactId %s: %v", federationContextId, artefactId, err)
 		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found: "+err.Error())
 		return
 	}
 
 	// remove artefact from the orchestrator
+	log.Printf("DeleteArtefactController - Removing artefact from orchestrator for federation: %s, artefactId: %s, appPkgId: %s", federationContextId, artefactId, artefact.AppPkgId)
 	err = amc.orchestratorService.RemoveAppPkg(artefact.AppPkgId)
 	if err != nil {
+		log.Printf("DeleteArtefactController - Error removing artefact from orchestrator for federation %s, artefactId %s: %v", federationContextId, artefactId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing artefact from orchestrator: "+err.Error())
 		return
 	}
 
 	// delete artefact from the database
+	log.Printf("DeleteArtefactController - Deleting artefact from database for federation: %s, artefactId: %s", federationContextId, artefactId)
 	err = amc.artefactService.RemoveArtefact(federationContextId, artefactId)
 	if err != nil {
+		log.Printf("DeleteArtefactController - Error deleting artefact from database for federation %s, artefactId %s: %v", federationContextId, artefactId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting artefact from database: "+err.Error())
 		return
 	}
 
+	log.Printf("DeleteArtefactController - Artefact deleted successfully for federation: %s, artefactId: %s", federationContextId, artefactId)
 	c.JSON(http.StatusOK, gin.H{"status": "Artefact deleted successfully"})
 }
 

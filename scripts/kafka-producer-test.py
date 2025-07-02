@@ -11,10 +11,10 @@ sasl_mechanism = 'PLAIN'
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
-federation_context_id = "92853657-76ec-4dd7-860b-829f6047e520"
-app_pkg_id = "686403a4232d0ef0a39b7508"
+federation_context_id = "ae78f0d3-e684-4261-8324-7c700d226ac8"
+app_pkg_id = "686541fe232d0ef0a39b7509"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
-app_instance_id = "ab3ecfa3-dfd4-415c-a8b7-e9da6c15fa2c"
+app_instance_id = "a266deb5-08f2-4913-8840-1190e41e895f"
 kdu_id = "mec-test-server"
 
 messages = {

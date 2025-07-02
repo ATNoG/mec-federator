@@ -28,9 +28,9 @@ func NewFederationAppiNewCallback(services *router.Services) *FederationAppiNewC
 }
 
 func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received new app instance message from topic %s, partition %d, offset %d", 
+	log.Printf("Received new app instance message from topic %s, partition %d, offset %d",
 		message.Topic, message.Partition, message.Offset)
-	
+
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
@@ -114,7 +114,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	request.AppInstCallbackLink = "callback.link"
 
 	// send request to partner
-	appInstanceId, err := f.sendAppInstanceRequestToPartner(&federation, &request)
+	appInstanceId, nsId, err := f.sendAppInstanceRequestToPartner(&federation, &request)
 	if err != nil {
 		log.Printf("Error sending app instance request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to create app instance: %v", err))
@@ -144,6 +144,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	response := map[string]string{
 		"msg_id":          msgId,
 		"app_instance_id": appInstance.Id,
+		"ns_id":           nsId,
 		"status":          "201",
 		"message":         "App instance created successfully",
 	}
@@ -155,7 +156,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 	}
 }
 
-func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *models.Federation, request *dto.InstantiateApplicationRequest) (string, error) {
+func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *models.Federation, request *dto.InstantiateApplicationRequest) (string, string, error) {
 	// use the stored access token from the federation
 	accessToken := federation.OriginOP.AccessToken.AccessToken
 
@@ -165,7 +166,7 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 	// marshal the request
 	payload, err := json.Marshal(request)
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal request: %v", err)
+		return "", "", fmt.Errorf("failed to marshal request: %v", err)
 	}
 
 	// create HTTP request
@@ -187,27 +188,32 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 		headers,
 		auth)
 	if err != nil {
-		return "", fmt.Errorf("failed to send HTTP request: %v", err)
+		return "", "", fmt.Errorf("failed to send HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	// check response status
 	if resp.StatusCode != http.StatusCreated {
-		return "", fmt.Errorf("partner returned error status %d", resp.StatusCode)
+		return "", "", fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 
 	// parse response to get app instance ID
 	var response map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode response: %v", err)
+		return "", "", fmt.Errorf("failed to decode response: %v", err)
 	}
 
 	appInstanceId, ok := response["appInstanceId"].(string)
 	if !ok {
-		return "", fmt.Errorf("appInstanceId not found in partner response")
+		return "", "", fmt.Errorf("appInstanceId not found in partner response")
+	}
+
+	nsId, ok := response["nsId"].(string)
+	if !ok {
+		return "", "", fmt.Errorf("nsId not found in partner response")
 	}
 
 	log.Printf("Partner response: app instance created with ID %s", appInstanceId)
-	return appInstanceId, nil
+	return appInstanceId, nsId, nil
 }

@@ -176,17 +176,17 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, c
 	}
 
 	// get the appInstanceId from the response
-	appInstanceId := rsp["appi_id"].(string)
+	appiId := rsp["appi_id"].(string)
 
 	// return the appInstanceId
-	return appInstanceId, nil
+	return appiId, nil
 }
 
 // Delete an application instance
-func (s *OrchestratorService) TerminateAppi(appInstanceId string) error {
+func (s *OrchestratorService) TerminateAppi(appiId string) error {
 	// make a message to send to the kafka topic
 	message := dto.TerminateAppiMessage{
-		AppInstanceId: appInstanceId,
+		AppiId: appiId,
 	}
 
 	// send the message to the kafka topic
@@ -206,8 +206,8 @@ func (s *OrchestratorService) TerminateAppi(appInstanceId string) error {
 	status := rsp["status"].(float64)
 
 	// if status is not 204, return an error
-	if status != 204 {
-		return errors.New("failed to terminate appPkg")
+	if status < 200 || status >= 300 {
+		return errors.New("failed to terminate app instance")
 	}
 
 	return nil
