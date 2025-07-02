@@ -27,6 +27,12 @@ type Middlewares struct {
 	FederationExistsMiddleware *gin.HandlerFunc
 }
 
+func GinLoggerWithSkipPaths(skipPaths []string) gin.HandlerFunc {
+	return gin.LoggerWithConfig(gin.LoggerConfig{
+		SkipPaths: skipPaths,
+	})
+}
+
 func Init(svcs *Services, mdws *Middlewares) *gin.Engine {
 	// start gin with default settings
 	router := gin.Default()
@@ -39,6 +45,9 @@ func Init(svcs *Services, mdws *Middlewares) *gin.Engine {
 
 	// run the server
 	router.Run(":" + config.AppConfig.ApiPort)
+
+	// attach custom logger
+	router.Use(GinLoggerWithSkipPaths([]string{"/healthcheck"}))
 
 	return router
 }

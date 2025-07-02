@@ -103,6 +103,7 @@ func (ac *AuthController) IssueAccessTokenController(c *gin.Context) {
 	accessToken := models.AccessToken{
 		AccessToken: tokenResponse.AccessToken,
 		ExpiresAt:   expiresAt,
+		ClientId:    clientId,
 	}
 
 	log.Print("BeginAuthController - Saving AccessToken")
