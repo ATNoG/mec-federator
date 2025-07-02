@@ -253,7 +253,7 @@ func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKD
 
 	// get the appInstance from the orchestrator
 	log.Printf("EnableAppInstanceKDUController - Getting app instance from orchestrator for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
-	orchAppI, err := amc.orchestratorService.GetAppi(appInstance.Id)
+	orchAppI, err := amc.orchestratorService.GetAppi(appInstance.AppiId)
 	if err != nil {
 		log.Printf("EnableAppInstanceKDUController - Error getting app instance from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())

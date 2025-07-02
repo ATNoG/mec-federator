@@ -27,9 +27,9 @@ func NewEnableAppInstanceKDUCallback(services *router.Services) *FederationKduEn
 }
 
 func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received enable KDU message from topic %s, partition %d, offset %d", 
+	log.Printf("Received enable KDU message from topic %s, partition %d, offset %d",
 		message.Topic, message.Partition, message.Offset)
-	
+
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
@@ -48,10 +48,17 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 		return
 	}
 
-	appInstanceId, ok := msg["app_instance_id"].(string)
+	mecAppdId, ok := msg["mec_appd_id"].(string)
 	if !ok {
-		log.Printf("Error: app_instance_id not found or not a string")
-		f.services.KafkaClientService.SendResponse(msgId, "400", "app_instance_id is required")
+		log.Printf("Error: mec_appd_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "mec_appd_id is required")
+		return
+	}
+
+	nsId, ok := msg["ns_id"].(string)
+	if !ok {
+		log.Printf("Error: ns_id not found or not a string")
+		f.services.KafkaClientService.SendResponse(msgId, "400", "ns_id is required")
 		return
 	}
 
@@ -78,9 +85,33 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 		return
 	}
 
+	// Get the app pkg from the orchestrator
+	appPkg, err := f.services.OrchestratorService.GetAppPkgByMecAppdId(mecAppdId)
+	if err != nil {
+		log.Printf("Error getting app pkg: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "App pkg not found")
+		return
+	}
+
+	// Get the federated artefact from the database
+	artefact, err := f.services.ArtefactService.GetArtefactByAppPkgId(federationContextId, appPkg.Id.Hex())
+	if err != nil {
+		log.Printf("Error getting artefact: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Artefact not found")
+		return
+	}
+
+	// Get the app instance from the database
+	appInstance, err := f.services.AppInstanceService.GetAppInstanceFromNsId(federationContextId, artefact.Id, nsId)
+	if err != nil {
+		log.Printf("Error getting app instance: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "App instance not found")
+		return
+	}
+
 	// Send enable KDU request to partner
 	log.Printf("Sending enable KDU request to partner for KDU: %s on node: %s", kduId, nodeName)
-	err = f.sendEnableKDURequestToPartner(&federation, appInstanceId, kduId, nodeName)
+	err = f.sendEnableKDURequestToPartner(&federation, appInstance.Id, kduId, nodeName)
 	if err != nil {
 		log.Printf("Error sending enable KDU request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to enable KDU: %v", err))
@@ -94,7 +125,7 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 		return
 	}
 
-	log.Printf("Successfully enabled KDU %s for app instance %s on node %s", kduId, appInstanceId, nodeName)
+	log.Printf("Successfully enabled KDU %s for app instance %s on node %s", kduId, appInstance.Id, nodeName)
 }
 
 func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *models.Federation, appInstanceId, kduId, nodeName string) error {
