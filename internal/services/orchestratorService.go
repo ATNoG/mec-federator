@@ -141,6 +141,19 @@ func (s *OrchestratorService) GetAppPkg(objectId string) (dto.OrchAppPkg, error)
 	return appPkg, nil
 }
 
+// Get an app pkg object id from the orchestrator db using its mecAppdId
+func (s *OrchestratorService) GetAppPkgByMecAppdId(mecAppdId string) (dto.OrchAppPkg, error) {
+	collection := s.getOrchestratorAppPkgsCollection()
+	filter := bson.M{"appd_id": mecAppdId}
+	var appPkg dto.OrchAppPkg
+	err := collection.FindOne(context.Background(), filter).Decode(&appPkg)
+	if err != nil {
+		return dto.OrchAppPkg{}, err
+	}
+
+	return appPkg, nil
+}
+
 // Instantiate an appPkg
 func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, config string) (string, error) {
 	// make a message to send to the kafka topic
@@ -281,9 +294,9 @@ func (s *OrchestratorService) DisableAppiKDU(appdId string, kduId string, nsId s
 }
 
 // Get app instance details from the orchestrator db
-func (s *OrchestratorService) GetAppi(appInstanceId string) (dto.OrchAppI, error) {
+func (s *OrchestratorService) GetAppi(appiId string) (dto.OrchAppI, error) {
 	collection := s.getOrchestratorAppInstancesCollection()
-	filter := bson.M{"appi_id": appInstanceId}
+	filter := bson.M{"appi_id": appiId}
 	var appInstInfo dto.OrchAppI
 	err := collection.FindOne(context.Background(), filter).Decode(&appInstInfo)
 	if err != nil {

@@ -25,24 +25,24 @@ func NewArtefactManagementController(orchestratorService *services.OrchestratorS
 }
 
 // @Summary Onboard an artefact
-// @Description Receives an artefact from origin OP. Artefact is a zip file containing scripts and/or packaging files
+// @Description Receives an artefact from origin OP. Artefact is a zip file containing scripts and/or packaging files. The artefact is validated and onboarded to the orchestrator.
 // @Tags EWBI - ArtefactManagement
-// @Param federationContextId path string true "Federation Context ID"
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
 // @Accept multipart/form-data
 // @Produce json
-// @Param artefactFile formData file true "Artefact file"
-// @Param artefactId formData string true "Artefact ID"
-// @Param appProviderId formData string true "App Provider ID"
-// @Param artefactName formData string true "Artefact Name"
-// @Param artefactVersionInfo formData string true "Artefact Version Info"
-// @Param artefactDescription formData string true "Artefact Description"
-// @Param artefactVirtType formData string true "Artefact Virt Type"
-// @Param artefactDescriptorType formData string true "Artefact Descriptor Type"
-// @Param artefactFileFormat formData string true "Artefact File Format"
-// @Param artefactFileName formData string true "Artefact File Name"
-// @Success 200 {object} map[string]string "status: Artefact onboarded successfully"
-// @Failure 400 {object} models.ProblemDetails
-// @Failure 500 {object} models.ProblemDetails
+// @Param artefactFile formData file true "Artefact file (zip/tar format containing packaging files)"
+// @Param artefactId formData string true "Unique identifier for the artefact"
+// @Param appProviderId formData string true "Application provider identifier"
+// @Param artefactName formData string true "Human-readable name of the artefact"
+// @Param artefactVersionInfo formData string true "Version information of the artefact"
+// @Param artefactDescription formData string true "Detailed description of the artefact"
+// @Param artefactVirtType formData string true "Virtualization type (e.g., container, VM)"
+// @Param artefactDescriptorType formData string true "Type of descriptor file (e.g., TOSCA, Helm)"
+// @Param artefactFileFormat formData string true "File format of the artefact (e.g., zip, tar.gz)"
+// @Param artefactFileName formData string true "Original filename of the artefact"
+// @Success 200 {object} map[string]string "Artefact onboarded successfully"
+// @Failure 400 {object} models.ProblemDetails "Bad request - invalid form data, missing required fields, or validation errors"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - file processing, orchestrator, or database errors"
 // @Router /ewbi/{federationContextId}/artefact [post]
 func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Context) {
 	federationContextId := c.Param("federationContextId")
@@ -161,13 +161,14 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 }
 
 // @Summary Get an artefact
-// @Description Get an artefact details by its id
+// @Description Retrieve detailed information about a specific artefact by its ID within a federation context
 // @Tags EWBI - ArtefactManagement
-// @Param federationContextId path string true "Federation Context ID"
-// @Param artefactId path string true "Artefact ID"
-// @Success 200 {object} dto.GetArtefactResponse
-// @Failure 404 {object} models.ProblemDetails
-// @Failure 500 {object} models.ProblemDetails
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Param artefactId path string true "Unique identifier of the artefact to retrieve"
+// @Produce json
+// @Success 200 {object} dto.GetArtefactResponse "Artefact details retrieved successfully"
+// @Failure 404 {object} models.ProblemDetails "Artefact not found in the specified federation context"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - database access failure"
 // @Router /ewbi/{federationContextId}/artefacts/{artefactId} [get]
 func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 	// get the artefact id from path
@@ -205,13 +206,14 @@ func (amc *ArtefactManagementController) GetArtefactController(c *gin.Context) {
 }
 
 // @Summary Delete an artefact
-// @Description Delete an artefact by its id
+// @Description Remove an artefact from both the orchestrator and database. This operation will also clean up associated resources.
 // @Tags EWBI - ArtefactManagement
-// @Param federationContextId path string true "Federation Context ID"
-// @Param artefactId path string true "Artefact ID"
-// @Success 200 {object} map[string]string "status: Artefact deleted successfully"
-// @Failure 404 {object} models.ProblemDetails
-// @Failure 500 {object} models.ProblemDetails
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Param artefactId path string true "Unique identifier of the artefact to delete"
+// @Produce json
+// @Success 200 {object} map[string]string "Artefact deleted successfully"
+// @Failure 404 {object} models.ProblemDetails "Artefact not found in the specified federation context"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - orchestrator removal or database deletion failure"
 // @Router /ewbi/{federationContextId}/artefact/{artefactId} [delete]
 func (amc *ArtefactManagementController) DeleteArtefactController(c *gin.Context) {
 	// get the artefact id from path

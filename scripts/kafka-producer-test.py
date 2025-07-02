@@ -15,6 +15,8 @@ federation_context_id = "ae78f0d3-e684-4261-8324-7c700d226ac8"
 app_pkg_id = "686541fe232d0ef0a39b7509"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
 app_instance_id = "a266deb5-08f2-4913-8840-1190e41e895f"
+mec_appd_id = "mec-test-server-appd"
+ns_id = "261274de-8b20-43ad-a64c-c79fc773a975"
 kdu_id = "mec-test-server"
 
 messages = {
@@ -61,7 +63,8 @@ messages = {
     "federation_disable_kdu": {
         "msg_id": "8",
         "federation_context_id": federation_context_id,
-        "app_instance_id": app_instance_id,
+        "mec_appd_id": mec_appd_id,
+        "ns_id": ns_id,
         "kdu_id": kdu_id,
     },
 }

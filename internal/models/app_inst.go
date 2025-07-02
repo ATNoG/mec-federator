@@ -7,5 +7,9 @@ type AppInstance struct {
 	Description         string `json:"description" bson:"description"`
 	ArtefactId          string `json:"artefactId" bson:"artefactId"`
 	AppiId              string `json:"appiId" bson:"appiId"`
-	AppPkgId            string `json:"appPkgId,omitempty" bson:"appPkgId"`
+
+	// is empty if the app instance is running on a partner zone
+	AppPkgId string `json:"appPkgId,omitempty" bson:"appPkgId"`
+	// refers to the ns id of the app instance if it is running on a partner zone
+	NsId string `json:"nsId,omitempty" bson:"nsId"`
 }

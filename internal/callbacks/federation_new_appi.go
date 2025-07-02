@@ -128,6 +128,8 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 		ArtefactId:          artefact.Id,
 		Name:                "federated-instance",
 		Description:         "not-local",
+		AppPkgId:            "", // empty if the app instance is running on a partner zone
+		NsId:                nsId,
 	}
 
 	// save appinstance to database

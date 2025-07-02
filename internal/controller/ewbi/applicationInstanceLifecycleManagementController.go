@@ -29,8 +29,17 @@ func NewApplicationInstanceLifecycleManagementController(orchestratorService *se
 }
 
 // @Summary Create an application instance
-// @Description Used by origin OP to create an application instance
+// @Description Creates a new application instance by instantiating an artefact in the specified zone. The operation includes artefact validation, orchestrator instantiation, and database registration.
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Accept json
+// @Produce json
+// @Param request body dto.InstantiateApplicationRequest true "Application instantiation request"
+// @Success 201 {object} map[string]string "Application instance created successfully with appInstanceId and nsId"
+// @Failure 400 {object} models.ProblemDetails "Bad request - invalid request body or validation errors"
+// @Failure 404 {object} models.ProblemDetails "Artefact not found in the specified federation context"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - VIM ID retrieval, orchestrator instantiation, or database errors"
+// @Router /ewbi/{federationContextId}/app_instances [post]
 func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceController(c *gin.Context) {
 	federationContextId := c.Param("federationContextId")
 	log.Printf("CreateAppInstanceController - Starting application instance creation for federation: %s", federationContextId)
@@ -121,8 +130,15 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 }
 
 // @Summary Delete an application instance
-// @Description Used by origin OP to delete an application instance
+// @Description Terminates and removes an application instance from both the orchestrator and database. This operation cleans up all associated resources.
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Param appInstanceId path string true "Application Instance ID" format(uuid)
+// @Produce json
+// @Success 200 {object} map[string]string "Application instance deleted successfully with appInstanceId"
+// @Failure 404 {object} models.ProblemDetails "Application instance not found"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - orchestrator termination or database removal errors"
+// @Router /ewbi/{federationContextId}/app_instances/{appInstanceId} [delete]
 func (amc *ApplicationInstanceLifecycleManagementController) DeleteAppInstanceController(c *gin.Context) {
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
@@ -163,9 +179,16 @@ func (amc *ApplicationInstanceLifecycleManagementController) DeleteAppInstanceCo
 	c.JSON(http.StatusOK, gin.H{"appInstanceId": appInstanceId})
 }
 
-// @Summary Get details about an application instance
-// @Description Used by origin OP to get details about an application instance
+// @Summary Get application instance details
+// @Description Retrieves comprehensive details about a specific application instance from the orchestrator, including deployment status and configuration.
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Param appInstanceId path string true "Application Instance ID" format(uuid)
+// @Produce json
+// @Success 200 {object} dto.OrchAppI "Application instance details from orchestrator"
+// @Failure 404 {object} models.ProblemDetails "Application instance not found"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - orchestrator access failure"
+// @Router /ewbi/{federationContextId}/app_instances/{appInstanceId} [get]
 func (amc *ApplicationInstanceLifecycleManagementController) GetAppInstanceDetailsController(c *gin.Context) {
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
@@ -187,8 +210,18 @@ func (amc *ApplicationInstanceLifecycleManagementController) GetAppInstanceDetai
 }
 
 // @Summary Enable application instance KDU
-// @Description Used by origin OP to enable an application instance KDU of a certain application instance
+// @Description Enables a specific Kubernetes Deployment Unit (KDU) within an application instance. This operation activates the KDU on the specified node.
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Param appInstanceId path string true "Application Instance ID" format(uuid)
+// @Accept json
+// @Produce json
+// @Param request body dto.EnableAppInstanceKDURequest true "KDU enablement request with KDU ID and target node"
+// @Success 200 {object} map[string]interface{} "KDU enabled successfully with application instance details"
+// @Failure 400 {object} models.ProblemDetails "Bad request - invalid request body or missing KDU"
+// @Failure 404 {object} models.ProblemDetails "Application instance or KDU not found"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - database access, orchestrator operations, or KDU enablement failure"
+// @Router /ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/enable [post]
 func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKDUController(c *gin.Context) {
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
@@ -262,8 +295,18 @@ func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKD
 }
 
 // @Summary Disable application instance KDU
-// @Description Used by origin OP to disable an application instance KDU of a certain application instance
+// @Description Disables a specific Kubernetes Deployment Unit (KDU) within an application instance. This operation deactivates the KDU and stops its execution.
 // @Tags EWBI - ApplicationInstanceLifecycleManagement
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Param appInstanceId path string true "Application Instance ID" format(uuid)
+// @Accept json
+// @Produce json
+// @Param request body dto.DisableAppInstanceKDURequest true "KDU disablement request with KDU ID"
+// @Success 200 {object} map[string]string "KDU disabled successfully with KDU ID"
+// @Failure 400 {object} models.ProblemDetails "Bad request - invalid request body or missing KDU"
+// @Failure 404 {object} models.ProblemDetails "Application instance or KDU not found"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - database access, orchestrator operations, or KDU disablement failure"
+// @Router /ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/disable [post]
 func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceKDUController(c *gin.Context) {
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
@@ -295,7 +338,7 @@ func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceK
 
 	// get the appInstance from the orchestrator
 	log.Printf("DisableAppInstanceKDUController - Getting app instance from orchestrator for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
-	orchAppI, err := amc.orchestratorService.GetAppi(appInstance.Id)
+	orchAppI, err := amc.orchestratorService.GetAppi(appInstance.AppiId)
 	if err != nil {
 		log.Printf("DisableAppInstanceKDUController - Error getting app instance from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())

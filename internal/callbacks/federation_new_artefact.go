@@ -31,9 +31,9 @@ func NewFederationArtefactNewCallback(services *router.Services) *FederationArte
 
 // receives info about an artefact to make available to a certain federation
 func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received new artefact message from topic %s, partition %d, offset %d", 
+	log.Printf("Received new artefact message from topic %s, partition %d, offset %d",
 		message.Topic, message.Partition, message.Offset)
-	
+
 	// unmarshal the message
 	var msg map[string]interface{}
 	if err := json.Unmarshal(message.Value, &msg); err != nil {
@@ -69,6 +69,14 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 		return
 	}
 
+	// check if the artefact already exists
+	artefact, err := f.services.ArtefactService.GetArtefactByAppPkgId(federationContextId, appPkgId)
+	if err == nil {
+		log.Printf("Artefact already exists: %s", artefact.Id)
+		f.services.KafkaClientService.SendResponse(msgId, "200", "Artefact already exists")
+		return
+	}
+
 	// get the app package from the orchestrator
 	log.Printf("Retrieving app package from orchestrator: %s", appPkgId)
 	appPkg, err := f.services.OrchestratorService.GetAppPkg(appPkgId)
@@ -80,7 +88,7 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 	log.Printf("Successfully retrieved app package: %s", appPkg.Name)
 
 	// create the artefact
-	artefact := &models.Artefact{
+	artefact = models.Artefact{
 		Id:                  uuid.New().String(),
 		FederationContextId: federationContextId,
 		AppPkgId:            appPkgId,
@@ -96,7 +104,7 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 
 	// send the artefact to the partner operator
 	log.Printf("Sending artefact %s to partner operator", artefact.Id)
-	err = f.sendArtefactToPartner(&federation, artefact)
+	err = f.sendArtefactToPartner(&federation, &artefact)
 	if err != nil {
 		log.Printf("Error sending artefact to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to send artefact to partner: %v", err))
@@ -107,7 +115,7 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 	// save the artefact locally
 	log.Printf("Saving artefact %s to local database", artefact.Id)
 	artefact.FederationContextId = federationContextId
-	err = f.services.ArtefactService.SaveArtefact(*artefact)
+	err = f.services.ArtefactService.SaveArtefact(artefact)
 	if err != nil {
 		log.Printf("Error saving artefact locally: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", "Failed to save artefact locally")
@@ -123,7 +131,7 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 		"status":      "200",
 		"message":     "Artefact created and sent successfully",
 	}
-	
+
 	_, err = f.services.KafkaClientService.Produce("responses", response)
 	if err != nil {
 		log.Printf("Error sending response to kafka: %v", err)

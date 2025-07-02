@@ -73,6 +73,17 @@ func (as *ArtefactService) GetArtefact(federationContextId string, artefactId st
 	return artefact, err
 }
 
+// Get an artefact by appPkgId and federationContextId
+func (as *ArtefactService) GetArtefactByAppPkgId(federationContextId string, appPkgId string) (models.Artefact, error) {
+	collection := as.getArtefactCollection()
+	filter := bson.M{"federationContextId": federationContextId, "appPkgId": appPkgId}
+	artefact, err := utils.FetchEntityFromDatabase[models.Artefact](collection, filter)
+	if err != nil {
+		return models.Artefact{}, fmt.Errorf("no artefact found with appPkgId %s in federation %s: %v", appPkgId, federationContextId, err)
+	}
+	return artefact, nil
+}
+
 // Get an artefact from the local database using the artefactId
 func (as *ArtefactService) GetArtefactById(artefactId string) (models.Artefact, error) {
 	collection := as.getArtefactCollection()
@@ -90,17 +101,6 @@ func (as *ArtefactService) GetArtefactsByFederationContextId(federationContextId
 	filter := bson.M{"federationContextId": federationContextId}
 	artefacts, err := utils.FetchEntitiesFromDatabase[models.Artefact](collection, filter)
 	return artefacts, err
-}
-
-// Get an artefact by appPkgId and federationContextId
-func (as *ArtefactService) GetArtefactByAppPkgId(federationContextId string, appPkgId string) (models.Artefact, error) {
-	collection := as.getArtefactCollection()
-	filter := bson.M{"federationContextId": federationContextId, "appPkgId": appPkgId}
-	artefact, err := utils.FetchEntityFromDatabase[models.Artefact](collection, filter)
-	if err != nil {
-		return models.Artefact{}, fmt.Errorf("no artefact found with appPkgId %s in federation %s: %v", appPkgId, federationContextId, err)
-	}
-	return artefact, nil
 }
 
 // Remove an artefact from the local database using the federationContextId and artefactId
