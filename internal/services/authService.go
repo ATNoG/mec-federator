@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -135,6 +136,10 @@ func (s *AuthService) FetchAccessTokenFromAuthEndpoint(authEndpoint string, clie
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return models.AccessToken{}, fmt.Errorf("failed to fetch access token: %s", resp.Status)
+	}
 
 	var accessToken models.AccessToken
 	body, err := io.ReadAll(resp.Body)
