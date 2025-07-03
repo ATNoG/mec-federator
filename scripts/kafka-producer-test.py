@@ -14,9 +14,9 @@ security_protocol = 'SASL_PLAINTEXT'
 federation_context_id = "ae78f0d3-e684-4261-8324-7c700d226ac8"
 app_pkg_id = "686541fe232d0ef0a39b7509"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
-app_instance_id = "a266deb5-08f2-4913-8840-1190e41e895f"
+app_instance_id = "e4b0be62-31b2-469a-9952-b9043de04b8f"
 mec_appd_id = "mec-test-server-appd"
-ns_id = "261274de-8b20-43ad-a64c-c79fc773a975"
+ns_id = "42af1c10-8d94-49e2-9e90-d9081d933dcd"
 kdu_id = "mec-test-server"
 
 messages = {

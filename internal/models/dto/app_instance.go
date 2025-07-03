@@ -13,11 +13,14 @@ type InstantiateApplicationRequest struct {
 
 // request to enable a KDU of an application instance
 type EnableAppInstanceKDURequest struct {
-	KDUId string `json:"kduId"`
-	Node  string `json:"node"`
+	KduId  string `json:"kduId"`
+	NsId   string `json:"nsId"`
+	Node   string `json:"node"`
+	NodeId string `json:"nodeId"`
 }
 
 // request to disable a KDU of an application instance
 type DisableAppInstanceKDURequest struct {
-	KDUId string `json:"kduId"`
+	NsId  string `json:"nsId"`
+	KduId string `json:"kduId"`
 }

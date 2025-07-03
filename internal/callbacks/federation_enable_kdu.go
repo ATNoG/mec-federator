@@ -111,7 +111,7 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 
 	// Send enable KDU request to partner
 	log.Printf("Sending enable KDU request to partner for KDU: %s on node: %s", kduId, nodeName)
-	err = f.sendEnableKDURequestToPartner(&federation, appInstance.Id, kduId, nodeName)
+	err = f.sendEnableKDURequestToPartner(&federation, appInstance.Id, nsId,  	kduId, nodeName)
 	if err != nil {
 		log.Printf("Error sending enable KDU request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to enable KDU: %v", err))
@@ -128,7 +128,7 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 	log.Printf("Successfully enabled KDU %s for app instance %s on node %s", kduId, appInstance.Id, nodeName)
 }
 
-func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *models.Federation, appInstanceId, kduId, nodeName string) error {
+func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *models.Federation, appInstanceId, nsId, kduId, nodeName string) error {
 	// Use the stored access token from the federation
 	accessToken := federation.OriginOP.AccessToken.AccessToken
 
@@ -138,8 +138,9 @@ func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *
 
 	// Create the enable request
 	request := dto.EnableAppInstanceKDURequest{
-		KDUId: kduId,
+		KduId: kduId,
 		Node:  nodeName,
+		NsId:  nsId,
 	}
 
 	// Marshal the request

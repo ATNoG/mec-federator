@@ -107,7 +107,7 @@ func (f *FederationKduDisableCallback) HandleMessage(message *sarama.ConsumerMes
 
 	// Send disable KDU request to partner
 	log.Printf("Sending disable KDU request to partner for KDU: %s", kduId)
-	err = f.sendDisableKDURequestToPartner(&federation, appInstance.Id, kduId)
+	err = f.sendDisableKDURequestToPartner(&federation, appInstance.Id, nsId, kduId)
 	if err != nil {
 		log.Printf("Error sending disable KDU request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to disable KDU: %v", err))
@@ -124,7 +124,7 @@ func (f *FederationKduDisableCallback) HandleMessage(message *sarama.ConsumerMes
 	log.Printf("Successfully disabled KDU %s for app instance %s", kduId, appInstance.Id)
 }
 
-func (f *FederationKduDisableCallback) sendDisableKDURequestToPartner(federation *models.Federation, appInstanceId, kduId string) error {
+func (f *FederationKduDisableCallback) sendDisableKDURequestToPartner(federation *models.Federation, appInstanceId, nsId, kduId string) error {
 	// Use the stored access token from the federation
 	accessToken := federation.OriginOP.AccessToken.AccessToken
 
@@ -135,7 +135,8 @@ func (f *FederationKduDisableCallback) sendDisableKDURequestToPartner(federation
 
 	// Create the disable request
 	request := dto.DisableAppInstanceKDURequest{
-		KDUId: kduId,
+		KduId: kduId,
+		NsId:  nsId,
 	}
 
 	// Marshal the request

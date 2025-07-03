@@ -240,22 +240,13 @@ func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKD
 		return
 	}
 
-	log.Printf("EnableAppInstanceKDUController - Request details for federation: %s, appInstanceId: %s, kduId: %s, node: %s", federationContextId, appInstanceId, request.KDUId, request.Node)
+	log.Printf("EnableAppInstanceKDUController - Request details for federation: %s, appInstanceId: %s, kduId: %s, node: %s", federationContextId, appInstanceId, request.KduId, request.Node)
 
 	// get the appInstance from the database
 	log.Printf("EnableAppInstanceKDUController - Getting app instance from database for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
 	appInstance, err := amc.appInstanceService.GetAppInstance(federationContextId, appInstanceId)
 	if err != nil {
 		log.Printf("EnableAppInstanceKDUController - Error getting app instance from database for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())
-		return
-	}
-
-	// get the appInstance from the orchestrator
-	log.Printf("EnableAppInstanceKDUController - Getting app instance from orchestrator for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
-	orchAppI, err := amc.orchestratorService.GetAppi(appInstance.AppiId)
-	if err != nil {
-		log.Printf("EnableAppInstanceKDUController - Error getting app instance from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())
 		return
 	}
@@ -269,29 +260,17 @@ func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKD
 		return
 	}
 
-	// iterate over the instances and check if the kdu id is in one of the instances
-	log.Printf("EnableAppInstanceKDUController - Searching for KDU in instances for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KDUId)
-	var nsId string
-	instances := orchAppI.Instances[orchAppI.Domain]
-	for _, instance := range instances {
-		if _, ok := instance.KDUs[request.KDUId]; ok {
-			nsId = instance.NSID
-			log.Printf("EnableAppInstanceKDUController - Found KDU in instance for federation: %s, appInstanceId: %s, kduId: %s, nsId: %s", federationContextId, appInstanceId, request.KDUId, nsId)
-			break
-		}
-	}
-
 	// enable the kdu
-	log.Printf("EnableAppInstanceKDUController - Enabling KDU for federation: %s, appInstanceId: %s, kduId: %s, nsId: %s, node: %s, appdId: %s", federationContextId, appInstanceId, request.KDUId, nsId, request.Node, appPkg.AppdId)
-	err = amc.orchestratorService.EnableAppInstanceKDU(appPkg.AppdId, request.KDUId, nsId, request.Node)
+	log.Printf("EnableAppInstanceKDUController - Enabling KDU for federation: %s, appInstanceId: %s, kduId: %s, nsId: %s, node: %s, appdId: %s", federationContextId, appInstanceId, request.KduId, request.NsId, request.Node, appPkg.AppdId)
+	err = amc.orchestratorService.EnableAppInstanceKDU(appPkg.AppdId, request.KduId, request.NsId, request.Node)
 	if err != nil {
-		log.Printf("EnableAppInstanceKDUController - Error enabling KDU for federation %s, appInstanceId %s, kduId %s: %v", federationContextId, appInstanceId, request.KDUId, err)
+		log.Printf("EnableAppInstanceKDUController - Error enabling KDU for federation %s, appInstanceId %s, kduId %s: %v", federationContextId, appInstanceId, request.KduId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error enabling application instance KDU: "+err.Error())
 		return
 	}
 
-	log.Printf("EnableAppInstanceKDUController - KDU enabled successfully for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KDUId)
-	c.JSON(http.StatusOK, gin.H{"appInstance": appInstance})
+	log.Printf("EnableAppInstanceKDUController - KDU enabled successfully for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KduId)
+	c.JSON(http.StatusOK, gin.H{"appInstance": appInstance, "kduId": request.KduId, "nsId": request.NsId})
 }
 
 // @Summary Disable application instance KDU
@@ -325,22 +304,13 @@ func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceK
 		return
 	}
 
-	log.Printf("DisableAppInstanceKDUController - Request details for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KDUId)
+	log.Printf("DisableAppInstanceKDUController - Request details for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KduId)
 
 	// get the appInstance from the database
 	log.Printf("DisableAppInstanceKDUController - Getting app instance from database for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
 	appInstance, err := amc.appInstanceService.GetAppInstance(federationContextId, appInstanceId)
 	if err != nil {
 		log.Printf("DisableAppInstanceKDUController - Error getting app instance from database for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())
-		return
-	}
-
-	// get the appInstance from the orchestrator
-	log.Printf("DisableAppInstanceKDUController - Getting app instance from orchestrator for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
-	orchAppI, err := amc.orchestratorService.GetAppi(appInstance.AppiId)
-	if err != nil {
-		log.Printf("DisableAppInstanceKDUController - Error getting app instance from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())
 		return
 	}
@@ -354,26 +324,13 @@ func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceK
 		return
 	}
 
-	// get the instances in the domain
-	log.Printf("DisableAppInstanceKDUController - Searching for KDU in instances for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KDUId)
-	instances := orchAppI.Instances[orchAppI.Domain]
-
-	// iterate over the instances and check if the kdu id is in one of the instances
-	for _, instance := range instances {
-		if _, ok := instance.KDUs[request.KDUId]; ok {
-			log.Printf("DisableAppInstanceKDUController - Found KDU in instance, disabling for federation: %s, appInstanceId: %s, kduId: %s, nsId: %s, appdId: %s", federationContextId, appInstanceId, request.KDUId, instance.NSID, appPkg.AppdId)
-			// disable the kdu
-			err = amc.orchestratorService.DisableAppiKDU(appPkg.AppdId, request.KDUId, instance.NSID)
-			if err != nil {
-				log.Printf("DisableAppInstanceKDUController - Error disabling KDU for federation %s, appInstanceId %s, kduId %s: %v", federationContextId, appInstanceId, request.KDUId, err)
-				utils.HandleProblem(c, http.StatusInternalServerError, "Error disabling application instance KDU: "+err.Error())
-				return
-			}
-
-			log.Printf("DisableAppInstanceKDUController - KDU disabled successfully for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KDUId)
-			break
-		}
+	err = amc.orchestratorService.DisableAppiKDU(appPkg.AppdId, request.KduId, request.NsId)
+	if err != nil {
+		log.Printf("DisableAppInstanceKDUController - Error disabling KDU for federation %s, appInstanceId %s, kduId %s: %v", federationContextId, appInstanceId, request.KduId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error disabling application instance KDU: "+err.Error())
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"kduId": request.KDUId})
+	log.Printf("DisableAppInstanceKDUController - KDU disabled successfully for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KduId)
+	c.JSON(http.StatusOK, gin.H{"appInstance": appInstance, "kduId": request.KduId, "nsId": request.NsId})
 }
