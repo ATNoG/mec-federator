@@ -51,6 +51,7 @@ func initEwbiZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middle
 	zoneInfoSyncController := ewbi.NewZonesInfoSyncController(
 		svcs.ZoneService,
 		svcs.OrchestratorService,
+		svcs.KafkaClientService,
 	)
 
 	ZoneInfoSync.POST(
@@ -70,6 +71,11 @@ func initEwbiZoneInfoSyncRoutes(router *gin.Engine, svcs *Services, mdws *Middle
 		"/:federationContextId/zones",
 		*mdws.FederationExistsMiddleware,
 		zoneInfoSyncController.GetAllLocalZonesController)
+
+	ZoneInfoSync.POST(
+		"/:federationContextId/metrics",
+		*mdws.FederationExistsMiddleware,
+		zoneInfoSyncController.PostMetricsController)
 }
 
 func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {

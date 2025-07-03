@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/services"
 	"github.com/mankings/mec-federator/internal/utils"
 )
@@ -12,12 +13,14 @@ import (
 type ZonesInfoSyncController struct {
 	zoneService         *services.ZoneService
 	orchestratorService *services.OrchestratorService
+	kafkaClientService  *services.KafkaClientService
 }
 
-func NewZonesInfoSyncController(zoneService *services.ZoneService, orchestratorService *services.OrchestratorService) *ZonesInfoSyncController {
+func NewZonesInfoSyncController(zoneService *services.ZoneService, orchestratorService *services.OrchestratorService, kafkaClientService *services.KafkaClientService) *ZonesInfoSyncController {
 	return &ZonesInfoSyncController{
 		zoneService:         zoneService,
 		orchestratorService: orchestratorService,
+		kafkaClientService:  kafkaClientService,
 	}
 }
 
@@ -71,4 +74,25 @@ func (zisc *ZonesInfoSyncController) GetAllLocalZonesController(c *gin.Context) 
 	}
 
 	c.JSON(http.StatusOK, localZones)
+}
+
+func (zisc *ZonesInfoSyncController) PostMetricsController(c *gin.Context) {
+	// get the request body and decode
+	var metricsRequestData dto.OrchMehMetricsRequestData
+	if err := c.ShouldBindJSON(&metricsRequestData); err != nil {
+		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// post metrics to kafka topic
+	metricsTopic := "federation-meh-metrics"
+	metricsMessage := metricsRequestData
+
+	msgId, err := zisc.kafkaClientService.Produce(metricsTopic, metricsMessage)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error posting metrics to kafka: "+err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msgId": msgId})
 }

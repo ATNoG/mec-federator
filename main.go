@@ -91,28 +91,31 @@ func main() {
 
 	infrastructureInfoCallback := callbacks.NewInfrastructureInfoCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage, false)
-	
+
+	federationInfrastructureInfoCallback := callbacks.NewFederationInfrastructureInfoCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation-infrastructure-info", federationInfrastructureInfoCallback.HandleMessage, false)
+
 	newFederationCallback := callbacks.NewNewFederationCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage, true)
-	
+
 	removeFederationCallback := callbacks.NewRemoveFederationCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage, true)
-	
+
 	newFederationArtefactCallback := callbacks.NewFederationArtefactNewCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_new_artefact", newFederationArtefactCallback.HandleMessage, true)
-	
+
 	removeFederationArtefactCallback := callbacks.NewFederationArtefactRemoveCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_remove_artefact", removeFederationArtefactCallback.HandleMessage, true)
-	
+
 	newFederationAppiCallback := callbacks.NewFederationAppiNewCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_new_appi", newFederationAppiCallback.HandleMessage, true)
-	
+
 	removeFederationAppiCallback := callbacks.NewFederationRemoveAppiCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_remove_appi", removeFederationAppiCallback.HandleMessage, true)
-	
+
 	enableAppInstKDUCallback := callbacks.NewEnableAppInstanceKDUCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_enable_kdu", enableAppInstKDUCallback.HandleMessage, true)
-	
+
 	disableAppInstKDUCallback := callbacks.NewDisableAppInstanceKDUCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_disable_kdu", disableAppInstKDUCallback.HandleMessage, true)
 

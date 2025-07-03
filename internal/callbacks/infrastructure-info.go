@@ -61,5 +61,4 @@ func (cc *InfrastructureInfoCallback) HandleMessage(message *sarama.ConsumerMess
 		log.Println("Error updating local zones:", err)
 		return
 	}
-
 }

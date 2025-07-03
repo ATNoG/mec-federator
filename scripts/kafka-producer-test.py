@@ -11,9 +11,9 @@ sasl_mechanism = 'PLAIN'
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
-federation_endpoint = "http://10.255.41.64:32440"
+federation_endpoint = "http://federator-po:8000"
 auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
-federation_context_id = "ae78f0d3-e684-4261-8324-7c700d226ac8"
+federation_context_id = "c3915b4e-2cad-4c86-9516-b351009b5165"
 app_pkg_id = "686541fe232d0ef0a39b7509"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
 app_instance_id = "c3c6d659-c04c-492a-9b0a-db4285118108"
@@ -69,6 +69,14 @@ messages = {
         "mec_appd_id": mec_appd_id,
         "ns_id": ns_id,
         "kdu_id": kdu_id,
+    },
+    "federation-infrastructure-info": {
+        "msg_id": "9",
+        "federation-meh-metrics": {
+            "cluster1Id": "cluster1",
+            "cluster2Id": "cluster2",
+            "cluster3Id": "cluster3",
+        },
     },
 }
 

@@ -203,3 +203,36 @@ func (fs *FederationService) GetFederatorUrl(federationContextId string) (string
 	}
 	return federatorUrl, nil
 }
+
+// Get Federations retrieves all federations from the database
+func (fs *FederationService) GetFederations() ([]models.Federation, error) {
+	collection := fs.getFederationCollection()
+	filter := bson.M{}
+	federations, err := utils.FetchEntitiesFromDatabase[models.Federation](collection, filter)
+	if err != nil {
+		return []models.Federation{}, fmt.Errorf("error fetching federations: %v", err)
+	}
+	return federations, nil
+}
+
+// GetOriginFederations retrieves the federations in which this federator is the origin OP from the database
+func (fs *FederationService) GetOriginFederations() ([]models.Federation, error) {
+	collection := fs.getFederationCollection()
+	filter := bson.M{"isOriginOP": true}
+	federations, err := utils.FetchEntitiesFromDatabase[models.Federation](collection, filter)
+	if err != nil {
+		return []models.Federation{}, fmt.Errorf("error fetching origin federations: %v", err)
+	}
+	return federations, nil
+}
+
+// GetPartnerFederations retrieves the federations in which this federator is the partner OP from the database
+func (fs *FederationService) GetPartnerFederations() ([]models.Federation, error) {
+	collection := fs.getFederationCollection()
+	filter := bson.M{"isOriginOP": false}
+	federations, err := utils.FetchEntitiesFromDatabase[models.Federation](collection, filter)
+	if err != nil {
+		return []models.Federation{}, fmt.Errorf("error fetching partner federations: %v", err)
+	}
+	return federations, nil
+}
