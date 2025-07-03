@@ -15,6 +15,7 @@ import (
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type FederationAppiNewCallback struct {
@@ -28,19 +29,24 @@ func NewFederationAppiNewCallback(services *router.Services) *FederationAppiNewC
 }
 
 func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received new app instance message from topic %s, partition %d, offset %d",
-		message.Topic, message.Partition, message.Offset)
+	utils.TimeCallback("FederationAppiNewCallback.HandleMessage", func() {
+		log.Printf("Received new app instance message from topic %s, partition %d, offset %d",
+			message.Topic, message.Partition, message.Offset)
 
-	var msg map[string]interface{}
-	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return
-	}
+		var msg map[string]interface{}
+		if err := json.Unmarshal(message.Value, &msg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return
+		}
 
-	log.Printf("Processing new app instance request with message ID: %s", msg["msg_id"])
+		log.Printf("Processing new app instance request with message ID: %s", msg["msg_id"])
 
-	msgId := msg["msg_id"].(string)
+		msgId := msg["msg_id"].(string)
+		f.handleNewAppInstance(msgId, msg)
+	})
+}
 
+func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[string]interface{}) {
 	// Extract and validate required fields from the message
 	federationContextId, ok := msg["federation_context_id"].(string)
 	if !ok {

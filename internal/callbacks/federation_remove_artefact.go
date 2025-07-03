@@ -13,6 +13,7 @@ import (
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type FederationArtefactRemoveCallback struct {
@@ -27,20 +28,25 @@ func NewFederationArtefactRemoveCallback(services *router.Services) *FederationA
 
 // receives info about an artefact to remove from a certain federation
 func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received remove artefact message from topic %s, partition %d, offset %d", 
-		message.Topic, message.Partition, message.Offset)
-	
-	// unmarshal the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return
-	}
+	utils.TimeCallback("FederationArtefactRemoveCallback.HandleMessage", func() {
+		log.Printf("Received remove artefact message from topic %s, partition %d, offset %d", 
+			message.Topic, message.Partition, message.Offset)
+		
+		// unmarshal the message
+		var msg map[string]interface{}
+		if err := json.Unmarshal(message.Value, &msg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return
+		}
 
-	log.Printf("Processing remove artefact request with message ID: %s", msg["msg_id"])
+		log.Printf("Processing remove artefact request with message ID: %s", msg["msg_id"])
 
-	msgId := msg["msg_id"].(string)
+		msgId := msg["msg_id"].(string)
+		f.handleRemoveArtefact(msgId, msg)
+	})
+}
 
+func (f *FederationArtefactRemoveCallback) handleRemoveArtefact(msgId string, msg map[string]interface{}) {
 	// Extract and validate required fields from the message
 	appPkgId, ok := msg["app_pkg_id"].(string)
 	if !ok {

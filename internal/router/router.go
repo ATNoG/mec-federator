@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mankings/mec-federator/docs"
 	"github.com/mankings/mec-federator/internal/config"
+	"github.com/mankings/mec-federator/internal/middleware"
 	"github.com/mankings/mec-federator/internal/services"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -25,6 +26,7 @@ type Services struct {
 type Middlewares struct {
 	AuthMiddleware             *gin.HandlerFunc
 	FederationExistsMiddleware *gin.HandlerFunc
+	TimeRequestMiddleware      *gin.HandlerFunc
 }
 
 func GinLoggerWithSkipPaths(skipPaths []string) gin.HandlerFunc {
@@ -49,6 +51,12 @@ func Init(svcs *Services, mdws *Middlewares) *gin.Engine {
 	// attach custom logger
 	router.Use(GinLoggerWithSkipPaths([]string{"/healthcheck"}))
 
+	// timing middleware
+	router.Use(middleware.TimingMiddleware())
+
+	// attach custom logger
+	router.Use(GinLoggerWithSkipPaths([]string{"/healthcheck"}))
+
 	return router
 }
 
@@ -59,7 +67,6 @@ func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// Auth Routes
 	initAuthRoutes(router, svcs)
 
-	// EWBI Routes
 	initEwbiFederationManagementRoutes(router, svcs, mdws)
 	initEwbiZoneInfoSyncRoutes(router, svcs, mdws)
 	initEwbiArtefactManagementRoutes(router, svcs, mdws)

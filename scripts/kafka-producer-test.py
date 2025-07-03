@@ -11,10 +11,12 @@ sasl_mechanism = 'PLAIN'
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
+federation_endpoint = "http://10.255.41.64:32440"
+auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
 federation_context_id = "ae78f0d3-e684-4261-8324-7c700d226ac8"
 app_pkg_id = "686541fe232d0ef0a39b7509"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
-app_instance_id = "e4b0be62-31b2-469a-9952-b9043de04b8f"
+app_instance_id = "c3c6d659-c04c-492a-9b0a-db4285118108"
 mec_appd_id = "mec-test-server-appd"
 ns_id = "42af1c10-8d94-49e2-9e90-d9081d933dcd"
 kdu_id = "mec-test-server"
@@ -24,8 +26,8 @@ messages = {
         "msg_id": "1",
         "client_id": "operator-a",
         "client_secret": "FkEZE8twp5sMn3qcVqvm3nZKzy9sLAr8",
-        "federation_endpoint": "http://10.255.41.64:32440",
-        "auth_endpoint": "http://10.255.41.64:32440/federation/v1/auth/token",
+        "federation_endpoint": federation_endpoint,
+        "auth_endpoint": auth_endpoint,
     },
     "remove_federation": {
         "msg_id": "2",

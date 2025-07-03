@@ -25,4 +25,4 @@ RUN make build
 EXPOSE 8080
 
 # Command to run the executable
-CMD  ["make", "start"]
+CMD  ["make", "up"]

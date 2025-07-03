@@ -12,6 +12,7 @@ import (
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type FederationRemoveAppiCallback struct {
@@ -25,19 +26,24 @@ func NewFederationRemoveAppiCallback(services *router.Services) *FederationRemov
 }
 
 func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received remove app instance message from topic %s, partition %d, offset %d", 
-		message.Topic, message.Partition, message.Offset)
-	
-	var msg map[string]interface{}
-	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return
-	}
+	utils.TimeCallback("FederationRemoveAppiCallback.HandleMessage", func() {
+		log.Printf("Received remove app instance message from topic %s, partition %d, offset %d", 
+			message.Topic, message.Partition, message.Offset)
+		
+		var msg map[string]interface{}
+		if err := json.Unmarshal(message.Value, &msg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return
+		}
 
-	log.Printf("Processing remove app instance request with message ID: %s", msg["msg_id"])
+		log.Printf("Processing remove app instance request with message ID: %s", msg["msg_id"])
 
-	msgId := msg["msg_id"].(string)
+		msgId := msg["msg_id"].(string)
+		f.handleRemoveAppInstance(msgId, msg)
+	})
+}
 
+func (f *FederationRemoveAppiCallback) handleRemoveAppInstance(msgId string, msg map[string]interface{}) {
 	// Extract and validate required fields from the message
 	federationContextId, ok := msg["federation_context_id"].(string)
 	if !ok {

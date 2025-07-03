@@ -13,6 +13,38 @@ import (
 	"github.com/mankings/mec-federator/internal/config"
 )
 
+type consumerGroupHandler struct {
+	topic    string
+	callback func(*sarama.ConsumerMessage)
+	logs     bool
+}
+
+func (h *consumerGroupHandler) Setup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (h *consumerGroupHandler) Cleanup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (h *consumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for {
+		select {
+		case message := <-claim.Messages():
+			if message == nil {
+				return nil
+			}
+			if h.logs {
+				log.Printf("Received message from topic '%s': %s", h.topic, string(message.Value))
+			}
+			h.callback(message)
+			session.MarkMessage(message, "")
+		case <-session.Context().Done():
+			return nil
+		}
+	}
+}
+
 /*
  * KafkaService
  *	responsible for interacting with Kafka
@@ -81,19 +113,18 @@ func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, ca
 	consumerConfig.Net.SASL.Enable = true
 	consumerConfig.Net.SASL.User = config.AppConfig.KafkaUsername
 	consumerConfig.Net.SASL.Password = config.AppConfig.KafkaPassword
+	
+	// Consumer group configuration
+	consumerConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
+	consumerConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
+	consumerConfig.Consumer.Return.Errors = true
 
-	consumer, err := sarama.NewConsumer(brokers, consumerConfig)
+	consumerGroup, err := sarama.NewConsumerGroup(brokers, "mec-federator-group", consumerConfig)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Starting consumer for topic", topic)
-
-	partitionConsumer, err := consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
-	if err != nil {
-		consumer.Close()
-		return err
-	}
 
 	k.callbacks[topic] = callback
 
@@ -131,24 +162,25 @@ func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, ca
 		}
 	}
 
-	go func() {
-		defer func() {
-			partitionConsumer.Close()
-			consumer.Close()
-		}()
+	// Create consumer group handler
+	handler := &consumerGroupHandler{
+		topic:    topic,
+		callback: callback,
+		logs:     logs,
+	}
 
+	go func() {
+		defer consumerGroup.Close()
+		
 		for {
 			select {
-			case message := <-partitionConsumer.Messages():
-				if logs {
-					log.Printf("Received message from topic '%s': %s", topic, string(message.Value))
-				}
-				callback(message)
-			case err := <-partitionConsumer.Errors():
-				log.Printf("Error consuming from %s topic: %v", topic, err)
 			case <-ctx.Done():
 				log.Printf("%s consumer shutting down", topic)
 				return
+			default:
+				if err := consumerGroup.Consume(ctx, []string{topic}, handler); err != nil {
+					log.Printf("Error consuming from %s topic: %v", topic, err)
+				}
 			}
 		}
 	}()

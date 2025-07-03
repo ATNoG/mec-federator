@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type RemoveFederationCallback struct {
@@ -23,20 +25,25 @@ func NewRemoveFederationCallback(services *router.Services) *RemoveFederationCal
 }
 
 func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received remove federation message from topic %s, partition %d, offset %d", 
-		message.Topic, message.Partition, message.Offset)
-	
-	// unmarshal the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return
-	}
+	utils.TimeCallback("RemoveFederationCallback.HandleMessage", func() {
+		log.Printf("Received remove federation message from topic %s, partition %d, offset %d",
+			message.Topic, message.Partition, message.Offset)
 
-	log.Printf("Processing remove federation request with message ID: %s", msg["msg_id"])
+		// unmarshal the message
+		var msg map[string]interface{}
+		if err := json.Unmarshal(message.Value, &msg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return
+		}
 
-	msgId := msg["msg_id"].(string)
+		log.Printf("Processing remove federation request with message ID: %s", msg["msg_id"])
 
+		msgId := msg["msg_id"].(string)
+		r.handleRemoveFederation(msgId, msg)
+	})
+}
+
+func (r *RemoveFederationCallback) handleRemoveFederation(msgId string, msg map[string]interface{}) {
 	// Extract and validate required fields from the message
 	federationContextId, ok := msg["federation_context_id"].(string)
 	if !ok {
@@ -62,8 +69,10 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 	// remove the federation
 	removeFederationUrl := fmt.Sprintf("%s/federation/v1/ewbi/%s/partner", federation.FederationEndpoint, federation.PartnerOP.FederationContextId)
 	log.Printf("Sending remove federation request to: %s", removeFederationUrl)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	resp, err := r.services.HttpClientService.DoRequest(
-		context.TODO(),
+		ctx,
 		http.MethodDelete,
 		removeFederationUrl,
 		nil,

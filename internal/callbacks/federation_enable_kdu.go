@@ -14,6 +14,7 @@ import (
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type FederationKduEnableCallback struct {
@@ -27,18 +28,24 @@ func NewEnableAppInstanceKDUCallback(services *router.Services) *FederationKduEn
 }
 
 func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received enable KDU message from topic %s, partition %d, offset %d",
-		message.Topic, message.Partition, message.Offset)
+	utils.TimeCallback("FederationKduEnableCallback.HandleMessage", func() {
+		log.Printf("Received enable KDU message from topic %s, partition %d, offset %d",
+			message.Topic, message.Partition, message.Offset)
 
-	var msg map[string]interface{}
-	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return
-	}
+		var msg map[string]interface{}
+		if err := json.Unmarshal(message.Value, &msg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return
+		}
 
-	log.Printf("Processing enable KDU request with message ID: %s", msg["msg_id"])
+		log.Printf("Processing enable KDU request with message ID: %s", msg["msg_id"])
 
-	msgId := msg["msg_id"].(string)
+		msgId := msg["msg_id"].(string)
+		f.handleEnableKDU(msgId, msg)
+	})
+}
+
+func (f *FederationKduEnableCallback) handleEnableKDU(msgId string, msg map[string]interface{}) {
 
 	// Extract required fields from the message
 	federationContextId, ok := msg["federation_context_id"].(string)
@@ -111,7 +118,7 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 
 	// Send enable KDU request to partner
 	log.Printf("Sending enable KDU request to partner for KDU: %s on node: %s", kduId, nodeName)
-	err = f.sendEnableKDURequestToPartner(&federation, appInstance.Id, nsId,  	kduId, nodeName)
+	err = f.sendEnableKDURequestToPartner(&federation, appInstance.Id, nsId, kduId, nodeName)
 	if err != nil {
 		log.Printf("Error sending enable KDU request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to enable KDU: %v", err))

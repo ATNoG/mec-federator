@@ -14,6 +14,7 @@ import (
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 // NewFederationCallback handles incoming new federation messages from Kafka
@@ -30,20 +31,25 @@ func NewNewFederationCallback(services *router.Services) *NewFederationCallback 
 
 // HandleMessage processes incoming new federation messages
 func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received new federation message from topic %s, partition %d, offset %d",
-		message.Topic, message.Partition, message.Offset)
+	utils.TimeCallback("NewFederationCallback.HandleMessage", func() {
+		log.Printf("Received new federation message from topic %s, partition %d, offset %d",
+			message.Topic, message.Partition, message.Offset)
 
-	// unmarshal the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return
-	}
+		// unmarshal the message
+		var msg map[string]interface{}
+		if err := json.Unmarshal(message.Value, &msg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return
+		}
 
-	log.Printf("Processing new federation request with message ID: %s", msg["msg_id"])
+		log.Printf("Processing new federation request with message ID: %s", msg["msg_id"])
 
-	msgId := msg["msg_id"].(string)
+		msgId := msg["msg_id"].(string)
+		nc.handleNewFederation(msgId, msg)
+	})
+}
 
+func (nc *NewFederationCallback) handleNewFederation(msgId string, msg map[string]interface{}) {
 	// Extract and validate required fields from the message
 	federationEndpoint, ok := msg["federation_endpoint"].(string)
 	if !ok {
@@ -102,8 +108,10 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 	log.Printf("Sending federation request to: %s", createFederationUrl)
 	authStrat := services.NewBearerTokenAuth(accessToken.AccessToken)
 	headers := map[string]string{"Content-Type": "application/json"}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	resp, err := nc.services.HttpClientService.DoRequest(
-		context.Background(),
+		ctx,
 		http.MethodPost,
 		createFederationUrl,
 		bytes.NewBuffer(payload),

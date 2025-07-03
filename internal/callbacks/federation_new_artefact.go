@@ -17,6 +17,7 @@ import (
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/router"
 	"github.com/mankings/mec-federator/internal/services"
+	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type FederationArtefactNewCallback struct {
@@ -31,20 +32,25 @@ func NewFederationArtefactNewCallback(services *router.Services) *FederationArte
 
 // receives info about an artefact to make available to a certain federation
 func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
-	log.Printf("Received new artefact message from topic %s, partition %d, offset %d",
-		message.Topic, message.Partition, message.Offset)
+	utils.TimeCallback("FederationArtefactNewCallback.HandleMessage", func() {
+		log.Printf("Received new artefact message from topic %s, partition %d, offset %d",
+			message.Topic, message.Partition, message.Offset)
 
-	// unmarshal the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal(message.Value, &msg); err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return
-	}
+		// unmarshal the message
+		var msg map[string]interface{}
+		if err := json.Unmarshal(message.Value, &msg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return
+		}
 
-	log.Printf("Processing new artefact request with message ID: %s", msg["msg_id"])
+		log.Printf("Processing new artefact request with message ID: %s", msg["msg_id"])
 
-	msgId := msg["msg_id"].(string)
+		msgId := msg["msg_id"].(string)
+		f.handleNewArtefact(msgId, msg)
+	})
+}
 
+func (f *FederationArtefactNewCallback) handleNewArtefact(msgId string, msg map[string]interface{}) {
 	// Extract and validate required fields from the message
 	appPkgId, ok := msg["app_pkg_id"].(string)
 	if !ok {

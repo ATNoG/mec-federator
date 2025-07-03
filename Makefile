@@ -1,6 +1,6 @@
 # Variables
 DOCKER_IMAGE_NAME = mankings/federator
-DOCKER_TAG ?= 1.2
+DOCKER_TAG ?= 1.3
 DOCKERFILE_PATH = deployment/docker/Dockerfile
 
 tidy:
@@ -11,6 +11,9 @@ build:
 	go build -o bin/federator main.go
 
 start: build
+	./bin/federator
+
+up:
 	./bin/federator
 
 # Docker build rules
