@@ -125,8 +125,7 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 
 	nsId := orchAppI.Instances[orchAppI.Domain][zone.ZoneId].NSID
 	vnfId := orchAppI.Instances[orchAppI.Domain][zone.ZoneId].VNFID
-	log.Printf("CreateAppInstanceController - Retrieved NS ID for federation: %s, appInstanceId: %s, nsId: %s", federationContextId, appInstance.Id, nsId)
-	log.Printf("CreateAppInstanceController - App instance created successfully for federation: %s, appInstanceId: %s, nsId: %s", federationContextId, appInstance.Id, nsId)
+	log.Printf("CreateAppInstanceController - App instance created successfully for federation: %s, appInstanceId: %s, nsId: %s, vnfId: %s", federationContextId, appInstance.Id, nsId, vnfId)
 	c.JSON(http.StatusCreated, gin.H{"appInstanceId": appInstance.Id, "nsId": nsId, "vnfId": vnfId})
 }
 

@@ -154,6 +154,7 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 		"msg_id":          msgId,
 		"app_instance_id": appInstance.Id,
 		"ns_id":           nsId,
+		"vnf_id":          vnfId,
 		"status":          "201",
 		"message":         "App instance created successfully",
 	}
