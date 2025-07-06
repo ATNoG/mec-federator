@@ -120,7 +120,7 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 	request.AppInstCallbackLink = "callback.link"
 
 	// send request to partner
-	appInstanceId, nsId, err := f.sendAppInstanceRequestToPartner(&federation, &request)
+	appInstanceId, nsId, vnfId, err := f.sendAppInstanceRequestToPartner(&federation, &request)
 	if err != nil {
 		log.Printf("Error sending app instance request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to create app instance: %v", err))
@@ -136,6 +136,7 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 		Description:         "not-local",
 		AppPkgId:            "", // empty if the app instance is running on a partner zone
 		NsId:                nsId,
+		VnfId:               vnfId,
 	}
 
 	// save appinstance to database
@@ -164,7 +165,7 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 	}
 }
 
-func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *models.Federation, request *dto.InstantiateApplicationRequest) (string, string, error) {
+func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *models.Federation, request *dto.InstantiateApplicationRequest) (string, string, string, error) {
 	// use the stored access token from the federation
 	accessToken := federation.OriginOP.AccessToken.AccessToken
 
@@ -174,7 +175,7 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 	// marshal the request
 	payload, err := json.Marshal(request)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to marshal request: %v", err)
+		return "", "", "", fmt.Errorf("failed to marshal request: %v", err)
 	}
 
 	// create HTTP request
@@ -196,32 +197,37 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 		headers,
 		auth)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to send HTTP request: %v", err)
+		return "", "", "", fmt.Errorf("failed to send HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	// check response status
 	if resp.StatusCode != http.StatusCreated {
-		return "", "", fmt.Errorf("partner returned error status %d", resp.StatusCode)
+		return "", "", "", fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 
 	// parse response to get app instance ID
 	var response map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to decode response: %v", err)
+		return "", "", "", fmt.Errorf("failed to decode response: %v", err)
 	}
 
 	appInstanceId, ok := response["appInstanceId"].(string)
 	if !ok {
-		return "", "", fmt.Errorf("appInstanceId not found in partner response")
+		return "", "", "", fmt.Errorf("appInstanceId not found in partner response")
 	}
 
 	nsId, ok := response["nsId"].(string)
 	if !ok {
-		return "", "", fmt.Errorf("nsId not found in partner response")
+		return "", "", "", fmt.Errorf("nsId not found in partner response")
+	}
+
+	vnfId, ok := response["vnfId"].(string)
+	if !ok {
+		return "", "", "", fmt.Errorf("vnfId not found in partner response")
 	}
 
 	log.Printf("Partner response: app instance created with ID %s", appInstanceId)
-	return appInstanceId, nsId, nil
+	return appInstanceId, nsId, vnfId, nil
 }
