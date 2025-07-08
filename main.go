@@ -119,6 +119,9 @@ func main() {
 	disableAppInstKDUCallback := callbacks.NewDisableAppInstanceKDUCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_disable_kdu", disableAppInstKDUCallback.HandleMessage, true)
 
+	migrateAppInstNodeCallback := callbacks.NewFederationMigrateNodeCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_migrate_node", migrateAppInstNodeCallback.HandleMessage, true)
+
 	// Initialize the scheduler
 	sched := scheduler.NewScheduler(services)
 	scheduler.CreateTasks(sched)

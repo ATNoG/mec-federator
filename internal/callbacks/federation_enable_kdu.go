@@ -76,7 +76,7 @@ func (f *FederationKduEnableCallback) handleEnableKDU(msgId string, msg map[stri
 		return
 	}
 
-	nodeName, ok := msg["node"].(string)
+	node, ok := msg["node"].(string)
 	if !ok {
 		log.Printf("Error: node not found or not a string")
 		f.services.KafkaClientService.SendResponse(msgId, "400", "node is required")
@@ -117,8 +117,8 @@ func (f *FederationKduEnableCallback) handleEnableKDU(msgId string, msg map[stri
 	}
 
 	// Send enable KDU request to partner
-	log.Printf("Sending enable KDU request to partner for KDU: %s on node: %s", kduId, nodeName)
-	err = f.sendEnableKDURequestToPartner(&federation, appInstance.Id, nsId, kduId, nodeName)
+	log.Printf("Sending enable KDU request to partner for KDU: %s on node: %s", kduId, node)
+	err = f.sendEnableKDURequestToPartner(&federation, appInstance.Id, nsId, kduId, node)
 	if err != nil {
 		log.Printf("Error sending enable KDU request to partner: %v", err)
 		f.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Failed to enable KDU: %v", err))
@@ -132,10 +132,10 @@ func (f *FederationKduEnableCallback) handleEnableKDU(msgId string, msg map[stri
 		return
 	}
 
-	log.Printf("Successfully enabled KDU %s for app instance %s on node %s", kduId, appInstance.Id, nodeName)
+	log.Printf("Successfully enabled KDU %s for app instance %s on node %s", kduId, appInstance.Id, node)
 }
 
-func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *models.Federation, appInstanceId, nsId, kduId, nodeName string) error {
+func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *models.Federation, appInstanceId, nsId, kduId, node string) error {
 	// Use the stored access token from the federation
 	accessToken := federation.OriginOP.AccessToken.AccessToken
 
@@ -146,7 +146,7 @@ func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *
 	// Create the enable request
 	request := dto.EnableAppInstanceKDURequest{
 		KduId: kduId,
-		Node:  nodeName,
+		Node:  node,
 		NsId:  nsId,
 	}
 
@@ -157,7 +157,7 @@ func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *
 	}
 
 	// Create HTTP request
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	headers := map[string]string{
@@ -184,6 +184,6 @@ func (f *FederationKduEnableCallback) sendEnableKDURequestToPartner(federation *
 		return fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 
-	log.Printf("Successfully sent enable KDU request to partner for KDU %s on node %s", kduId, nodeName)
+	log.Printf("Successfully sent enable KDU request to partner for KDU %s on node %s", kduId, node)
 	return nil
 }

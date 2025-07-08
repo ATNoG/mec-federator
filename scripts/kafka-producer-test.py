@@ -18,7 +18,8 @@ app_pkg_id = "686af10a232d0ef0a39b750a"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
 app_instance_id = "18e259e2-2ffa-4a3b-9691-ae9612bbaded"
 mec_appd_id = "mec-test-server-appd"
-ns_id = "42af1c10-8d94-49e2-9e90-d9081d933dcd"
+ns_id = "e60089f7-f37c-489a-b2c0-2b5a8422ccb0"
+vnf_id = "2d6e98f9-e2f0-4317-9c2b-c4c5354c6308"
 kdu_id = "mec-test-server"
 
 messages = {
@@ -77,6 +78,14 @@ messages = {
             "cluster2Id": "cluster2",
             "cluster3Id": "cluster3",
         },
+    },
+    "federation_migrate_node": {
+        "msg_id": "10",
+        "federation_context_id": federation_context_id,
+        "ns_id": ns_id,
+        "vnf_id": vnf_id,
+        "kdu_id": kdu_id,
+        "node": "cluster2-96720290",
     },
 }
 

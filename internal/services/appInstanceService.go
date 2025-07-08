@@ -121,3 +121,17 @@ func (ais *AppInstanceService) GetAppInstanceFromNsId(federationContextId string
 	}
 	return appInstance, nil
 }
+
+// Gets an app instance from the database by its federationContextId, nsId and vnfId
+func (ais *AppInstanceService) GetAppInstanceFromNsIdAndVnfId(federationContextId string, nsId string, vnfId string) (models.AppInstance, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	collection := ais.getAppInstanceCollection()
+	filter := bson.M{"federationContextId": federationContextId, "nsId": nsId, "vnfId": vnfId}
+	var appInstance models.AppInstance
+	err := collection.FindOne(ctx, filter).Decode(&appInstance)
+	if err != nil {
+		return models.AppInstance{}, err
+	}
+	return appInstance, nil
+}

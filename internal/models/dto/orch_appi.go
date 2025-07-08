@@ -59,6 +59,14 @@ type DisableAppInstanceKDUMessage struct {
 	NSId   string `json:"ns_id"`
 }
 
+// migrate an app instance to a specific node
+type MigrateAppInstanceNodeMessage struct {
+	NsId  string `json:"ns_id"`
+	VnfId string `json:"vnf_id"`
+	KduId string `json:"kdu_id"`
+	Node  string `json:"node"`
+}
+
 //
 // kafka messages to be received
 //

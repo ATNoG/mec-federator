@@ -334,3 +334,64 @@ func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceK
 	log.Printf("DisableAppInstanceKDUController - KDU disabled successfully for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KduId)
 	c.JSON(http.StatusOK, gin.H{"appInstance": appInstance, "kduId": request.KduId, "nsId": request.NsId})
 }
+
+// @Summary Migrate application instance to a specific node
+// @Description Migrates a specific Kubernetes Deployment Unit (KDU) within an application instance to a different node. This operation migrates the KDU to the specified node.
+// @Tags EWBI - ApplicationInstanceLifecycleManagement
+// @Param federationContextId path string true "Federation Context ID" format(uuid)
+// @Param appInstanceId path string true "Application Instance ID" format(uuid)
+// @Accept json
+// @Produce json
+// @Param request body dto.AppInstanceNodeMigrateRequest true "Application instance node migration request with KDU ID and target node"
+// @Success 200 {object} map[string]string "Application instance migrated successfully with appInstanceId"
+// @Failure 400 {object} models.ProblemDetails "Bad request - invalid request body or missing KDU"
+// @Failure 404 {object} models.ProblemDetails "Application instance or KDU not found"
+// @Failure 500 {object} models.ProblemDetails "Internal server error - database access, orchestrator operations, or KDU enablement failure"
+// @Router /ewbi/{federationContextId}/app_instances/{appInstanceId}/node/migrate [post]
+func (amc *ApplicationInstanceLifecycleManagementController) AppInstanceNodeMigrateController(c *gin.Context) {
+	// get the federationContextId from the path
+	federationContextId := c.Param("federationContextId")
+
+	// get the appInstanceId from the path
+	appInstanceId := c.Param("appInstanceId")
+
+	log.Printf("AppInstanceNodeMigrateController - Starting node migration for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
+
+	// get the rest of the details from the request body
+	log.Printf("AppInstanceNodeMigrateController - Binding request body for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
+	var request dto.AppInstanceNodeMigrateRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Printf("AppInstanceNodeMigrateController - Error binding request body for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	log.Printf("AppInstanceNodeMigrateController - Request details for federation: %s, appInstanceId: %s, kduId: %s, nodeId: %s", federationContextId, appInstanceId, request.KduId, request.Node)
+
+	// get the appInstance from the database
+	log.Printf("AppInstanceNodeMigrateController - Getting app instance from database for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
+	appInstance, err := amc.appInstanceService.GetAppInstance(federationContextId, appInstanceId)
+	if err != nil {
+		log.Printf("AppInstanceNodeMigrateController - Error getting app instance from database for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())
+		return
+	}
+
+	// check for the appi in the orchestrator database
+	log.Printf("AppInstanceNodeMigrateController - Getting appi from orchestrator for federation: %s, appInstanceId: %s, appiId: %s", federationContextId, appInstanceId, appInstance.AppiId)
+	_, err = amc.orchestratorService.GetAppi(appInstance.AppiId)
+	if err != nil {
+		log.Printf("AppInstanceNodeMigrateController - Error getting appi from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application package: "+err.Error())
+		return
+	}
+
+	// send the migrate node request to the partner
+	log.Printf("AppInstanceNodeMigrateController - Sending migrate node request to partner for federation: %s, appInstanceId: %s, nsId: %s, vnfId: %s, node: %s", federationContextId, appInstanceId, request.NsId, request.VnfId, request.Node)
+	err = amc.orchestratorService.MigrateAppiNode(request.NsId, request.VnfId, request.KduId, request.Node)
+	if err != nil {
+		log.Printf("AppInstanceNodeMigrateController - Error sending migrate node request to partner for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error sending migrate node request to partner: "+err.Error())
+		return
+	}
+}

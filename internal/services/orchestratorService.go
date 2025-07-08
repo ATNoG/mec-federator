@@ -323,3 +323,37 @@ func (s *OrchestratorService) GetAppis(appInstanceIds []string) ([]dto.OrchAppI,
 
 	return appInsts, nil
 }
+
+// Migrate an app instance to a specific node
+func (s *OrchestratorService) MigrateAppiNode(nsId string, vnfId string, kduId string, node string) error {
+	// make a message to send to the kafka topic
+	message := dto.MigrateAppInstanceNodeMessage{
+		NsId:  nsId,
+		VnfId: vnfId,
+		KduId: kduId,
+		Node:  node,
+	}
+
+	// send the message to the kafka topic
+	msgId, err := s.kafkaClientService.Produce("migrate_node", message)
+	if err != nil {
+		return err
+	}
+
+	// wait for a response
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 60*time.Second)
+	if err != nil {
+		slog.Warn("failed to get response from orchestrator", "error", err)
+		return err
+	}
+
+	// get status field from response
+	status := rsp["status"].(string)
+
+	// if status is not success, return an error
+	if status != "success" {
+		return errors.New("failed to migrate app instance node")
+	}
+
+	return nil
+}

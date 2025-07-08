@@ -145,4 +145,8 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 		"/:federationContextId/application/lcm/:appInstanceId/kdu/disable",
 		*mdws.FederationExistsMiddleware,
 		applicationInstanceLifecycleManagementController.DisableAppInstanceKDUController)
+	ApplicationInstanceLifecycleManagement.POST(
+		"/:federationContextId/application/lcm/:appInstanceId/node/migrate",
+		*mdws.FederationExistsMiddleware,
+		applicationInstanceLifecycleManagementController.AppInstanceNodeMigrateController)
 }
