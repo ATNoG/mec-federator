@@ -67,7 +67,7 @@ func (ais *AppInstanceService) GetAppInstance(federationContextId string, appIns
 
 // Provides a list of instances for a given federationContextId
 func (ais *AppInstanceService) GetAppInstancesByFederationContextId(fedContextId string) ([]models.AppInstance, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	collection := ais.getAppInstanceCollection()
 	filter := bson.M{"federationContextId": fedContextId}
@@ -89,7 +89,7 @@ func (ais *AppInstanceService) GetAppInstancesByFederationContextId(fedContextId
 
 // Provides a list of all app instances resulting from any federation
 func (ais *AppInstanceService) GetAllAppInstances() ([]models.AppInstance, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	collection := ais.getAppInstanceCollection()
 	cursor, err := collection.Find(ctx, bson.M{})

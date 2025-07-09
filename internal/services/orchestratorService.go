@@ -61,7 +61,7 @@ func (s *OrchestratorService) OnboardAppPkg(appPkg dto.NewAppPkg) (string, error
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 60*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return "", err
@@ -173,7 +173,7 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, c
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 20*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 60*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return "", err
