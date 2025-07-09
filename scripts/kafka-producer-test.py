@@ -16,10 +16,10 @@ auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
 federation_context_id = "c3915b4e-2cad-4c86-9516-b351009b5165"
 app_pkg_id = "686af10a232d0ef0a39b750a"
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
-app_instance_id = "18e259e2-2ffa-4a3b-9691-ae9612bbaded"
+app_instance_id = "b75b8d4b-b3b6-4fbe-a5a1-5246423bc617"
 mec_appd_id = "mec-test-server-appd"
-ns_id = "e60089f7-f37c-489a-b2c0-2b5a8422ccb0"
-vnf_id = "2d6e98f9-e2f0-4317-9c2b-c4c5354c6308"
+ns_id = "203972c9-ccac-4a14-8df3-63a7ee782e5b"
+vnf_id = "283b1534-89ab-42f0-9fb1-cf2284010801"
 kdu_id = "mec-test-server"
 
 messages = {

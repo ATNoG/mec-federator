@@ -13,14 +13,16 @@ import (
 )
 
 type ApplicationInstanceLifecycleManagementController struct {
+	federationService   *services.FederationService
 	orchestratorService *services.OrchestratorService
 	artefactService     *services.ArtefactService
 	appInstanceService  *services.AppInstanceService
 	zoneService         *services.ZoneService
 }
 
-func NewApplicationInstanceLifecycleManagementController(orchestratorService *services.OrchestratorService, artefactService *services.ArtefactService, appInstanceService *services.AppInstanceService, zoneService *services.ZoneService) *ApplicationInstanceLifecycleManagementController {
+func NewApplicationInstanceLifecycleManagementController(federationService *services.FederationService, orchestratorService *services.OrchestratorService, artefactService *services.ArtefactService, appInstanceService *services.AppInstanceService, zoneService *services.ZoneService) *ApplicationInstanceLifecycleManagementController {
 	return &ApplicationInstanceLifecycleManagementController{
+		federationService:   federationService,
 		orchestratorService: orchestratorService,
 		artefactService:     artefactService,
 		appInstanceService:  appInstanceService,
@@ -53,6 +55,15 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 		return
 	}
 
+	// get the federation from the database
+	log.Printf("CreateAppInstanceController - Getting federation from database for federation: %s", federationContextId)
+	federation, err := amc.federationService.GetFederation(federationContextId)
+	if err != nil {
+		log.Printf("CreateAppInstanceController - Error getting federation from database for federation %s: %v", federationContextId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting federation: "+err.Error())
+		return
+	}
+
 	// get the artefact from the database
 	log.Printf("CreateAppInstanceController - Retrieving artefact for federation: %s, appId: %s", federationContextId, request.AppId)
 	artefact, err := amc.artefactService.GetArtefact(federationContextId, request.AppId)
@@ -75,7 +86,7 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 
 	// instantiate the appPkg
 	log.Printf("CreateAppInstanceController - Instantiating app package for federation: %s, appId: %s, appPkgId: %s, vimId: %s", federationContextId, request.AppId, artefact.AppPkgId, vimId)
-	appiId, err := amc.orchestratorService.InstantiateAppPkg(artefact.AppPkgId, vimId, request.Config)
+	appiId, err := amc.orchestratorService.InstantiateAppPkg(artefact.AppPkgId, vimId, request.Config, federation.OriginOP.OrigOPFederationId)
 	if err != nil {
 		log.Printf("CreateAppInstanceController - Error instantiating app package for federation %s, appId %s: %v", federationContextId, request.AppId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error instantiating application instance: "+err.Error())

@@ -22,11 +22,12 @@ type Instance struct {
 
 // instantiate a new app instance
 type InstantiateAppPkgMessage struct {
-	AppPkgId    string `json:"app_pkg_id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	VimId       string `json:"vim_id"`
-	Config      string `json:"config"`
+	AppPkgId     string `json:"app_pkg_id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	VimId        string `json:"vim_id"`
+	Config       string `json:"config"`
+	OriginDomain string `json:"original_domain"`
 }
 
 // terminate an app instance

@@ -118,6 +118,7 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 	ApplicationInstanceLifecycleManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
 
 	applicationInstanceLifecycleManagementController := ewbi.NewApplicationInstanceLifecycleManagementController(
+		svcs.FederationService,
 		svcs.OrchestratorService,
 		svcs.ArtefactService,
 		svcs.AppInstanceService,

@@ -155,14 +155,15 @@ func (s *OrchestratorService) GetAppPkgByMecAppdId(mecAppdId string) (dto.OrchAp
 }
 
 // Instantiate an appPkg
-func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, config string) (string, error) {
+func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, config string, origin string) (string, error) {
 	// make a message to send to the kafka topic
 	message := dto.InstantiateAppPkgMessage{
-		AppPkgId:    appPkgId,
-		Name:        "test",
-		Description: "test",
-		VimId:       vimId,
-		Config:      config,
+		AppPkgId:     appPkgId,
+		Name:         "test",
+		Description:  "test",
+		VimId:        vimId,
+		Config:       config,
+		OriginDomain: origin,
 	}
 
 	// send the message to the kafka topic
@@ -243,7 +244,7 @@ func (s *OrchestratorService) EnableAppInstanceKDU(appdId string, kduId string, 
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 60*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return err
@@ -276,7 +277,7 @@ func (s *OrchestratorService) DisableAppiKDU(appdId string, kduId string, nsId s
 	}
 
 	// wait for a response
-	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 10*time.Second)
+	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 60*time.Second)
 	if err != nil {
 		slog.Warn("failed to get response from orchestrator", "error", err)
 		return err
