@@ -180,7 +180,7 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 	}
 
 	// create HTTP request
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
 	headers := map[string]string{
@@ -198,6 +198,7 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 		headers,
 		auth)
 	if err != nil {
+		log.Printf("Error sending HTTP request: %v", err)
 		return "", "", "", fmt.Errorf("failed to send HTTP request: %v", err)
 	}
 	defer resp.Body.Close()

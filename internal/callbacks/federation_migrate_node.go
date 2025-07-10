@@ -135,7 +135,7 @@ func (f *FederationMigrateNodeCallback) sendMigrateNodeRequestToPartner(federati
 	}
 
 	// Create HTTP request
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
 	headers := map[string]string{
@@ -155,6 +155,9 @@ func (f *FederationMigrateNodeCallback) sendMigrateNodeRequestToPartner(federati
 	if err != nil {
 		return fmt.Errorf("failed to send request to partner: %v", err)
 	}
+
+	// status to float
+	
 
 	// Check the response status
 	if resp.StatusCode != http.StatusOK {

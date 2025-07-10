@@ -20,20 +20,14 @@ up:
 docker-build:
 	docker build -t $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) -f $(DOCKERFILE_PATH) .
 
-docker-build-latest: docker-build
-
-docker-tag:
-	docker tag $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) $(DOCKER_IMAGE_NAME):latest
-
 docker-push:
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_TAG)
 
-docker-push-latest:
+docker-build-push-latest:
+	docker build -t $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) -f $(DOCKERFILE_PATH) .
+	docker tag $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) $(DOCKER_IMAGE_NAME):latest
+	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_TAG)
 	docker push $(DOCKER_IMAGE_NAME):latest
-
-docker-build-push: docker-build docker-push
-
-docker-build-push-latest: docker-build docker-tag docker-push-latest
 
 half-up:
 	docker compose \

@@ -62,10 +62,11 @@ type DisableAppInstanceKDUMessage struct {
 
 // migrate an app instance to a specific node
 type MigrateAppInstanceNodeMessage struct {
-	NsId  string `json:"ns_id"`
-	VnfId string `json:"vnf_id"`
-	KduId string `json:"kdu_id"`
-	Node  string `json:"node"`
+	AppdId string `json:"appd_id"`
+	NsId   string `json:"ns_id"`
+	VnfId  string `json:"vnf_id"`
+	KduId  string `json:"kdu_id"`
+	Node   string `json:"node"`
 }
 
 //

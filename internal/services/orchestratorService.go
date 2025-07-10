@@ -175,7 +175,7 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, c
 	// wait for a response
 	rsp, err := s.kafkaClientService.WaitForResponse(msgId, 60*time.Second)
 	if err != nil {
-		slog.Warn("failed to get response from orchestrator", "error", err)
+		slog.Warn("timeout waiting for response from orchestrator", "error", err)
 		return "", err
 	}
 
@@ -183,9 +183,8 @@ func (s *OrchestratorService) InstantiateAppPkg(appPkgId string, vimId string, c
 	status := rsp["status"].(float64)
 
 	// if status is not 201, return an error
-	if status != 201 {
-		slog.Warn("failed to instantiate appPkg", "status", status)
-		slog.Warn("response", "response", rsp)
+	if status < 200 || status >= 300 {
+		slog.Warn("failed to instantiate appPkg", "status", status, "response", rsp)
 		return "", errors.New("failed to instantiate appPkg")
 	}
 
@@ -251,10 +250,10 @@ func (s *OrchestratorService) EnableAppInstanceKDU(appdId string, kduId string, 
 	}
 
 	// get status field from response
-	status := rsp["status"].(string)
+	status := rsp["status"].(float64)
 
 	// if status is not success, return an error
-	if status != "success" {
+	if status < 200 || status >= 300 {
 		return errors.New("failed to enable app instance KDU")
 	}
 
@@ -284,10 +283,10 @@ func (s *OrchestratorService) DisableAppiKDU(appdId string, kduId string, nsId s
 	}
 
 	// get status field from response
-	status := rsp["status"].(string)
+	status := rsp["status"].(float64)
 
 	// if status is not success, return an error
-	if status != "success" {
+	if status < 200 || status >= 300 {
 		return errors.New("failed to disable app instance KDU")
 	}
 
@@ -326,13 +325,14 @@ func (s *OrchestratorService) GetAppis(appInstanceIds []string) ([]dto.OrchAppI,
 }
 
 // Migrate an app instance to a specific node
-func (s *OrchestratorService) MigrateAppiNode(nsId string, vnfId string, kduId string, node string) error {
+func (s *OrchestratorService) MigrateAppiNode(appdId string, nsId string, vnfId string, kduId string, node string) error {
 	// make a message to send to the kafka topic
 	message := dto.MigrateAppInstanceNodeMessage{
-		NsId:  nsId,
-		VnfId: vnfId,
-		KduId: kduId,
-		Node:  node,
+		AppdId: appdId,
+		NsId:   nsId,
+		VnfId:  vnfId,
+		KduId:  kduId,
+		Node:   node,
 	}
 
 	// send the message to the kafka topic
@@ -349,10 +349,10 @@ func (s *OrchestratorService) MigrateAppiNode(nsId string, vnfId string, kduId s
 	}
 
 	// get status field from response
-	status := rsp["status"].(string)
+	status := rsp["status"].(float64)
 
 	// if status is not success, return an error
-	if status != "success" {
+	if status < 200 || status > 300 {
 		return errors.New("failed to migrate app instance node")
 	}
 

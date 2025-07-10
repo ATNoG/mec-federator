@@ -113,7 +113,7 @@ func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, ca
 	consumerConfig.Net.SASL.Enable = true
 	consumerConfig.Net.SASL.User = config.AppConfig.KafkaUsername
 	consumerConfig.Net.SASL.Password = config.AppConfig.KafkaPassword
-	
+
 	// Consumer group configuration
 	consumerConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
 	consumerConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
@@ -147,6 +147,7 @@ func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, ca
 			msgIDStr, ok := msgID.(string)
 			if !ok {
 				log.Println("msg_id is not a string")
+				log.Println(response)
 				return
 			}
 
@@ -171,7 +172,7 @@ func (k *KafkaClientService) StartConsumer(ctx context.Context, topic string, ca
 
 	go func() {
 		defer consumerGroup.Close()
-		
+
 		for {
 			select {
 			case <-ctx.Done():

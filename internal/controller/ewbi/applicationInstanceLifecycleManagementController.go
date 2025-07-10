@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/services"
@@ -134,8 +135,18 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 		return
 	}
 
-	nsId := orchAppI.Instances[orchAppI.Domain][zone.ZoneId].NSID
-	vnfId := orchAppI.Instances[orchAppI.Domain][zone.ZoneId].VNFID
+	nsId := orchAppI.Instances[config.AppConfig.OperatorId][zone.ZoneId].NSID
+	vnfId := orchAppI.Instances[config.AppConfig.OperatorId][zone.ZoneId].VNFID
+
+	// log this orchappi
+	log.Printf("CreateAppInstanceController - OrchAppI: %v", orchAppI)
+	// log the instances
+	log.Printf("CreateAppInstanceController - Instances: %v", orchAppI.Instances)
+	// log the domain
+	log.Printf("CreateAppInstanceController - Domain: %v", orchAppI.Domain)
+	// log the zone id
+	log.Printf("CreateAppInstanceController - Zone ID: %v", zone.ZoneId)
+
 	log.Printf("CreateAppInstanceController - App instance created successfully for federation: %s, appInstanceId: %s, nsId: %s, vnfId: %s", federationContextId, appInstance.Id, nsId, vnfId)
 	c.JSON(http.StatusCreated, gin.H{"appInstanceId": appInstance.Id, "nsId": nsId, "vnfId": vnfId})
 }
@@ -397,9 +408,18 @@ func (amc *ApplicationInstanceLifecycleManagementController) AppInstanceNodeMigr
 		return
 	}
 
+	// get the appPkg from the orchestrator database
+	log.Printf("AppInstanceNodeMigrateController - Getting app package from orchestrator for federation: %s, appInstanceId: %s, appPkgId: %s", federationContextId, appInstanceId, appInstance.AppPkgId)
+	appPkg, err := amc.orchestratorService.GetAppPkg(appInstance.AppPkgId)
+	if err != nil {
+		log.Printf("AppInstanceNodeMigrateController - Error getting app package from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application package: "+err.Error())
+		return
+	}
+
 	// send the migrate node request to the partner
 	log.Printf("AppInstanceNodeMigrateController - Sending migrate node request to partner for federation: %s, appInstanceId: %s, nsId: %s, vnfId: %s, node: %s", federationContextId, appInstanceId, request.NsId, request.VnfId, request.Node)
-	err = amc.orchestratorService.MigrateAppiNode(request.NsId, request.VnfId, request.KduId, request.Node)
+	err = amc.orchestratorService.MigrateAppiNode(appPkg.AppdId, request.NsId, request.VnfId, request.KduId, request.Node)
 	if err != nil {
 		log.Printf("AppInstanceNodeMigrateController - Error sending migrate node request to partner for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error sending migrate node request to partner: "+err.Error())
