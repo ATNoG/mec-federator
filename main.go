@@ -48,7 +48,7 @@ func init() {
 }
 
 func main() {
-	log.Print("Starting MEC Federator, version 1.8")
+	log.Print("Starting MEC Federator, version 1.9 (results mode)")
 
 	// init services
 	httpServ := services.NewHttpClientService()
@@ -130,6 +130,6 @@ func main() {
 	// Initialize the router
 	router.Init(services, middlewares)
 
-	log.Print("MEC Federator 1.8 started successfully")
+	log.Print("MEC Federator 1.9 (results mode) started successfully")
 
 }

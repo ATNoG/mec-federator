@@ -44,6 +44,12 @@ func NewApplicationInstanceLifecycleManagementController(federationService *serv
 // @Failure 500 {object} models.ProblemDetails "Internal server error - VIM ID retrieval, orchestrator instantiation, or database errors"
 // @Router /ewbi/{federationContextId}/app_instances [post]
 func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-instantiate-appi-init",
+		Message: "",
+		Value:   nil,
+	})
+
 	federationContextId := c.Param("federationContextId")
 	log.Printf("CreateAppInstanceController - Starting application instance creation for federation: %s", federationContextId)
 
@@ -137,17 +143,14 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 
 	nsId := orchAppI.Instances[config.AppConfig.OperatorId][zone.ZoneId].NSID
 	vnfId := orchAppI.Instances[config.AppConfig.OperatorId][zone.ZoneId].VNFID
-
-	// log this orchappi
-	log.Printf("CreateAppInstanceController - OrchAppI: %v", orchAppI)
-	// log the instances
-	log.Printf("CreateAppInstanceController - Instances: %v", orchAppI.Instances)
-	// log the domain
-	log.Printf("CreateAppInstanceController - Domain: %v", orchAppI.Domain)
-	// log the zone id
-	log.Printf("CreateAppInstanceController - Zone ID: %v", zone.ZoneId)
-
 	log.Printf("CreateAppInstanceController - App instance created successfully for federation: %s, appInstanceId: %s, nsId: %s, vnfId: %s", federationContextId, appInstance.Id, nsId, vnfId)
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-instantiate-appi-done",
+		Message: "",
+		Value:   nil,
+	})
+
 	c.JSON(http.StatusCreated, gin.H{"appInstanceId": appInstance.Id, "nsId": nsId, "vnfId": vnfId})
 }
 
@@ -162,6 +165,12 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 // @Failure 500 {object} models.ProblemDetails "Internal server error - orchestrator termination or database removal errors"
 // @Router /ewbi/{federationContextId}/app_instances/{appInstanceId} [delete]
 func (amc *ApplicationInstanceLifecycleManagementController) DeleteAppInstanceController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-remove-appi-init",
+		Message: "",
+		Value:   nil,
+	})
+
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
 
@@ -198,6 +207,13 @@ func (amc *ApplicationInstanceLifecycleManagementController) DeleteAppInstanceCo
 	}
 
 	log.Printf("DeleteAppInstanceController - App instance deleted successfully for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-remove-appi-done",
+		Message: "",
+		Value:   nil,
+	})
+
 	c.JSON(http.StatusOK, gin.H{"appInstanceId": appInstanceId})
 }
 
@@ -245,6 +261,12 @@ func (amc *ApplicationInstanceLifecycleManagementController) GetAppInstanceDetai
 // @Failure 500 {object} models.ProblemDetails "Internal server error - database access, orchestrator operations, or KDU enablement failure"
 // @Router /ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/enable [post]
 func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKDUController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-enable-kdu-init",
+		Message: "",
+		Value:   nil,
+	})
+
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
 
@@ -292,6 +314,13 @@ func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKD
 	}
 
 	log.Printf("EnableAppInstanceKDUController - KDU enabled successfully for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KduId)
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-enable-kdu-done",
+		Message: "",
+		Value:   nil,
+	})
+
 	c.JSON(http.StatusOK, gin.H{"appInstance": appInstance, "kduId": request.KduId, "nsId": request.NsId})
 }
 
@@ -309,6 +338,12 @@ func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKD
 // @Failure 500 {object} models.ProblemDetails "Internal server error - database access, orchestrator operations, or KDU disablement failure"
 // @Router /ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/disable [post]
 func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceKDUController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-disable-kdu-init",
+		Message: "",
+		Value:   nil,
+	})
+
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
 
@@ -354,6 +389,13 @@ func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceK
 	}
 
 	log.Printf("DisableAppInstanceKDUController - KDU disabled successfully for federation: %s, appInstanceId: %s, kduId: %s", federationContextId, appInstanceId, request.KduId)
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-disable-kdu-done",
+		Message: "",
+		Value:   nil,
+	})
+
 	c.JSON(http.StatusOK, gin.H{"appInstance": appInstance, "kduId": request.KduId, "nsId": request.NsId})
 }
 
@@ -371,6 +413,12 @@ func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceK
 // @Failure 500 {object} models.ProblemDetails "Internal server error - database access, orchestrator operations, or KDU enablement failure"
 // @Router /ewbi/{federationContextId}/app_instances/{appInstanceId}/node/migrate [post]
 func (amc *ApplicationInstanceLifecycleManagementController) AppInstanceNodeMigrateController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-migrate-appi-init",
+		Message: "",
+		Value:   nil,
+	})
+
 	// get the federationContextId from the path
 	federationContextId := c.Param("federationContextId")
 
@@ -425,4 +473,12 @@ func (amc *ApplicationInstanceLifecycleManagementController) AppInstanceNodeMigr
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error sending migrate node request to partner: "+err.Error())
 		return
 	}
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-migrate-appi-done",
+		Message: "",
+		Value:   nil,
+	})
+
+	c.JSON(http.StatusOK, gin.H{"appInstanceId": appInstanceId})
 }

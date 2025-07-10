@@ -27,6 +27,12 @@ func NewFederationMigrateNodeCallback(services *router.Services) *FederationMigr
 
 func (f *FederationMigrateNodeCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationMigrateNodeCallback.HandleMessage", func() {
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "federation-oo-migrate-node-init",
+			Message: "",
+			Value:   nil,
+		})
+
 		log.Printf("Received migrate node message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -40,6 +46,12 @@ func (f *FederationMigrateNodeCallback) HandleMessage(message *sarama.ConsumerMe
 
 		msgId := msg["msg_id"].(string)
 		f.handleMigrateNode(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "federation-oo-migrate-node-done",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 
@@ -157,7 +169,6 @@ func (f *FederationMigrateNodeCallback) sendMigrateNodeRequestToPartner(federati
 	}
 
 	// status to float
-	
 
 	// Check the response status
 	if resp.StatusCode != http.StatusOK {

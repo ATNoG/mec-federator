@@ -29,6 +29,12 @@ func NewDisableAppInstanceKDUCallback(services *router.Services) *FederationKduD
 
 func (f *FederationKduDisableCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationKduDisableCallback.HandleMessage", func() {
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "federation-oo-disable-kdu-init",
+			Message: "",
+			Value:   nil,
+		})
+
 		log.Printf("Received disable KDU message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -42,6 +48,12 @@ func (f *FederationKduDisableCallback) HandleMessage(message *sarama.ConsumerMes
 
 		msgId := msg["msg_id"].(string)
 		f.handleDisableKDU(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "federation-oo-disable-kdu-done",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 

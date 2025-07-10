@@ -45,6 +45,12 @@ func NewArtefactManagementController(orchestratorService *services.OrchestratorS
 // @Failure 500 {object} models.ProblemDetails "Internal server error - file processing, orchestrator, or database errors"
 // @Router /ewbi/{federationContextId}/artefact [post]
 func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-onboard-artefact-init",
+		Message: "",
+		Value:   nil,
+	})
+
 	federationContextId := c.Param("federationContextId")
 	log.Printf("OnboardArtefactController - Starting artefact onboarding for federation: %s", federationContextId)
 
@@ -157,6 +163,13 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 	}
 
 	log.Printf("OnboardArtefactController - Artefact onboarded successfully for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "federation-po-onboard-artefact-done",
+		Message: "",
+		Value:   nil,
+	})
+
 	c.JSON(http.StatusOK, gin.H{"status": "Artefact onboarded successfully"})
 }
 
