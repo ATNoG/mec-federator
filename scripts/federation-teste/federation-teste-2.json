@@ -1,0 +1,119 @@
+{
+  "sent_total": 952,
+  "alerts": [
+    {
+      "name": "migration-init",
+      "message": "MEAO Migration Init",
+      "value": null,
+      "timestamp": 1752251980.2561886
+    },
+    {
+      "name": "artefact-onboard-init",
+      "message": "MEAO Artefact Onboard Init",
+      "value": null,
+      "timestamp": 1752251980.2674963
+    },
+    {
+      "name": "federation-oo-onboard-artefact-init",
+      "message": "",
+      "value": null,
+      "timestamp": 1752251980.2806516
+    },
+    {
+      "name": "federation-po-onboard-artefact-init",
+      "message": "",
+      "value": null,
+      "timestamp": 1752251980.2963746
+    },
+    {
+      "name": "federation-po-onboard-artefact-done",
+      "message": "",
+      "value": null,
+      "timestamp": 1752251997.2102902
+    },
+    {
+      "name": "federation-oo-onboard-artefact-done",
+      "message": "",
+      "value": null,
+      "timestamp": 1752251997.2202954
+    },
+    {
+      "name": "artefact-onboard-done",
+      "message": "MEAO Artefact Onboard Done",
+      "value": null,
+      "timestamp": 1752251997.240091
+    },
+    {
+      "name": "appi-inst-init",
+      "message": "MEAO Appi Creation Init",
+      "value": null,
+      "timestamp": 1752251997.2490132
+    },
+    {
+      "name": "federation-oo-instantiate-appi-init",
+      "message": "",
+      "value": null,
+      "timestamp": 1752251997.2600014
+    },
+    {
+      "name": "federation-po-instantiate-appi-init",
+      "message": "",
+      "value": null,
+      "timestamp": 1752251997.2726572
+    },
+    {
+      "name": "federation-po-instantiate-appi-done",
+      "message": "",
+      "value": null,
+      "timestamp": 1752252030.8931625
+    },
+    {
+      "name": "federation-oo-instantiate-appi-done",
+      "message": "",
+      "value": null,
+      "timestamp": 1752252030.9027932
+    },
+    {
+      "name": "appi-inst-done",
+      "message": "MEAO Appi Creation Done",
+      "value": null,
+      "timestamp": 1752252030.989697
+    },
+    {
+      "name": "migration-ready",
+      "message": "MEAO Migration Ready",
+      "value": null,
+      "timestamp": 1752252030.9975777
+    },
+    {
+      "name": "network-interface-switch-init",
+      "message": "Switching to ens5",
+      "value": null,
+      "timestamp": 1752252031.004473
+    },
+    {
+      "name": "network-interface-switch-done",
+      "message": "Switched to ens5",
+      "value": null,
+      "timestamp": 1752252031.2109962
+    },
+    {
+      "name": "old-appi-remove-init",
+      "message": "MEAO Removing old appi Init",
+      "value": null,
+      "timestamp": 1752252031.223562
+    },
+    {
+      "name": "old-appi-remove-done",
+      "message": "MEAO Removing old done",
+      "value": null,
+      "timestamp": 1752252051.9203887
+    },
+    {
+      "name": "migration-done",
+      "message": "MEAO Migration Done",
+      "value": null,
+      "timestamp": 1752252051.9339433
+    }
+  ]
+}

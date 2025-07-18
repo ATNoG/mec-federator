@@ -29,6 +29,10 @@ docker-build-push-latest:
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_TAG)
 	docker push $(DOCKER_IMAGE_NAME):latest
 
+docker-build-push-test:
+	docker build -t $(DOCKER_IMAGE_NAME):test -f $(DOCKERFILE_PATH) .
+	docker push $(DOCKER_IMAGE_NAME):test
+
 half-up:
 	docker compose \
 		--project-directory . \
