@@ -58,6 +58,7 @@ func main() {
 	mecServ := services.NewMecSystemService()
 	fedServ := services.NewFederationService()
 	artefactServ := services.NewArtefactService()
+	applicationServ := services.NewApplicationService(kafkaServ)
 	orchServ := services.NewOrchestratorService(kafkaServ)
 	appInstanceServ := services.NewAppInstanceService(kafkaServ)
 	zoneServ := services.NewZoneService(kafkaServ)
@@ -73,6 +74,7 @@ func main() {
 		FederationService:   fedServ,
 		ZoneService:         zoneServ,
 		ArtefactService:     artefactServ,
+		ApplicationService:  applicationServ,
 		AppInstanceService:  appInstanceServ,
 	}
 
@@ -106,6 +108,12 @@ func main() {
 
 	removeFederationArtefactCallback := callbacks.NewFederationArtefactRemoveCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_remove_artefact", removeFederationArtefactCallback.HandleMessage, true)
+
+	newFederationAppCallback := callbacks.NewFederationNewAppCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_new_app", newFederationAppCallback.HandleMessage, true)
+
+	removeFederationAppCallback := callbacks.NewFederationRemoveAppCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_remove_app", removeFederationAppCallback.HandleMessage, true)
 
 	newFederationAppiCallback := callbacks.NewFederationAppiNewCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_new_appi", newFederationAppiCallback.HandleMessage, true)

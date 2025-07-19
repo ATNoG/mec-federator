@@ -94,7 +94,7 @@ func (cc *FederationInfrastructureInfoCallback) sendMetricsToPartner(federation 
 	defer resp.Body.Close()
 
 	// Handle response
-	if resp.StatusCode != 200 {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 

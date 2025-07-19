@@ -126,7 +126,7 @@ func (nc *NewFederationCallback) handleNewFederation(msgId string, msg map[strin
 	defer resp.Body.Close()
 
 	log.Printf("Received federation response with status: %d", resp.StatusCode)
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("Error creating federation: %v", resp.StatusCode)
 		nc.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Partner returned error status %d", resp.StatusCode))
 		return

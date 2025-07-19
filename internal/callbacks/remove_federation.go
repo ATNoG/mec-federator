@@ -85,7 +85,7 @@ func (r *RemoveFederationCallback) handleRemoveFederation(msgId string, msg map[
 	}
 
 	log.Printf("Received remove federation response with status: %d", resp.StatusCode)
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("Error removing federation: %v", resp.Status)
 		r.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Partner returned error status %d", resp.StatusCode))
 		return

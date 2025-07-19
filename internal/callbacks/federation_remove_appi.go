@@ -27,9 +27,9 @@ func NewFederationRemoveAppiCallback(services *router.Services) *FederationRemov
 
 func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationRemoveAppiCallback.HandleMessage", func() {
-		log.Printf("Received remove app instance message from topic %s, partition %d, offset %d", 
+		log.Printf("Received remove app instance message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
-		
+
 		var msg map[string]interface{}
 		if err := json.Unmarshal(message.Value, &msg); err != nil {
 			log.Printf("Error unmarshaling message: %v", err)
@@ -131,7 +131,7 @@ func (f *FederationRemoveAppiCallback) sendDeleteRequestToPartner(federation *mo
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 

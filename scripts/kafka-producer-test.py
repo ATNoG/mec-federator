@@ -14,9 +14,15 @@ security_protocol = 'SASL_PLAINTEXT'
 federation_endpoint = "http://federator-po:8000"
 auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
 federation_context_id = "c3915b4e-2cad-4c86-9516-b351009b5165"
+
 app_pkg_id = "686af10a232d0ef0a39b750a"
-partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
+artefact_id = "2cca6ec5-efdf-429f-b790-7ecdfa6e319f"
+
+app_id = "e0a7ec9f-53c0-4074-9bdd-69b36c69b01d"
 app_instance_id = "cc484054-7743-445f-87a7-65a137fa2a71"
+
+partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
+
 mec_appd_id = "mec-test-server-appd"
 ns_id = "203972c9-ccac-4a14-8df3-63a7ee782e5b"
 vnf_id = "283b1534-89ab-42f0-9fb1-cf2284010801"
@@ -43,6 +49,16 @@ messages = {
         "msg_id": "4",
         "federation_context_id": federation_context_id,
         "app_pkg_id": app_pkg_id,
+    },
+    "federation_new_app": {
+        "msg_id": "5",
+        "federation_context_id": federation_context_id,
+        "app_pkg_id": app_pkg_id,
+    },
+    "federation_remove_app": {
+        "msg_id": "6",
+        "federation_context_id": federation_context_id,
+        "app_id": app_id,
     },
     "federation_new_appi": {
         "msg_id": "5",

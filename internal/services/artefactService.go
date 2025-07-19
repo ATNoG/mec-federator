@@ -48,7 +48,7 @@ func (as *ArtefactService) getFileCollection() *mongo.Collection {
 // Register an artefact locally
 func (as *ArtefactService) RegisterArtefact(artefact models.Artefact) error {
 	artefact.FederationContextId = "local"
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	collection := as.getArtefactCollection()
 	_, err := collection.InsertOne(ctx, artefact)
@@ -57,8 +57,19 @@ func (as *ArtefactService) RegisterArtefact(artefact models.Artefact) error {
 
 // Save an artefact to the local database
 func (as *ArtefactService) SaveArtefact(artefact models.Artefact) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	collection := as.getArtefactCollection()
-	_, err := collection.InsertOne(context.Background(), artefact)
+	_, err := collection.InsertOne(ctx, artefact)
+	return err
+}
+
+// Update an artefact in the local database
+func (as *ArtefactService) UpdateArtefact(artefact models.Artefact) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	collection := as.getArtefactCollection()
+	_, err := collection.UpdateOne(ctx, bson.M{"artefactId": artefact.Id}, bson.M{"$set": artefact})
 	return err
 }
 

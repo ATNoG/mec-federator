@@ -204,7 +204,7 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 	defer resp.Body.Close()
 
 	// check response status
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", "", "", fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 

@@ -1,5 +1,12 @@
 package dto
 
+// request to onboard an application
+type OnboardApplicationRequest struct {
+	AppId      string `json:"appId"`
+	AppName    string `json:"appName"`
+	ArtefactId string `json:"artefactId"`
+}
+
 // request to instantiate an application
 type InstantiateApplicationRequest struct {
 	TransactionId       string `json:"transactionId"`

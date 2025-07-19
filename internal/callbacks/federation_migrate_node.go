@@ -157,10 +157,9 @@ func (f *FederationMigrateNodeCallback) sendMigrateNodeRequestToPartner(federati
 	}
 
 	// status to float
-	
 
 	// Check the response status
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("failed to migrate node: %s", resp.Status)
 	}
 
