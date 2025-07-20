@@ -150,7 +150,7 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 	applicationInstanceLifecycleManagementController := ewbi.NewApplicationInstanceLifecycleManagementController(
 		svcs.FederationService,
 		svcs.OrchestratorService,
-		svcs.ArtefactService,
+		svcs.ApplicationService,
 		svcs.AppInstanceService,
 		svcs.ZoneService,
 	)

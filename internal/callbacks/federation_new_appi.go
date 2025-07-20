@@ -94,6 +94,15 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 		return
 	}
 
+	// get the application from the database
+	log.Printf("Getting application from database for federation: %s, appId: %s", federationContextId, artefact.Id)
+	application, err := f.services.ApplicationService.GetApplicationByArtefactId(federationContextId, artefact.Id)
+	if err != nil {
+		log.Printf("Error getting application: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Application not found")
+		return
+	}
+
 	// get the partner zone from the vimId
 	var zoneId string
 	for _, zone := range federation.PartnerOP.OfferedAvailabilityZones {
@@ -112,7 +121,7 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 	// make request to send to partner
 	var request dto.InstantiateApplicationRequest
 	request.TransactionId = uuid.New().String()
-	request.AppId = artefact.Id
+	request.AppId = application.Id
 	request.AppProviderId = artefact.AppProviderId
 	request.AppVersion = artefact.VersionInfo
 	request.ZoneInfo = zoneId
@@ -131,10 +140,9 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 	appInstance := models.AppInstance{
 		Id:                  appInstanceId,
 		FederationContextId: federationContextId,
-		ArtefactId:          artefact.Id,
+		AppId:               application.Id,
 		Name:                "federated-instance",
 		Description:         "not-local",
-		AppPkgId:            "", // empty if the app instance is running on a partner zone
 		NsId:                nsId,
 		VnfId:               vnfId,
 	}

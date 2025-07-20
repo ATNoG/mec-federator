@@ -16,16 +16,16 @@ import (
 type ApplicationInstanceLifecycleManagementController struct {
 	federationService   *services.FederationService
 	orchestratorService *services.OrchestratorService
-	artefactService     *services.ArtefactService
+	applicationService  *services.ApplicationService
 	appInstanceService  *services.AppInstanceService
 	zoneService         *services.ZoneService
 }
 
-func NewApplicationInstanceLifecycleManagementController(federationService *services.FederationService, orchestratorService *services.OrchestratorService, artefactService *services.ArtefactService, appInstanceService *services.AppInstanceService, zoneService *services.ZoneService) *ApplicationInstanceLifecycleManagementController {
+func NewApplicationInstanceLifecycleManagementController(federationService *services.FederationService, orchestratorService *services.OrchestratorService, applicationService *services.ApplicationService, appInstanceService *services.AppInstanceService, zoneService *services.ZoneService) *ApplicationInstanceLifecycleManagementController {
 	return &ApplicationInstanceLifecycleManagementController{
 		federationService:   federationService,
 		orchestratorService: orchestratorService,
-		artefactService:     artefactService,
+		applicationService:  applicationService,
 		appInstanceService:  appInstanceService,
 		zoneService:         zoneService,
 	}
@@ -65,12 +65,12 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 		return
 	}
 
-	// get the artefact from the database
-	log.Printf("CreateAppInstanceController - Retrieving artefact for federation: %s, appId: %s", federationContextId, request.AppId)
-	artefact, err := amc.artefactService.GetArtefact(federationContextId, request.AppId)
+	// get the application from the database
+	log.Printf("CreateAppInstanceController - Getting application from database for federation: %s, appId: %s", federationContextId, request.AppId)
+	application, err := amc.applicationService.GetApplication(federationContextId, request.AppId)
 	if err != nil {
-		log.Printf("CreateAppInstanceController - Artefact not found for federation %s, appId %s: %v", federationContextId, request.AppId, err)
-		utils.HandleProblem(c, http.StatusNotFound, "Artefact not found: "+err.Error())
+		log.Printf("CreateAppInstanceController - Error getting application from database for federation %s, appId %s: %v", federationContextId, request.AppId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application: "+err.Error())
 		return
 	}
 
@@ -86,8 +86,8 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 	log.Printf("CreateAppInstanceController - Retrieved VIM ID for federation: %s, appId: %s, vimId: %s", federationContextId, request.AppId, vimId)
 
 	// instantiate the appPkg
-	log.Printf("CreateAppInstanceController - Instantiating app package for federation: %s, appId: %s, appPkgId: %s, vimId: %s", federationContextId, request.AppId, artefact.AppPkgId, vimId)
-	appiId, err := amc.orchestratorService.InstantiateAppPkg(artefact.AppPkgId, vimId, request.Config, federation.OriginOP.OrigOPFederationId)
+	log.Printf("CreateAppInstanceController - Instantiating app package for federation: %s, appId: %s, appPkgId: %s, vimId: %s", federationContextId, request.AppId, application.AppPkgId, vimId)
+	appiId, err := amc.orchestratorService.InstantiateAppPkg(application.AppPkgId, vimId, request.Config, federation.OriginOP.OrigOPFederationId)
 	if err != nil {
 		log.Printf("CreateAppInstanceController - Error instantiating app package for federation %s, appId %s: %v", federationContextId, request.AppId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error instantiating application instance: "+err.Error())
@@ -104,9 +104,8 @@ func (amc *ApplicationInstanceLifecycleManagementController) CreateAppInstanceCo
 		FederationContextId: federationContextId,
 		Name:                "federated-instance",
 		Description:         "local",
-		ArtefactId:          artefact.Id,
 		AppiId:              appiId,
-		AppPkgId:            artefact.AppPkgId,
+		AppId:               application.Id,
 	}
 
 	// save the appInstance to the database
@@ -273,9 +272,18 @@ func (amc *ApplicationInstanceLifecycleManagementController) EnableAppInstanceKD
 		return
 	}
 
+	// get the application from the database
+	log.Printf("EnableAppInstanceKDUController - Getting application from database for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
+	application, err := amc.applicationService.GetApplication(federationContextId, appInstance.AppId)
+	if err != nil {
+		log.Printf("EnableAppInstanceKDUController - Error getting application from database for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application: "+err.Error())
+		return
+	}
+
 	// get the appPkg from the orchestrator database
-	log.Printf("EnableAppInstanceKDUController - Getting app package from orchestrator for federation: %s, appInstanceId: %s, appPkgId: %s", federationContextId, appInstanceId, appInstance.AppPkgId)
-	appPkg, err := amc.orchestratorService.GetAppPkg(appInstance.AppPkgId)
+	log.Printf("EnableAppInstanceKDUController - Getting app package from orchestrator for federation: %s, appInstanceId: %s, appPkgId: %s", federationContextId, appInstanceId, application.AppPkgId)
+	appPkg, err := amc.orchestratorService.GetAppPkg(application.AppPkgId)
 	if err != nil {
 		log.Printf("EnableAppInstanceKDUController - Error getting app package from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application package: "+err.Error())
@@ -337,9 +345,18 @@ func (amc *ApplicationInstanceLifecycleManagementController) DisableAppInstanceK
 		return
 	}
 
+	// get the application from the database
+	log.Printf("DisableAppInstanceKDUController - Getting application from database for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
+	application, err := amc.applicationService.GetApplication(federationContextId, appInstance.AppId)
+	if err != nil {
+		log.Printf("DisableAppInstanceKDUController - Error getting application from database for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application: "+err.Error())
+		return
+	}
+
 	// get the appPkg from the orchestrator database
-	log.Printf("DisableAppInstanceKDUController - Getting app package from orchestrator for federation: %s, appInstanceId: %s, appPkgId: %s", federationContextId, appInstanceId, appInstance.AppPkgId)
-	appPkg, err := amc.orchestratorService.GetAppPkg(appInstance.AppPkgId)
+	log.Printf("DisableAppInstanceKDUController - Getting app package from orchestrator for federation: %s, appInstanceId: %s, appPkgId: %s", federationContextId, appInstanceId, application.AppPkgId)
+	appPkg, err := amc.orchestratorService.GetAppPkg(application.AppPkgId)
 	if err != nil {
 		log.Printf("DisableAppInstanceKDUController - Error getting app package from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application package: "+err.Error())
@@ -408,9 +425,18 @@ func (amc *ApplicationInstanceLifecycleManagementController) AppInstanceNodeMigr
 		return
 	}
 
+	// get the application from the database
+	log.Printf("AppInstanceNodeMigrateController - Getting application from database for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
+	application, err := amc.applicationService.GetApplication(federationContextId, appInstance.AppId)
+	if err != nil {
+		log.Printf("AppInstanceNodeMigrateController - Error getting application from database for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application: "+err.Error())
+		return
+	}
+
 	// get the appPkg from the orchestrator database
-	log.Printf("AppInstanceNodeMigrateController - Getting app package from orchestrator for federation: %s, appInstanceId: %s, appPkgId: %s", federationContextId, appInstanceId, appInstance.AppPkgId)
-	appPkg, err := amc.orchestratorService.GetAppPkg(appInstance.AppPkgId)
+	log.Printf("AppInstanceNodeMigrateController - Getting app package from orchestrator for federation: %s, appInstanceId: %s, appPkgId: %s", federationContextId, appInstanceId, application.AppPkgId)
+	appPkg, err := amc.orchestratorService.GetAppPkg(application.AppPkgId)
 	if err != nil {
 		log.Printf("AppInstanceNodeMigrateController - Error getting app package from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application package: "+err.Error())

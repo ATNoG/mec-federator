@@ -18,8 +18,8 @@ federation_context_id = "c3915b4e-2cad-4c86-9516-b351009b5165"
 app_pkg_id = "686af10a232d0ef0a39b750a"
 artefact_id = "2cca6ec5-efdf-429f-b790-7ecdfa6e319f"
 
-app_id = "e0a7ec9f-53c0-4074-9bdd-69b36c69b01d"
-app_instance_id = "cc484054-7743-445f-87a7-65a137fa2a71"
+app_id = "4e1d0b12-876f-443d-a98a-89da87482d18"
+app_instance_id = "9c7cebf4-42d6-4f1b-9ad7-701f571b66a4"
 
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
 

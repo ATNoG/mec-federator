@@ -90,6 +90,25 @@ func (f *FederationNewAppCallback) handleNewApp(msgId string, msg map[string]int
 		return
 	}
 
+	// make local application object
+	application := models.Application{
+		Id:                  appId,
+		FederationContextId: federationContextId,
+		AppPkgId:            "",
+		Name:                artefact.Name + "-fed-app",
+		Description:         "not-local",
+		ArtefactId:          artefact.Id,
+	}
+
+	// save the application to the database
+	log.Printf("Saving application to database: %v", application)
+	err = f.services.ApplicationService.CreateApplication(application)
+	if err != nil {
+		log.Printf("Error saving application to database: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", "Failed to save application to database")
+		return
+	}
+
 	// send response to kafka
 	response := map[string]string{
 		"msg_id":  msgId,
