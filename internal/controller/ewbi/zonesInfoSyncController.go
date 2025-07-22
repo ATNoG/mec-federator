@@ -29,7 +29,7 @@ func NewZonesInfoSyncController(zoneService *services.ZoneService, orchestratorS
 // @Tags EWBI - ZonesInfoSync
 func (zisc *ZonesInfoSyncController) SubscribeZoneController(c *gin.Context) {
 	// get the federationContextId from the path
-	// federationContextId := c.Param("federationContextId")
+	federationContextId := c.Param("federationContextId")
 
 	// get the request body and decode
 	var zoneRegistrationRequestData models.ZoneRegistrationRequestData
@@ -37,12 +37,71 @@ func (zisc *ZonesInfoSyncController) SubscribeZoneController(c *gin.Context) {
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body")
 		return
 	}
+
+	// for each string in the AcceptedAvailabilityZones array, get the zone details from the database
+	acceptedZones := []models.ZoneDetails{}
+	for _, zoneId := range zoneRegistrationRequestData.AcceptedAvailabilityZones {
+		zone, err := zisc.zoneService.GetLocalZoneById(zoneId)
+		if err != nil {
+			utils.HandleProblem(c, http.StatusInternalServerError, "Error getting zone details for zoneId: "+zoneId)
+			return
+		}
+
+		// check if they are already subscribed in this federation context
+		_, err = zisc.zoneService.GetZoneRegisteredData(federationContextId, zoneId)
+		if err != nil {
+			utils.HandleProblem(c, http.StatusInternalServerError, "Error checking if zone is subscribed: "+zoneId)
+			return
+		}
+
+		acceptedZones = append(acceptedZones, zone)
+	}
+
+	// make the response body
+	zoneRegistrationResponseData := models.ZoneRegistrationResponseData{}
+
+	// for each zone in the acceptedzones, make the corresponding ZoneRegisteredData
+	acceptedZoneResourceInfo := []models.ZoneRegisteredData{}
+	for _, zone := range acceptedZones {
+		zoneRegisteredData := models.ZoneRegisteredData{
+			ZoneId:              zone.ZoneId,
+			FederationContextId: federationContextId,
+		}
+
+		acceptedZoneResourceInfo = append(acceptedZoneResourceInfo, zoneRegisteredData)
+	}
+
+	zoneRegistrationResponseData.AcceptedZoneResourceInfo = acceptedZoneResourceInfo
+
+	// return the accepted zones
+	c.JSON(http.StatusOK, zoneRegistrationResponseData)
 }
 
 // @Summary Unsubscribe from a Zone
 // @Description Used by origin OP to show intent on not using a partner OP's zone anymore
 // @Tags EWBI - ZonesInfoSync
 func (zisc *ZonesInfoSyncController) UnsubscribeZoneController(c *gin.Context) {
+	// get the federationContextId from the path
+	federationContextId := c.Param("federationContextId")
+
+	// get the zoneId from the path
+	zoneId := c.Param("zoneId")
+
+	// get the zone registered data for the given zoneId and federationContextId
+	_, err := zisc.zoneService.GetZoneRegisteredData(federationContextId, zoneId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting zone registered data: "+zoneId)
+		return
+	}
+
+	// delete the zone registered data for the given zoneId and federationContextId
+	err = zisc.zoneService.DeleteZoneRegisteredData(federationContextId, zoneId)
+	if err != nil {
+		utils.HandleProblem(c, http.StatusInternalServerError, "Error deleting zone registered data: "+zoneId)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Zone unregistered successfully"})
 }
 
 // @Summary Get Zone Details

@@ -2,6 +2,9 @@ package models
 
 type ZoneRegisteredData struct {
 	ZoneId string `json:"zoneId"`
+
+	FederationContextId string `json:"federationContextId"`
+
 	// Resources exclusively reserved for the originator OP.
 	ReservedComputeResources []ComputeResourceInfo `json:"reservedComputeResources"`
 	// Max quota on resources partner OP allows over reserved resources.
