@@ -60,12 +60,10 @@ def process_alert_phases(alerts):
     
     # Define phase boundaries (start_alert -> end_alert)
     phase_definitions = {
-        "Origin\nArtefact\nOnboard\nRequest": ("migration-init", "federation-po-onboard-artefact-init"),
-        "Partner\nArtefact\nOnboarding": ("federation-po-onboard-artefact-init", "artefact-onboard-done"),
-        "Origin App\nInstantiation\nRequest": ("artefact-onboard-done", "federation-po-instantiate-appi-init"), 
-        "Partner App\nInstantiation": ("federation-po-instantiate-appi-init", "migration-ready"),
+        "Artefact\nOnboarding": ("migration-init", "artefact-onboard-done"),
+        "Partner\nApp\nInstantiation": ("appi-inst-init", "migration-ready"),
         "Network\nInterface\nSwitch": ("migration-ready", "network-interface-switch-done"),
-        "Origin \nOld App\nTermination": ("network-interface-switch-done", "migration-done"),
+        "Origin\nApp\nTermination": ("network-interface-switch-done", "migration-done"),
         "Migration\nTime": ("migration-init", "migration-done")
     }
     
@@ -197,6 +195,7 @@ def plot_results(sent_total, phase_durations, output=None):
     plt.ylabel("Duration (seconds)", fontsize=28)
     plt.title("Migration Phase Duration Distribution", fontsize=32)
     plt.xticks(rotation=0, ha='center', fontsize=26)
+    plt.ylim(0, 80)
     plt.yticks(fontsize=26)
     plt.grid(True, alpha=0.3)
     plt.tight_layout()

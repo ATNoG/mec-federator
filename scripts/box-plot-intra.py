@@ -195,6 +195,7 @@ def plot_results(sent_total, phase_durations, output=None):
     plt.title("Single Domain Migration Phase Duration Distribution", fontsize=32)
     plt.xticks(rotation=0, ha='center', fontsize=26)
     plt.yticks(fontsize=26)
+    plt.ylim(0, 80)
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
 
