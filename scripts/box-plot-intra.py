@@ -182,7 +182,7 @@ def plot_results(sent_total, phase_durations, output=None):
         return
     
     # Create the box plot
-    box_plot = plt.boxplot(box_data, labels=labels, patch_artist=True)
+    box_plot = plt.boxplot(box_data, labels=labels, patch_artist=True, showfliers=False)
     
     # Color the boxes with distinct colors for each phase
     colors = sns.color_palette('Set2', len(box_data))
