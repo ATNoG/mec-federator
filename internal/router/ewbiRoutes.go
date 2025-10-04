@@ -113,6 +113,36 @@ func initEwbiArtefactManagementRoutes(router *gin.Engine, svcs *Services, mdws *
 		artefactManagementController.DeleteFileController)
 }
 
+func initEwbiApplicationOnboardingRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
+	// ApplicationOnboarding - Create and manage application onboarding
+	ApplicationOnboarding := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
+
+	applicationOnboardingController := ewbi.NewApplicationOnboardingController(
+		svcs.FederationService,
+		svcs.OrchestratorService,
+		svcs.ArtefactService,
+		svcs.ApplicationService,
+		svcs.ZoneService,
+	)
+
+	ApplicationOnboarding.POST(
+		"/:federationContextId/application/onboarding",
+		*mdws.FederationExistsMiddleware,
+		applicationOnboardingController.OnboardApplicationController)
+	ApplicationOnboarding.PATCH(
+		"/:federationContextId/application/onboarding/app/:appId",
+		*mdws.FederationExistsMiddleware,
+		applicationOnboardingController.UpdateApplicationController)
+	ApplicationOnboarding.DELETE(
+		"/:federationContextId/application/onboarding/app/:appId",
+		*mdws.FederationExistsMiddleware,
+		applicationOnboardingController.RemoveApplicationController)
+	ApplicationOnboarding.GET(
+		"/:federationContextId/application/onboarding/app/:appId/zone/:zoneId",
+		*mdws.FederationExistsMiddleware,
+		applicationOnboardingController.ViewApplicationController)
+}
+
 func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	// ApplicationInstanceLifecycleManagement - Create and manage application instance lifecycle
 	ApplicationInstanceLifecycleManagement := router.Group("/federation/v1/ewbi", *mdws.AuthMiddleware)
@@ -120,7 +150,7 @@ func initEwbiApplicationInstanceLifecycleManagementRoutes(router *gin.Engine, sv
 	applicationInstanceLifecycleManagementController := ewbi.NewApplicationInstanceLifecycleManagementController(
 		svcs.FederationService,
 		svcs.OrchestratorService,
-		svcs.ArtefactService,
+		svcs.ApplicationService,
 		svcs.AppInstanceService,
 		svcs.ZoneService,
 	)

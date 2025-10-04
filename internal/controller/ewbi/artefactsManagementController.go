@@ -106,35 +106,35 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 		return
 	}
 
-	// Get descriptor data from the tar ball
-	log.Printf("OnboardArtefactController - Extracting descriptor data for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
-	descriptorData, err := utils.GetDescriptorData(fileContent)
-	if err != nil {
-		log.Printf("OnboardArtefactController - Error getting descriptor data for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
-		utils.HandleProblem(c, http.StatusBadRequest, "Error getting descriptor data: "+err.Error())
-		return
-	}
+	// // Get descriptor data from the tar ball
+	// log.Printf("OnboardArtefactController - Extracting descriptor data for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
+	// descriptorData, err := utils.GetDescriptorData(fileContent)
+	// if err != nil {
+	// 	log.Printf("OnboardArtefactController - Error getting descriptor data for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
+	// 	utils.HandleProblem(c, http.StatusBadRequest, "Error getting descriptor data: "+err.Error())
+	// 	return
+	// }
 
-	// Validate the descriptor data
-	log.Printf("OnboardArtefactController - Validating descriptor data for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
-	appPkg, err := utils.ValidateDescriptorData(descriptorData)
-	if err != nil {
-		log.Printf("OnboardArtefactController - Error validating descriptor data for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
-		utils.HandleProblem(c, http.StatusBadRequest, "Error validating descriptor data: "+err.Error())
-		return
-	}
-	appPkg.AppD = fileContent
+	// // Validate the descriptor data
+	// log.Printf("OnboardArtefactController - Validating descriptor data for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
+	// appPkg, err := utils.ValidateDescriptorData(descriptorData)
+	// if err != nil {
+	// 	log.Printf("OnboardArtefactController - Error validating descriptor data for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
+	// 	utils.HandleProblem(c, http.StatusBadRequest, "Error validating descriptor data: "+err.Error())
+	// 	return
+	// }
+	// appPkg.AppD = fileContent
 
-	// Onboard the artefact onto the orchestrator
-	log.Printf("OnboardArtefactController - Onboarding artefact to orchestrator for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
-	appPkgId, err := amc.orchestratorService.OnboardAppPkg(appPkg)
-	if err != nil {
-		log.Printf("OnboardArtefactController - Error onboarding artefact to orchestrator for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
-		utils.HandleProblem(c, http.StatusInternalServerError, "Error onboarding artefact onto orchestrator: "+err.Error())
-		return
-	}
+	// // Onboard the artefact onto the orchestrator
+	// log.Printf("OnboardArtefactController - Onboarding artefact to orchestrator for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
+	// appPkgId, err := amc.orchestratorService.OnboardAppPkg(appPkg)
+	// if err != nil {
+	// 	log.Printf("OnboardArtefactController - Error onboarding artefact to orchestrator for federation %s, artefactId %s: %v", federationContextId, artefactOnboardRequest.ArtefactId, err)
+	// 	utils.HandleProblem(c, http.StatusInternalServerError, "Error onboarding artefact onto orchestrator: "+err.Error())
+	// 	return
+	// }
 
-	log.Printf("OnboardArtefactController - Artefact onboarded to orchestrator successfully for federation: %s, artefactId: %s, appPkgId: %s", federationContextId, artefactOnboardRequest.ArtefactId, appPkgId)
+	// log.Printf("OnboardArtefactController - Artefact onboarded to orchestrator successfully for federation: %s, artefactId: %s, appPkgId: %s", federationContextId, artefactOnboardRequest.ArtefactId, appPkgId)
 
 	// Create artefact object
 	log.Printf("OnboardArtefactController - Creating artefact object for federation: %s, artefactId: %s", federationContextId, artefactOnboardRequest.ArtefactId)
@@ -150,7 +150,6 @@ func (amc *ArtefactManagementController) OnboardArtefactController(c *gin.Contex
 		FileName:            artefactOnboardRequest.ArtefactFileName,
 		FileFormat:          artefactOnboardRequest.ArtefactFileFormat,
 		ArtefactFile:        &fileContent,
-		AppPkgId:            appPkgId,
 	}
 
 	// Save artefact object to database

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/router"
@@ -106,6 +105,15 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 		return
 	}
 
+	// get the application from the database
+	log.Printf("Getting application from database for federation: %s, appId: %s", federationContextId, artefact.Id)
+	application, err := f.services.ApplicationService.GetApplicationByArtefactId(federationContextId, artefact.Id)
+	if err != nil {
+		log.Printf("Error getting application: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "404", "Application not found")
+		return
+	}
+
 	// get the partner zone from the vimId
 	var zoneId string
 	for _, zone := range federation.PartnerOP.OfferedAvailabilityZones {
@@ -123,13 +131,15 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 
 	// make request to send to partner
 	var request dto.InstantiateApplicationRequest
-	request.TransactionId = uuid.New().String()
-	request.AppId = artefact.Id
+	request.AppId = application.Id
 	request.AppProviderId = artefact.AppProviderId
 	request.AppVersion = artefact.VersionInfo
 	request.ZoneInfo = zoneId
 	request.Config = config
 	request.AppInstCallbackLink = "callback.link"
+
+	// generate idempotency key from the request
+	request.TransactionId = utils.GenerateIdempotencyKey(request)
 
 	// send request to partner
 	appInstanceId, nsId, vnfId, err := f.sendAppInstanceRequestToPartner(&federation, &request)
@@ -143,10 +153,9 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 	appInstance := models.AppInstance{
 		Id:                  appInstanceId,
 		FederationContextId: federationContextId,
-		ArtefactId:          artefact.Id,
+		AppId:               application.Id,
 		Name:                "federated-instance",
 		Description:         "not-local",
-		AppPkgId:            "", // empty if the app instance is running on a partner zone
 		NsId:                nsId,
 		VnfId:               vnfId,
 	}
@@ -216,7 +225,7 @@ func (f *FederationAppiNewCallback) sendAppInstanceRequestToPartner(federation *
 	defer resp.Body.Close()
 
 	// check response status
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", "", "", fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 

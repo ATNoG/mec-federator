@@ -109,7 +109,6 @@ func (f *FederationArtefactNewCallback) handleNewArtefact(msgId string, msg map[
 	artefact = models.Artefact{
 		Id:                  uuid.New().String(),
 		FederationContextId: federationContextId,
-		AppPkgId:            appPkgId,
 		AppProviderId:       appPkg.Provider,
 		Name:                appPkg.Name,
 		Description:         appPkg.Description,
@@ -118,6 +117,7 @@ func (f *FederationArtefactNewCallback) handleNewArtefact(msgId string, msg map[
 		DescriptorType:      models.HELM,
 		FileFormat:          models.TARGZ,
 		ArtefactFile:        &appPkg.AppD,
+		AppPkgId:            appPkgId,
 	}
 
 	// send the artefact to the partner operator
