@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 	"github.com/mankings/mec-federator/internal/models"
 	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/router"
@@ -120,13 +119,15 @@ func (f *FederationAppiNewCallback) handleNewAppInstance(msgId string, msg map[s
 
 	// make request to send to partner
 	var request dto.InstantiateApplicationRequest
-	request.TransactionId = uuid.New().String()
 	request.AppId = application.Id
 	request.AppProviderId = artefact.AppProviderId
 	request.AppVersion = artefact.VersionInfo
 	request.ZoneInfo = zoneId
 	request.Config = config
 	request.AppInstCallbackLink = "callback.link"
+
+	// generate idempotency key from the request
+	request.TransactionId = utils.GenerateIdempotencyKey(request)
 
 	// send request to partner
 	appInstanceId, nsId, vnfId, err := f.sendAppInstanceRequestToPartner(&federation, &request)
