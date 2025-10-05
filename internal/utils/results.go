@@ -13,7 +13,7 @@ type ResultsMessage struct {
 	Value   interface{} `json:"value"`
 }
 
-var resultsEndpoint = "http://10.255.41.239:8000/alert"
+var resultsEndpoint = "http://10.255.42.59:8000/alert"
 
 func SendResultsMessage(message ResultsMessage) error {
 	jsonData, err := json.Marshal(message)

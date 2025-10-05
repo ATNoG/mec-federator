@@ -1,6 +1,6 @@
 # Variables
 DOCKER_IMAGE_NAME = mankings/federator
-DOCKER_TAG ?= 1.9
+DOCKER_TAG ?= 2.0.1
 DOCKERFILE_PATH = deployment/docker/Dockerfile
 
 tidy:

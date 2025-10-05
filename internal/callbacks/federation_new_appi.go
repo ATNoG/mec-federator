@@ -30,8 +30,8 @@ func NewFederationAppiNewCallback(services *router.Services) *FederationAppiNewC
 func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationAppiNewCallback.HandleMessage", func() {
 		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "federation-oo-instantiate-appi-init",
-			Message: "",
+			Name:    "oo-init-instantiate-appi",
+			Message: "reset",
 			Value:   nil,
 		})
 
@@ -50,7 +50,7 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 		f.handleNewAppInstance(msgId, msg)
 
 		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "federation-oo-instantiate-appi-done",
+			Name:    "oo-done-instantiate-appi",
 			Message: "",
 			Value:   nil,
 		})

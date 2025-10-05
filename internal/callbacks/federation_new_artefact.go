@@ -34,8 +34,8 @@ func NewFederationArtefactNewCallback(services *router.Services) *FederationArte
 func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationArtefactNewCallback.HandleMessage", func() {
 		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "federation-oo-onboard-artefact-init",
-			Message: "",
+			Name:    "oo-init-onboard-artefact",
+			Message: "reset",
 			Value:   nil,
 		})
 
@@ -55,7 +55,7 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 		f.handleNewArtefact(msgId, msg)
 
 		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "federation-oo-onboard-artefact-done",
+			Name:    "oo-done-onboard-artefact",
 			Message: "",
 			Value:   nil,
 		})

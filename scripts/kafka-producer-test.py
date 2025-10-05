@@ -13,7 +13,7 @@ security_protocol = 'SASL_PLAINTEXT'
 # Hardcoded messages to send
 federation_endpoint = "http://federator-po:8000"
 auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
-federation_context_id = "c3915b4e-2cad-4c86-9516-b351009b5165"
+federation_context_id = "a1e9b73a-7cf3-41dd-91e5-beade471d518"
 
 app_pkg_id = "686af10a232d0ef0a39b750a"
 artefact_id = "2cca6ec5-efdf-429f-b790-7ecdfa6e319f"

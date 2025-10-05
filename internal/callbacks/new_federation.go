@@ -32,6 +32,12 @@ func NewNewFederationCallback(services *router.Services) *NewFederationCallback 
 // HandleMessage processes incoming new federation messages
 func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("NewFederationCallback.HandleMessage", func() {
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-init-create-federation",
+			Message: "reset",
+			Value:   nil,
+		})
+
 		log.Printf("Received new federation message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -46,6 +52,12 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 
 		msgId := msg["msg_id"].(string)
 		nc.handleNewFederation(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-done-create-federation",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 
