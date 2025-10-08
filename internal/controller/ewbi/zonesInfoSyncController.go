@@ -24,9 +24,17 @@ func NewZonesInfoSyncController(zoneService *services.ZoneService, orchestratorS
 	}
 }
 
-// @Summary Subscribe to a Zone
-// @Description Used by origin OP to show intent on using a partner OP's zone
+// @Summary Subscribe to Zone
+// @Description Registers the origin operator's intent to use one or more availability zones from the partner operator
 // @Tags EWBI - ZonesInfoSync
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param zoneRegistrationRequestData body models.ZoneRegistrationRequestData true "Zone Registration Request Data"
+// @Success 200 {object} models.ZoneRegistrationResponseData
+// @Failure 400 {object} models.ProblemDetails "Invalid request body"
+// @Failure 500 {object} models.ProblemDetails "Internal server error"
+// @Router /ewbi/{federationContextId}/zones [post]
 func (zisc *ZonesInfoSyncController) SubscribeZoneController(c *gin.Context) {
 	// get the federationContextId from the path
 	federationContextId := c.Param("federationContextId")
@@ -77,9 +85,16 @@ func (zisc *ZonesInfoSyncController) SubscribeZoneController(c *gin.Context) {
 	c.JSON(http.StatusOK, zoneRegistrationResponseData)
 }
 
-// @Summary Unsubscribe from a Zone
-// @Description Used by origin OP to show intent on not using a partner OP's zone anymore
+// @Summary Unsubscribe from Zone
+// @Description Unregisters the origin operator's subscription to a specific availability zone from the partner operator
 // @Tags EWBI - ZonesInfoSync
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param zoneId path string true "Zone identifier"
+// @Success 200 {object} map[string]string "message: Zone unregistered successfully"
+// @Failure 500 {object} models.ProblemDetails "Internal server error"
+// @Router /ewbi/{federationContextId}/zones/{zoneId} [delete]
 func (zisc *ZonesInfoSyncController) UnsubscribeZoneController(c *gin.Context) {
 	// get the federationContextId from the path
 	federationContextId := c.Param("federationContextId")
@@ -105,8 +120,15 @@ func (zisc *ZonesInfoSyncController) UnsubscribeZoneController(c *gin.Context) {
 }
 
 // @Summary Get Zone Details
-// @Description Used by origin OP to get details of a zone that belongs to a partner OP
-// @Tags EWBI - ZonesInfoSync~
+// @Description Retrieves detailed information about a specific availability zone from the partner operator
+// @Tags EWBI - ZonesInfoSync
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param zoneId path string true "Zone identifier"
+// @Success 200 {object} models.ZoneDetails
+// @Failure 500 {object} models.ProblemDetails "Internal server error"
+// @Router /ewbi/{federationContextId}/zones/{zoneId} [get]
 func (zisc *ZonesInfoSyncController) GetZoneController(c *gin.Context) {
 	// get the zoneId from the path
 	zoneId := c.Param("zoneId")
@@ -122,8 +144,14 @@ func (zisc *ZonesInfoSyncController) GetZoneController(c *gin.Context) {
 }
 
 // @Summary Get All Local Zones
-// @Description Used by origin OP to get all zones that belong to a partner OP
+// @Description Retrieves a list of all availability zones offered by the partner operator
 // @Tags EWBI - ZonesInfoSync
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Success 200 {array} models.ZoneDetails
+// @Failure 500 {object} models.ProblemDetails "Internal server error"
+// @Router /ewbi/{federationContextId}/zones [get]
 func (zisc *ZonesInfoSyncController) GetAllLocalZonesController(c *gin.Context) {
 	// ensure latest zones are up to date
 	localZones, err := zisc.zoneService.GetLocalZones()
@@ -135,6 +163,17 @@ func (zisc *ZonesInfoSyncController) GetAllLocalZonesController(c *gin.Context) 
 	c.JSON(http.StatusOK, localZones)
 }
 
+// @Summary Post MEH Metrics
+// @Description Receives metrics data from the orchestrator's Multi-access Edge Host and publishes to Kafka topic
+// @Tags EWBI - ZonesInfoSync
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param metricsRequestData body dto.OrchMehMetricsRequestData true "MEH Metrics Request Data"
+// @Success 200 {object} map[string]string "msgId: Kafka message ID"
+// @Failure 400 {object} models.ProblemDetails "Invalid request body"
+// @Failure 500 {object} models.ProblemDetails "Error posting metrics to Kafka"
+// @Router /ewbi/{federationContextId}/metrics [post]
 func (zisc *ZonesInfoSyncController) PostMetricsController(c *gin.Context) {
 	// get the request body and decode
 	var metricsRequestData dto.OrchMehMetricsRequestData

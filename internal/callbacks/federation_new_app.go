@@ -50,6 +50,12 @@ func (f *FederationNewAppCallback) HandleMessage(message *sarama.ConsumerMessage
 
 		msgId := msg["msg_id"].(string)
 		f.handleNewApp(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-done-onboard-app",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 

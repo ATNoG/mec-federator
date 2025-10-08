@@ -1,5 +1,12 @@
 package ewbi
 
+/*
+ *
+ * This file contains the implementation of the Application Onboarding Controller over the E/WBI
+ * Exposes Application Onboarding functionalities to manage applications in federations.
+ *
+ */
+
 import (
 	"log"
 	"net/http"
@@ -19,6 +26,7 @@ type ApplicationOnboardingController struct {
 	zoneService         *services.ZoneService
 }
 
+// NewApplicationOnboardingController creates a new instance of the ApplicationOnboardingController
 func NewApplicationOnboardingController(federationService *services.FederationService, orchestratorService *services.OrchestratorService, artefactService *services.ArtefactService, applicationService *services.ApplicationService, zoneService *services.ZoneService) *ApplicationOnboardingController {
 	return &ApplicationOnboardingController{
 		federationService:   federationService,
@@ -29,6 +37,17 @@ func NewApplicationOnboardingController(federationService *services.FederationSe
 	}
 }
 
+// @Summary Onboard Application
+// @Description Onboards an application to the orchestrator and creates an application object in the federation
+// @Tags EWBI - ApplicationOnboarding
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param request body dto.OnboardApplicationRequest true "Onboard Application Request"
+// @Success 201 {object} map[string]string "message: Application onboarded successfully"
+// @Failure 400 {object} models.ProblemDetails "Invalid request or validation error"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /ewbi/{federationContextId}/applications [post]
 func (aoc *ApplicationOnboardingController) OnboardApplicationController(c *gin.Context) {
 	federationContextId := c.Param("federationContextId")
 	log.Printf("OnboardApplicationController - Starting application onboarding for federation: %s", federationContextId)
@@ -113,9 +132,31 @@ func (aoc *ApplicationOnboardingController) OnboardApplicationController(c *gin.
 	c.JSON(http.StatusCreated, gin.H{"message": "Application onboarded successfully"})
 }
 
+// @Summary Update Application
+// @Description Updates an application object in the federation
+// @Tags EWBI - ApplicationOnboarding
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param appId path string true "Application ID"
+// @Success 200 {object} map[string]string "message: Application updated successfully"
+// @Failure 400 {object} models.ProblemDetails "Invalid request"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /ewbi/{federationContextId}/applications/{appId} [patch]
 func (aoc *ApplicationOnboardingController) UpdateApplicationController(c *gin.Context) {
 }
 
+// @Summary Remove Application
+// @Description Removes an application from the orchestrator and deletes the application object from the federation
+// @Tags EWBI - ApplicationOnboarding
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param appId path string true "Application ID"
+// @Success 200 {object} map[string]string "message: Application removed successfully"
+// @Failure 400 {object} models.ProblemDetails "Invalid request or application has running instances"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /ewbi/{federationContextId}/applications/{appId} [delete]
 func (aoc *ApplicationOnboardingController) RemoveApplicationController(c *gin.Context) {
 	federationContextId := c.Param("federationContextId")
 
@@ -158,5 +199,16 @@ func (aoc *ApplicationOnboardingController) RemoveApplicationController(c *gin.C
 	c.JSON(http.StatusOK, gin.H{"message": "Application removed successfully"})
 }
 
+// @Summary View Application
+// @Description Retrieves application details by application ID within a federation
+// @Tags EWBI - ApplicationOnboarding
+// @Accept json
+// @Produce json
+// @Param federationContextId path string true "Federation Context ID"
+// @Param appId path string true "Application ID"
+// @Success 200 {object} models.Application
+// @Failure 400 {object} models.ProblemDetails "Invalid request or application not found"
+// @Failure 500 {object} models.ProblemDetails "Internal Server Error"
+// @Router /ewbi/{federationContextId}/applications/{appId} [get]
 func (aoc *ApplicationOnboardingController) ViewApplicationController(c *gin.Context) {
 }

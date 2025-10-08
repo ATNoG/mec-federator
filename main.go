@@ -103,8 +103,8 @@ func main() {
 	removeFederationCallback := callbacks.NewRemoveFederationCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage, true)
 
-	// getFederationInfoCallback := callbacks.NewGetFederationInfoCallback(services)
-	// kafkaServ.StartConsumer(context.Background(), "get_federation_info", getFederationInfoCallback.HandleMessage, true)
+	getFederationInfoCallback := callbacks.NewGetFederationInfoCallback(services)
+	kafkaServ.StartConsumer(context.Background(), "federation_get_info", getFederationInfoCallback.HandleMessage, true)
 
 	newFederationArtefactCallback := callbacks.NewFederationArtefactNewCallback(services)
 	kafkaServ.StartConsumer(context.Background(), "federation_new_artefact", newFederationArtefactCallback.HandleMessage, true)

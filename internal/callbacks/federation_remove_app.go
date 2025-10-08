@@ -89,6 +89,15 @@ func (f *FederationRemoveAppCallback) handleRemoveApp(msgId string, msg map[stri
 		return
 	}
 
+	// remove the app locally
+	log.Printf("Removing app locally for federation: %s, appId: %s", federationContextId, appId)
+	err = f.services.ApplicationService.DeleteApplication(federationContextId, appId)
+	if err != nil {
+		log.Printf("Error removing app locally: %v", err)
+		f.services.KafkaClientService.SendResponse(msgId, "500", "Error removing app locally")
+		return
+	}
+
 	// send the response
 	response := map[string]string{
 		"msg_id":  msgId,

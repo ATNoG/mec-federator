@@ -154,9 +154,568 @@ const docTemplate = `{
                 }
             }
         },
+        "/ewbi/{federationContextId}/app_instances": {
+            "post": {
+                "description": "Creates a new application instance in the specified zone and registers it in the orchestrator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationInstanceLifecycleManagement"
+                ],
+                "summary": "Create Application Instance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Application instantiation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.InstantiateApplicationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "appInstanceId: id, nsId: id, vnfId: id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/app_instances/{appInstanceId}": {
+            "get": {
+                "description": "Retrieves detailed information about an application instance from the orchestrator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationInstanceLifecycleManagement"
+                ],
+                "summary": "Get Application Instance Details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application Instance ID",
+                        "name": "appInstanceId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OrchAppI"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Terminates and removes an application instance from the orchestrator and database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationInstanceLifecycleManagement"
+                ],
+                "summary": "Delete Application Instance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application Instance ID",
+                        "name": "appInstanceId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "appInstanceId: id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/disable": {
+            "post": {
+                "description": "Disables a Kubernetes Deployment Unit (KDU) within an application instance",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationInstanceLifecycleManagement"
+                ],
+                "summary": "Disable Application Instance KDU",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application Instance ID",
+                        "name": "appInstanceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "KDU disablement request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DisableAppInstanceKDURequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "appInstance: object, kduId: id, nsId: id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/enable": {
+            "post": {
+                "description": "Enables a Kubernetes Deployment Unit (KDU) within an application instance on the specified node",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationInstanceLifecycleManagement"
+                ],
+                "summary": "Enable Application Instance KDU",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application Instance ID",
+                        "name": "appInstanceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "KDU enablement request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.EnableAppInstanceKDURequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "appInstance: object, kduId: id, nsId: id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/app_instances/{appInstanceId}/node/migrate": {
+            "post": {
+                "description": "Migrates a Kubernetes Deployment Unit (KDU) within an application instance to a different node",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationInstanceLifecycleManagement"
+                ],
+                "summary": "Migrate Application Instance Node",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application Instance ID",
+                        "name": "appInstanceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Node migration request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AppInstanceNodeMigrateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "appInstanceId: id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/applications": {
+            "post": {
+                "description": "Onboards an application to the orchestrator and creates an application object in the federation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationOnboarding"
+                ],
+                "summary": "Onboard Application",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Onboard Application Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.OnboardApplicationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "message: Application onboarded successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/applications/{appId}": {
+            "get": {
+                "description": "Retrieves application details by application ID within a federation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationOnboarding"
+                ],
+                "summary": "View Application",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "appId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Application"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or application not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes an application from the orchestrator and deletes the application object from the federation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationOnboarding"
+                ],
+                "summary": "Remove Application",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "appId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Application removed successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or application has running instances",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates an application object in the federation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ApplicationOnboarding"
+                ],
+                "summary": "Update Application",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "appId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Application updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/ewbi/{federationContextId}/artefact": {
             "post": {
-                "description": "Receives an artefact from origin OP. Artefact is a zip file containing scripts and/or packaging files",
+                "description": "Receives and onboards an artefact from the origin operator. The artefact is a packaged file (zip/tar) containing application scripts and packaging files. The artefact is validated and stored in the database.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -166,7 +725,7 @@ const docTemplate = `{
                 "tags": [
                     "EWBI - ArtefactManagement"
                 ],
-                "summary": "Onboard an artefact",
+                "summary": "Onboard Artefact",
                 "parameters": [
                     {
                         "type": "string",
@@ -177,70 +736,70 @@ const docTemplate = `{
                     },
                     {
                         "type": "file",
-                        "description": "Artefact file",
+                        "description": "Artefact package file (zip/tar format)",
                         "name": "artefactFile",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact ID",
+                        "description": "Unique identifier for the artefact",
                         "name": "artefactId",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "App Provider ID",
+                        "description": "Application provider identifier",
                         "name": "appProviderId",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact Name",
+                        "description": "Human-readable name of the artefact",
                         "name": "artefactName",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact Version Info",
+                        "description": "Version information of the artefact",
                         "name": "artefactVersionInfo",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact Description",
+                        "description": "Detailed description of the artefact",
                         "name": "artefactDescription",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact Virt Type",
+                        "description": "Virtualization type (e.g., container, VM)",
                         "name": "artefactVirtType",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact Descriptor Type",
+                        "description": "Descriptor file type (e.g., TOSCA, Helm)",
                         "name": "artefactDescriptorType",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact File Format",
+                        "description": "File format of the artefact (e.g., zip, tar.gz)",
                         "name": "artefactFileFormat",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Artefact File Name",
+                        "description": "Original filename of the artefact",
                         "name": "artefactFileName",
                         "in": "formData",
                         "required": true
@@ -257,13 +816,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid form data or validation errors",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemDetails"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "File processing or database errors",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemDetails"
                         }
@@ -273,11 +832,17 @@ const docTemplate = `{
         },
         "/ewbi/{federationContextId}/artefact/{artefactId}": {
             "delete": {
-                "description": "Delete an artefact by its id",
+                "description": "Removes an artefact from the database. Artefacts that have been onboarded to the orchestrator cannot be deleted until the onboarding is removed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "EWBI - ArtefactManagement"
                 ],
-                "summary": "Delete an artefact",
+                "summary": "Delete Artefact",
                 "parameters": [
                     {
                         "type": "string",
@@ -288,7 +853,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Artefact ID",
+                        "description": "Artefact identifier",
                         "name": "artefactId",
                         "in": "path",
                         "required": true
@@ -304,14 +869,20 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "403": {
+                        "description": "Artefact has been onboarded and cannot be deleted",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Artefact not found",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemDetails"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemDetails"
                         }
@@ -321,11 +892,17 @@ const docTemplate = `{
         },
         "/ewbi/{federationContextId}/artefacts/{artefactId}": {
             "get": {
-                "description": "Get an artefact details by its id",
+                "description": "Retrieves detailed information about a specific artefact by its ID within a federation context",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "EWBI - ArtefactManagement"
                 ],
-                "summary": "Get an artefact",
+                "summary": "Get Artefact Details",
                 "parameters": [
                     {
                         "type": "string",
@@ -336,7 +913,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Artefact ID",
+                        "description": "Artefact identifier",
                         "name": "artefactId",
                         "in": "path",
                         "required": true
@@ -350,13 +927,13 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Artefact not found",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemDetails"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemDetails"
                         }
@@ -401,6 +978,62 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/metrics": {
+            "post": {
+                "description": "Receives metrics data from the orchestrator's Multi-access Edge Host and publishes to Kafka topic",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ZonesInfoSync"
+                ],
+                "summary": "Post MEH Metrics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MEH Metrics Request Data",
+                        "name": "metricsRequestData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.OrchMehMetricsRequestData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "msgId: Kafka message ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Error posting metrics to Kafka",
                         "schema": {
                             "$ref": "#/definitions/models.ProblemDetails"
                         }
@@ -591,6 +1224,189 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/ewbi/{federationContextId}/zones": {
+            "get": {
+                "description": "Retrieves a list of all availability zones offered by the partner operator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ZonesInfoSync"
+                ],
+                "summary": "Get All Local Zones",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ZoneDetails"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Registers the origin operator's intent to use one or more availability zones from the partner operator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ZonesInfoSync"
+                ],
+                "summary": "Subscribe to Zone",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Zone Registration Request Data",
+                        "name": "zoneRegistrationRequestData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ZoneRegistrationRequestData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ZoneRegistrationResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/ewbi/{federationContextId}/zones/{zoneId}": {
+            "get": {
+                "description": "Retrieves detailed information about a specific availability zone from the partner operator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ZonesInfoSync"
+                ],
+                "summary": "Get Zone Details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Zone identifier",
+                        "name": "zoneId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ZoneDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Unregisters the origin operator's subscription to a specific availability zone from the partner operator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EWBI - ZonesInfoSync"
+                ],
+                "summary": "Unsubscribe from Zone",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Federation Context ID",
+                        "name": "federationContextId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Zone identifier",
+                        "name": "zoneId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message: Zone unregistered successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProblemDetails"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -601,6 +1417,48 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "clientSecret": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AppInstanceNodeMigrateRequest": {
+            "type": "object",
+            "properties": {
+                "kduId": {
+                    "type": "string"
+                },
+                "node": {
+                    "type": "string"
+                },
+                "nsId": {
+                    "type": "string"
+                },
+                "vnfId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DisableAppInstanceKDURequest": {
+            "type": "object",
+            "properties": {
+                "kduId": {
+                    "type": "string"
+                },
+                "nsId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.EnableAppInstanceKDURequest": {
+            "type": "object",
+            "properties": {
+                "kduId": {
+                    "type": "string"
+                },
+                "node": {
+                    "type": "string"
+                },
+                "nsId": {
                     "type": "string"
                 }
             }
@@ -637,13 +1495,135 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.Instance": {
+            "type": "object",
+            "properties": {
+                "kdus": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "ns_id": {
+                    "type": "string"
+                },
+                "vnf_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.InstantiateApplicationRequest": {
+            "type": "object",
+            "properties": {
+                "appId": {
+                    "type": "string"
+                },
+                "appInstCallbackLink": {
+                    "type": "string"
+                },
+                "appProviderId": {
+                    "type": "string"
+                },
+                "appVersion": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "string"
+                },
+                "transactionId": {
+                    "type": "string"
+                },
+                "zoneInfo": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OnboardApplicationRequest": {
+            "type": "object",
+            "properties": {
+                "appId": {
+                    "type": "string"
+                },
+                "appName": {
+                    "type": "string"
+                },
+                "artefactId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OrchAppI": {
+            "type": "object",
+            "properties": {
+                "app_pkg_id": {
+                    "type": "string"
+                },
+                "appi_id": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "instances": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/definitions/dto.Instance"
+                        }
+                    }
+                },
+                "ns_pkg_id": {
+                    "type": "string"
+                },
+                "vnf_pkg_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OrchMehMetricsRequestData": {
+            "type": "object",
+            "properties": {
+                "federation-meh-metrics": {
+                    "type": "object",
+                    "additionalProperties": {}
+                }
+            }
+        },
         "models.AccessToken": {
             "type": "object",
             "properties": {
                 "accessToken": {
                     "type": "string"
                 },
+                "clientId": {
+                    "type": "string"
+                },
                 "expiresAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Application": {
+            "type": "object",
+            "properties": {
+                "appId": {
+                    "type": "string"
+                },
+                "appPkgId": {
+                    "description": "is empty if the app instance is running on a partner zone",
+                    "type": "string"
+                },
+                "artefactId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "federationContextId": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -689,6 +1669,63 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "VM_TYPE",
                 "CONTAINER_TYPE"
+            ]
+        },
+        "models.ComputeResourceInfo": {
+            "type": "object",
+            "properties": {
+                "cpuArchType": {
+                    "description": "CPU Instruction Set Architecture (ISA) E.g., Intel, Arm etc.",
+                    "type": "string"
+                },
+                "cpuExclusivity": {
+                    "description": "Support for exclusive CPUs",
+                    "type": "boolean"
+                },
+                "diskStorage": {
+                    "description": "Amount of disk storage in Gbytes for a given ISA type",
+                    "type": "integer"
+                },
+                "fpga": {
+                    "description": "Number of FPGAs available for a given ISA type",
+                    "type": "integer"
+                },
+                "gpu": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GpuInfo"
+                    }
+                },
+                "hugepages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.HugePage"
+                    }
+                },
+                "memory": {
+                    "description": "Amount of RAM in Mbytes",
+                    "type": "integer"
+                },
+                "numCPU": {
+                    "type": "string"
+                },
+                "vpu": {
+                    "description": "Number of Intel VPUs available for a given ISA type",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CpuArchType": {
+            "type": "string",
+            "enum": [
+                "ISA_X86",
+                "ISA_X86_64",
+                "ISA_ARM_64"
+            ],
+            "x-enum-varnames": [
+                "X86",
+                "X86_64",
+                "ARM_64"
             ]
         },
         "models.FederationHealthInfo": {
@@ -872,6 +1909,94 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Flavour": {
+            "type": "object",
+            "properties": {
+                "cpuArchType": {
+                    "$ref": "#/definitions/models.CpuArchType"
+                },
+                "cpuExclusivity": {
+                    "description": "Support for exclusive CPUs",
+                    "type": "boolean"
+                },
+                "flavourId": {
+                    "type": "string"
+                },
+                "fpga": {
+                    "description": "Number of FPGAs",
+                    "type": "integer"
+                },
+                "gpu": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GpuInfo"
+                    }
+                },
+                "hugepages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.HugePage"
+                    }
+                },
+                "memorySize": {
+                    "description": "Amount of RAM in Mbytes",
+                    "type": "integer"
+                },
+                "numCPU": {
+                    "description": "Number of available vCPUs",
+                    "type": "integer"
+                },
+                "storageSize": {
+                    "description": "Amount of disk storage in Gbytes",
+                    "type": "integer"
+                },
+                "supportedOSTypes": {
+                    "description": "A list of operating systems which this flavour configuration can support e.g., RHEL Linux, Ubuntu 18.04 LTS, MS Windows 2012 R2.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OsType"
+                    }
+                },
+                "vpu": {
+                    "description": "Number of Intel VPUs available",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.GpuInfo": {
+            "type": "object",
+            "properties": {
+                "gpuMemory": {
+                    "description": "GPU memory in Mbytes",
+                    "type": "integer"
+                },
+                "gpuModeName": {
+                    "description": "Model name corresponding to vendorType may include info e.g. for NVIDIA, model name could be “Tesla M60”, “Tesla V100” etc.",
+                    "type": "string"
+                },
+                "gpuVendorType": {
+                    "description": "GPU vendor name e.g. NVIDIA, AMD etc.",
+                    "type": "string"
+                },
+                "numGPU": {
+                    "description": "Number of GPUs",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.HugePage": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "description": "Total number of huge pages",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "Size of hugepage",
+                    "type": "string"
+                }
+            }
+        },
         "models.InvalidParam": {
             "type": "object",
             "properties": {
@@ -913,6 +2038,23 @@ const docTemplate = `{
                 },
                 "userName": {
                     "description": "Username to access the repository",
+                    "type": "string"
+                }
+            }
+        },
+        "models.OsType": {
+            "type": "object",
+            "properties": {
+                "architecture": {
+                    "type": "string"
+                },
+                "distribution": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
@@ -982,8 +2124,73 @@ const docTemplate = `{
                 "geolocation": {
                     "type": "string"
                 },
+                "vimId": {
+                    "description": "vim id",
+                    "type": "string"
+                },
+                "zoneId": {
+                    "description": "cluster id",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ZoneRegisteredData": {
+            "type": "object",
+            "properties": {
+                "computeResourceQuotaLimits": {
+                    "description": "Max quota on resources partner OP allows over reserved resources.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ComputeResourceInfo"
+                    }
+                },
+                "federationContextId": {
+                    "type": "string"
+                },
+                "flavoursSupported": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Flavour"
+                    }
+                },
+                "networkResources": {},
+                "reservedComputeResources": {
+                    "description": "Resources exclusively reserved for the originator OP.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ComputeResourceInfo"
+                    }
+                },
                 "zoneId": {
                     "type": "string"
+                },
+                "zoneServiceLevelObjsInfo": {
+                    "description": "It is a measure of the actual amount of data that is being sent over a network per unit of time and indicates máximum supported value for a zone"
+                }
+            }
+        },
+        "models.ZoneRegistrationRequestData": {
+            "type": "object",
+            "properties": {
+                "acceptedAvailabilityZones": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "availZoneNotifLink": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ZoneRegistrationResponseData": {
+            "type": "object",
+            "properties": {
+                "acceptedZoneResourceInfo": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ZoneRegisteredData"
+                    }
                 }
             }
         }
