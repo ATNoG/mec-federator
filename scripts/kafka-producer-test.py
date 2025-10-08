@@ -11,18 +11,20 @@ sasl_mechanism = 'PLAIN'
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
-federation_endpoint = "http://federator-po:8000"
+# federation_endpoint = "http://federator-po:8000"
+federation_endpoint = "http://10.255.41.64:32440"
 auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
-federation_context_id = "a1e9b73a-7cf3-41dd-91e5-beade471d518"
+federation_context_id = "cbeb895e-64c9-496e-a77f-670728d1fcc0"
 
-app_pkg_id = "686af10a232d0ef0a39b750a"
-artefact_id = "2cca6ec5-efdf-429f-b790-7ecdfa6e319f"
+app_pkg_id = "68e5354148ea03c68bd847b9"
 
-app_id = "4e1d0b12-876f-443d-a98a-89da87482d18"
-app_instance_id = "9c7cebf4-42d6-4f1b-9ad7-701f571b66a4"
+artefact_id = "55314322-34a6-405e-81ea-1595c92f8b80"
+
+app_id = "56499315-303c-4d8e-a546-943ce2742039"
+
+app_instance_id = "4ef88d67-477d-4949-83af-02f7813dcdbc"
 
 partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
-app_instance_id = "30f86265-7df6-4652-9220-b27fc96510af"
 mec_appd_id = "mec-test-server-appd"
 ns_id = "203972c9-ccac-4a14-8df3-63a7ee782e5b"
 vnf_id = "283b1534-89ab-42f0-9fb1-cf2284010801"
@@ -38,6 +40,10 @@ messages = {
     },
     "remove_federation": {
         "msg_id": "2",
+        "federation_context_id": federation_context_id,
+    },
+    "federation_get_info":{
+        "msg_id": "22",
         "federation_context_id": federation_context_id,
     },
     "federation_new_artefact": {
