@@ -6,6 +6,7 @@ import (
 
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -38,6 +39,10 @@ func (z *ZoneService) getZoneDetailsCollection() *mongo.Collection {
 
 func (z *ZoneService) getZoneRegisteredDataCollection() *mongo.Collection {
 	return config.GetMongoDatabase().Collection("zoneRegisteredData")
+}
+
+func (z *ZoneService) getOrchestratorResourceCollection() *mongo.Collection {
+	return config.GetOrchestratorMongoDatabase().Collection("resources")
 }
 
 // Updates the database with the local available zones
@@ -143,4 +148,12 @@ func (z *ZoneService) DeleteZoneRegisteredData(federationContextId string, zoneI
 	collection := z.getZoneRegisteredDataCollection()
 	_, err := collection.DeleteOne(ctx, bson.M{"zoneId": zoneId, "federationContextId": federationContextId})
 	return err
+}
+
+// Get the resources in a given zone from the orchestrator db
+func (z *ZoneService) GetResourcesInZone(zoneId string) ([]dto.OrchResources, error) {
+	collection := z.getOrchestratorResourceCollection()
+	filter := bson.M{"cluster": zoneId}
+	resources, err := utils.FetchEntitiesFromDatabase[dto.OrchResources](collection, filter)
+	return resources, err
 }

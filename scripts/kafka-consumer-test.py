@@ -2,10 +2,10 @@ from kafka import KafkaConsumer
 import sys, os
 
 # List your topics here
-topics = ['responses', 'federation_new_appi', 'instantiate_app_pkg', 'terminate_app_pkg']
+topics = ['responses', 'federation_subscribe_zone', 'federation_unsubscribe_zone']
 
 # Kafka configuration
-bootstrap_servers = ['10.255.41.64:31999'] 
+bootstrap_servers = ['10.255.41.81:31999'] 
 username = os.getenv('KAFKA_USERNAME', 'user1')
 password = os.getenv('KAFKA_PASSWORD', 'password')
 sasl_mechanism = 'PLAIN' 

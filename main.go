@@ -10,7 +10,6 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	"github.com/mankings/mec-federator/internal/callbacks"
@@ -88,51 +87,10 @@ func main() {
 		FederationExistsMiddleware: &federationExistsMiddleware,
 	}
 
+	// start callbacks
+	callbacks.StartCallbacks(services)
+
 	// start kafka consumers with callbacks
-	kafkaServ.StartConsumer(context.Background(), "responses", nil, false) // use default callback for responses, might change in the future
-
-	infrastructureInfoCallback := callbacks.NewInfrastructureInfoCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "infrastructure-info", infrastructureInfoCallback.HandleMessage, false)
-
-	federationInfrastructureInfoCallback := callbacks.NewFederationInfrastructureInfoCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation-infrastructure-info", federationInfrastructureInfoCallback.HandleMessage, false)
-
-	newFederationCallback := callbacks.NewNewFederationCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "new_federation", newFederationCallback.HandleMessage, true)
-
-	removeFederationCallback := callbacks.NewRemoveFederationCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "remove_federation", removeFederationCallback.HandleMessage, true)
-
-	getFederationInfoCallback := callbacks.NewGetFederationInfoCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_get_info", getFederationInfoCallback.HandleMessage, true)
-
-	newFederationArtefactCallback := callbacks.NewFederationArtefactNewCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_new_artefact", newFederationArtefactCallback.HandleMessage, true)
-
-	removeFederationArtefactCallback := callbacks.NewFederationArtefactRemoveCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_remove_artefact", removeFederationArtefactCallback.HandleMessage, true)
-
-	newFederationAppCallback := callbacks.NewFederationNewAppCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_new_app", newFederationAppCallback.HandleMessage, true)
-
-	removeFederationAppCallback := callbacks.NewFederationRemoveAppCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_remove_app", removeFederationAppCallback.HandleMessage, true)
-
-	newFederationAppiCallback := callbacks.NewFederationAppiNewCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_new_appi", newFederationAppiCallback.HandleMessage, true)
-
-	removeFederationAppiCallback := callbacks.NewFederationRemoveAppiCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_remove_appi", removeFederationAppiCallback.HandleMessage, true)
-
-	enableAppInstKDUCallback := callbacks.NewEnableAppInstanceKDUCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_enable_kdu", enableAppInstKDUCallback.HandleMessage, true)
-
-	disableAppInstKDUCallback := callbacks.NewDisableAppInstanceKDUCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_disable_kdu", disableAppInstKDUCallback.HandleMessage, true)
-
-	migrateAppInstNodeCallback := callbacks.NewFederationMigrateNodeCallback(services)
-	kafkaServ.StartConsumer(context.Background(), "federation_migrate_node", migrateAppInstNodeCallback.HandleMessage, true)
-
 	// Initialize the scheduler
 	sched := scheduler.NewScheduler(services)
 	scheduler.CreateTasks(sched)

@@ -238,13 +238,15 @@ func (amc *ApplicationInstanceLifecycleManagementController) DeleteAppInstanceCo
 func (amc *ApplicationInstanceLifecycleManagementController) GetAppInstanceDetailsController(c *gin.Context) {
 	// get the appInstanceId from the path
 	appInstanceId := c.Param("appInstanceId")
+
+	// get the federationContextId from the path
 	federationContextId := c.Param("federationContextId")
 
 	log.Printf("GetAppInstanceDetailsController - Getting app instance details for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
 
 	// get the appInstance from the orchestrator
 	log.Printf("GetAppInstanceDetailsController - Retrieving app instance from orchestrator for federation: %s, appInstanceId: %s", federationContextId, appInstanceId)
-	appInstance, err := amc.orchestratorService.GetAppi(appInstanceId)
+	appInstance, err := amc.appInstanceService.GetAppInstance(federationContextId, appInstanceId)
 	if err != nil {
 		log.Printf("GetAppInstanceDetailsController - Error getting app instance from orchestrator for federation %s, appInstanceId %s: %v", federationContextId, appInstanceId, err)
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error getting application instance: "+err.Error())
