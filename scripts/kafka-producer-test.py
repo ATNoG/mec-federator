@@ -4,30 +4,26 @@ import json
 import argparse
 
 # Kafka configuration
-bootstrap_servers = ['10.255.41.81:31999'] 
+bootstrap_servers = ['10.255.41.64:31999'] 
 username = os.getenv('KAFKA_USERNAME', 'user1')
 password = os.getenv('KAFKA_PASSWORD', 'password')
 sasl_mechanism = 'PLAIN' 
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
-# federation_endpoint = "http://federator-po:8000"
-federation_endpoint = "http://10.255.41.64:32440"
+federation_endpoint = "http://10.255.41.81:32440"
 auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
 
-federation_context_id = "cbeb895e-64c9-496e-a77f-670728d1fcc0"
-
-zone_id = "a61c4ca9-c7ce-4cd4-a3c8-98511fa75556"
-
-artefact_id = "55314322-34a6-405e-81ea-1595c92f8b80"
-
-app_id = "c0e5e719-1179-4fdd-908f-ea94e6bf0a01"
-
-app_instance_id = "16c114dd-aea3-4ac0-a588-bad4e100b01a"
-
-app_pkg_id = "68f12328eae7e7de1b70711b"
-partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
+app_pkg_id = "68f689828a12144ffa0ea8d5"
+partner_vim_id = "5466c037-8ddb-47b8-b66c-a45dffe603e7"
 mec_appd_id = "mec-test-server-appd"
+
+federation_context_id = "9bc6a233-f990-4105-88bb-528d2479a37e"
+zone_id = "a61c4ca9-c7ce-4cd4-a3c8-98511fa75556"
+artefact_id = "55314322-34a6-405e-81ea-1595c92f8b80"
+app_id = "0108175c-745b-490b-b68e-cddf86b2cc23"
+app_instance_id = "93546a21-d554-479a-afe5-7207ad8fa775"
+
 ns_id = "203972c9-ccac-4a14-8df3-63a7ee782e5b"
 vnf_id = "283b1534-89ab-42f0-9fb1-cf2284010801"
 kdu_id = "mec-test-server"

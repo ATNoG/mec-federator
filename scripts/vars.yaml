@@ -1,0 +1,11 @@
+additionalParamsForVnf:
+- member-vnf-index: "mec-test-server-appd-vnf"
+  additionalParamsForKdu:
+    - kdu_name: mec-test-server
+      enable: True
+      kdu-deployment-name: mec-test-server
+      k8s-namespace: mec-test-server
+      additionalParams:
+        service:
+          nodePort: 30100  # Usually between 30000-32767
+
