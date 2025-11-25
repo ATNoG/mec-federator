@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"time"
 
 	"github.com/mankings/mec-federator/internal/config"
 	"github.com/mankings/mec-federator/internal/models"
+	"github.com/mankings/mec-federator/internal/models/dto"
 	"github.com/mankings/mec-federator/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -33,6 +35,14 @@ func NewZoneService(kafkaClientService *KafkaClientService) *ZoneService {
 
 func (z *ZoneService) getZoneDetailsCollection() *mongo.Collection {
 	return config.GetMongoDatabase().Collection("zoneDetails")
+}
+
+func (z *ZoneService) getZoneRegisteredDataCollection() *mongo.Collection {
+	return config.GetMongoDatabase().Collection("zoneRegisteredData")
+}
+
+func (z *ZoneService) getOrchestratorResourceCollection() *mongo.Collection {
+	return config.GetOrchestratorMongoDatabase().Collection("resources")
 }
 
 // Updates the database with the local available zones
@@ -66,7 +76,7 @@ func (z *ZoneService) UpdateLocalZones(zones []models.ZoneDetails) error {
 	return nil
 }
 
-// Returns all the local zones that are registered for federation
+// Returns all the local zones
 func (z *ZoneService) GetLocalZones() ([]models.ZoneDetails, error) {
 
 	// get the local zones from the database
@@ -98,17 +108,6 @@ func (z *ZoneService) GetLocalZoneById(zoneId string) (models.ZoneDetails, error
 	return zone, err
 }
 
-// Returns all the zones that are registered for federation
-func (z *ZoneService) GetAllZones() ([]models.ZoneDetails, error) {
-	return nil, nil
-}
-
-// Returns all the zones that are subscribed to a given federation context
-func (z *ZoneService) GetSubscribedZones(federationContextId string) ([]models.ZoneDetails, error) {
-	// Implementation to get all subscribed zones
-	return nil, nil
-}
-
 // Get the vim id of a zone
 func (z *ZoneService) GetVimId(zoneId string) (string, error) {
 	collection := z.getZoneDetailsCollection()
@@ -123,4 +122,38 @@ func (z *ZoneService) GetZoneFromVimId(vimId string) (models.ZoneDetails, error)
 	filter := bson.M{"vimId": vimId}
 	zone, err := utils.FetchEntityFromDatabase[models.ZoneDetails](collection, filter)
 	return zone, err
+}
+
+// Save a zone registered data
+func (z *ZoneService) SaveZoneRegisteredData(zoneRegisteredData models.ZoneRegisteredData) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	collection := z.getZoneRegisteredDataCollection()
+	_, err := collection.InsertOne(ctx, zoneRegisteredData)
+	return err
+}
+
+// Get the zone registered data for a given zone id and federation context id if it exists
+func (z *ZoneService) GetZoneRegisteredData(federationContextId string, zoneId string) (models.ZoneRegisteredData, error) {
+	collection := z.getZoneRegisteredDataCollection()
+	filter := bson.M{"zoneId": zoneId, "federationContextId": federationContextId}
+	zoneRegisteredData, err := utils.FetchEntityFromDatabase[models.ZoneRegisteredData](collection, filter)
+	return zoneRegisteredData, err
+}
+
+// Delete the zone registered data for a given zone id and federation context id
+func (z *ZoneService) DeleteZoneRegisteredData(federationContextId string, zoneId string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	collection := z.getZoneRegisteredDataCollection()
+	_, err := collection.DeleteOne(ctx, bson.M{"zoneId": zoneId, "federationContextId": federationContextId})
+	return err
+}
+
+// Get the resources in a given zone from the orchestrator db
+func (z *ZoneService) GetResourcesInZone(zoneId string) ([]dto.OrchResources, error) {
+	collection := z.getOrchestratorResourceCollection()
+	filter := bson.M{"cluster": zoneId}
+	resources, err := utils.FetchEntitiesFromDatabase[dto.OrchResources](collection, filter)
+	return resources, err
 }

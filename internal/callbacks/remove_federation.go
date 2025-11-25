@@ -26,6 +26,12 @@ func NewRemoveFederationCallback(services *router.Services) *RemoveFederationCal
 
 func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("RemoveFederationCallback.HandleMessage", func() {
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-init-remove-federation",
+			Message: "reset",
+			Value:   nil,
+		})
+
 		log.Printf("Received remove federation message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -40,6 +46,12 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 
 		msgId := msg["msg_id"].(string)
 		r.handleRemoveFederation(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-done-remove-federation",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 
@@ -85,7 +97,7 @@ func (r *RemoveFederationCallback) handleRemoveFederation(msgId string, msg map[
 	}
 
 	log.Printf("Received remove federation response with status: %d", resp.StatusCode)
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("Error removing federation: %v", resp.Status)
 		r.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Partner returned error status %d", resp.StatusCode))
 		return

@@ -4,20 +4,26 @@ import json
 import argparse
 
 # Kafka configuration
-bootstrap_servers = ['10.255.41.81:31999'] 
+bootstrap_servers = ['10.255.41.64:31999'] 
 username = os.getenv('KAFKA_USERNAME', 'user1')
 password = os.getenv('KAFKA_PASSWORD', 'password')
 sasl_mechanism = 'PLAIN' 
 security_protocol = 'SASL_PLAINTEXT' 
 
 # Hardcoded messages to send
-federation_endpoint = "http://federator-po:8000"
+federation_endpoint = "http://10.255.41.81:32440"
 auth_endpoint = federation_endpoint + "/federation/v1/auth/token"
-federation_context_id = "c3915b4e-2cad-4c86-9516-b351009b5165"
-app_pkg_id = "686af10a232d0ef0a39b750a"
-partner_vim_id = "45af887d-7fef-4c82-9428-d75fe43108e8"
-app_instance_id = "cc484054-7743-445f-87a7-65a137fa2a71"
+
+app_pkg_id = "68f689828a12144ffa0ea8d5"
+partner_vim_id = "5466c037-8ddb-47b8-b66c-a45dffe603e7"
 mec_appd_id = "mec-test-server-appd"
+
+federation_context_id = "9bc6a233-f990-4105-88bb-528d2479a37e"
+zone_id = "a61c4ca9-c7ce-4cd4-a3c8-98511fa75556"
+artefact_id = "55314322-34a6-405e-81ea-1595c92f8b80"
+app_id = "0108175c-745b-490b-b68e-cddf86b2cc23"
+app_instance_id = "93546a21-d554-479a-afe5-7207ad8fa775"
+
 ns_id = "203972c9-ccac-4a14-8df3-63a7ee782e5b"
 vnf_id = "283b1534-89ab-42f0-9fb1-cf2284010801"
 kdu_id = "mec-test-server"
@@ -34,6 +40,20 @@ messages = {
         "msg_id": "2",
         "federation_context_id": federation_context_id,
     },
+    "federation_get_info":{
+        "msg_id": "22",
+        "federation_context_id": federation_context_id,
+    },
+    "federation_subscribe_zone": {
+        "msg_id": "23",
+        "federation_context_id": federation_context_id,
+        "zone_id": zone_id,
+    },
+    "federation_unsubscribe_zone": {
+        "msg_id": "24",
+        "federation_context_id": federation_context_id,
+        "zone_id": zone_id,
+    },
     "federation_new_artefact": {
         "msg_id": "3",
         "federation_context_id": federation_context_id,
@@ -44,12 +64,27 @@ messages = {
         "federation_context_id": federation_context_id,
         "app_pkg_id": app_pkg_id,
     },
+    "federation_new_app": {
+        "msg_id": "5",
+        "federation_context_id": federation_context_id,
+        "app_pkg_id": app_pkg_id,
+    },
+    "federation_remove_app": {
+        "msg_id": "6",
+        "federation_context_id": federation_context_id,
+        "app_id": app_id,
+    },
     "federation_new_appi": {
         "msg_id": "5",
         "federation_context_id": federation_context_id,
         "app_pkg_id": app_pkg_id,
         "vim_id": partner_vim_id,
         "config": "",
+    },
+    "federation_get_appi_info": {
+        "msg_id": "6",
+        "federation_context_id": federation_context_id,
+        "app_instance_id": app_instance_id,
     },
     "federation_remove_appi": {
         "msg_id": "6",

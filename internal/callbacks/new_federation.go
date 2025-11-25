@@ -32,6 +32,12 @@ func NewNewFederationCallback(services *router.Services) *NewFederationCallback 
 // HandleMessage processes incoming new federation messages
 func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("NewFederationCallback.HandleMessage", func() {
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-init-create-federation",
+			Message: "reset",
+			Value:   nil,
+		})
+
 		log.Printf("Received new federation message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -46,6 +52,12 @@ func (nc *NewFederationCallback) HandleMessage(message *sarama.ConsumerMessage) 
 
 		msgId := msg["msg_id"].(string)
 		nc.handleNewFederation(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-done-create-federation",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 
@@ -126,7 +138,7 @@ func (nc *NewFederationCallback) handleNewFederation(msgId string, msg map[strin
 	defer resp.Body.Close()
 
 	log.Printf("Received federation response with status: %d", resp.StatusCode)
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("Error creating federation: %v", resp.StatusCode)
 		nc.services.KafkaClientService.SendResponse(msgId, "500", fmt.Sprintf("Partner returned error status %d", resp.StatusCode))
 		return

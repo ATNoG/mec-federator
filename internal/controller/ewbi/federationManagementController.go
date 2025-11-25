@@ -49,8 +49,14 @@ func NewFederationManagementController(federationService *services.FederationSer
 // @Failure 500 {object} models.ProblemDetails
 // @Router /ewbi/partner [post]
 func (fmc *FederationManagementController) CreateFederationController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "po-init-create-federation",
+		Message: "",
+		Value:   nil,
+	})
+
 	log.Print("CreateFederationController - Starting federation creation process")
-	
+
 	// Check if the request data is valid
 	var federationRequestData models.FederationRequestData
 	if err := c.ShouldBindJSON(&federationRequestData); err != nil {
@@ -58,7 +64,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body, missing parameters or wrong data type")
 		return
 	}
-	
+
 	log.Printf("CreateFederationController - Received federation request from partner: %s", federationRequestData.OrigOPFederationId)
 
 	// Create the federation response data
@@ -82,7 +88,7 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving local zones")
 		return
 	}
-	
+
 	log.Printf("CreateFederationController - Retrieved %d local zones", len(localZones))
 
 	// Add zones to the federation response data
@@ -112,10 +118,17 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error creating the Federation object")
 		return
 	}
-	
+
 	log.Printf("CreateFederationController - Federation created successfully with contextId: %s", federation.PartnerOP.FederationContextId)
 
 	log.Printf("CreateFederationController - Returning federation response for contextId: %s", federation.PartnerOP.FederationContextId)
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "po-done-create-federation",
+		Message: "",
+		Value:   nil,
+	})
+
 	c.JSON(http.StatusOK, federation.PartnerOP)
 }
 
@@ -129,6 +142,12 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
 // @Router /ewbi/{federationContextId}/partner [delete]
 func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "po-init-remove-federation",
+		Message: "",
+		Value:   nil,
+	})
+
 	// Get the federation context id
 	federationContextId := c.Param("federationContextId")
 	log.Printf("RemoveFederationController - Starting federation removal for contextId: %s", federationContextId)
@@ -147,7 +166,7 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 		utils.HandleProblem(c, http.StatusBadRequest, "There are still app instances running in the federation")
 		return
 	}
-	
+
 	log.Printf("RemoveFederationController - No app instances found in federation: %s", federationContextId)
 
 	// Check if there are any artefacts stored in the federation
@@ -164,7 +183,7 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 		utils.HandleProblem(c, http.StatusBadRequest, "There are still artefacts stored in the federation")
 		return
 	}
-	
+
 	log.Printf("RemoveFederationController - No artefacts found in federation: %s", federationContextId)
 
 	// Delete the federation object from the database
@@ -175,8 +194,14 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error removing the Federation object from database")
 		return
 	}
-	
+
 	log.Printf("RemoveFederationController - Federation %s removed successfully", federationContextId)
+
+	utils.SendResultsMessage(utils.ResultsMessage{
+		Name:    "po-done-remove-federation",
+		Message: "",
+		Value:   nil,
+	})
 
 	c.JSON(http.StatusOK, gin.H{"status": "Federation removed successfully"})
 }
@@ -227,14 +252,14 @@ func (fmc *FederationManagementController) GetFederationMetaInfoController(c *gi
 func (fmc *FederationManagementController) UpdateFederationController(c *gin.Context) {
 	federationContextId := c.Param("federationContextId")
 	log.Printf("UpdateFederationController - Starting federation update for contextId: %s", federationContextId)
-	
+
 	var patchParams models.FederationPatchParams
 	if err := c.ShouldBindJSON(&patchParams); err != nil {
 		log.Printf("UpdateFederationController - Invalid request body for federation %s: %v", federationContextId, err)
 		utils.HandleProblem(c, http.StatusBadRequest, "Invalid request body, missing parameters or wrong data type")
 		return
 	}
-	
+
 	log.Printf("UpdateFederationController - Patch parameters for federation %s: ObjectType=%s, OperationType=%s", federationContextId, patchParams.ObjectType, patchParams.OperationType)
 
 	if patchParams.ObjectType != "MOBILE_NETWORK_CODES" && patchParams.ObjectType != "FIXED_NETWORK_CODES" {
@@ -256,7 +281,7 @@ func (fmc *FederationManagementController) UpdateFederationController(c *gin.Con
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error updating the Federation object: "+err.Error())
 		return
 	}
-	
+
 	log.Printf("UpdateFederationController - Federation %s updated successfully", federationContextId)
 
 	c.JSON(http.StatusOK, gin.H{"status": "Federation updated successfully"})
@@ -276,7 +301,7 @@ func (fmc *FederationManagementController) GetFederationContextIdentifierControl
 	// Check if the a federation exists with the given accessToken
 	accessToken := c.Query("accessToken")
 	log.Printf("GetFederationContextIdentifierController - Looking up federation by access token")
-	
+
 	if !fmc.federationService.ExistsFederationWithAccessToken(accessToken) {
 		log.Printf("GetFederationContextIdentifierController - No federation found with provided access token")
 		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given accessToken")
@@ -291,7 +316,7 @@ func (fmc *FederationManagementController) GetFederationContextIdentifierControl
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving federation information: "+err.Error())
 		return
 	}
-	
+
 	log.Printf("GetFederationContextIdentifierController - Found federation with contextId: %s", federation.PartnerOP.FederationContextId)
 
 	c.JSON(http.StatusOK, gin.H{"federationContextId": federation.PartnerOP.FederationContextId})
@@ -311,7 +336,7 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 	// Check if the federation exists
 	federationContextId := c.Param("federationContextId")
 	log.Printf("GetFederationHealthController - Checking health for federation: %s", federationContextId)
-	
+
 	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
 		log.Printf("GetFederationHealthController - No federation found with contextId: %s", federationContextId)
 		utils.HandleProblem(c, http.StatusBadRequest, "No Federation found with the given federationContextId")
@@ -326,7 +351,7 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error retrieving federation information")
 		return
 	}
-	
+
 	log.Printf("GetFederationHealthController - Successfully retrieved health info for federation: %s", federationContextId)
 
 	c.JSON(http.StatusOK, federation.HealthInfo)
@@ -345,7 +370,7 @@ func (fmc *FederationManagementController) GetFederationHealthController(c *gin.
 func (fmc *FederationManagementController) RenewFederationController(c *gin.Context) {
 	federationContextId := c.Param("federationContextId")
 	log.Printf("RenewFederationController - Starting federation renewal for contextId: %s", federationContextId)
-	
+
 	// Check if the federation exists
 	if !fmc.federationService.ExistsFederationWithContextId(federationContextId) {
 		log.Printf("RenewFederationController - No federation found with contextId: %s", federationContextId)
@@ -370,7 +395,7 @@ func (fmc *FederationManagementController) RenewFederationController(c *gin.Cont
 		utils.HandleProblem(c, http.StatusInternalServerError, "Error renewing the Federation object")
 		return
 	}
-	
+
 	log.Printf("RenewFederationController - Federation %s renewed successfully. New renewal date: %v, expiry date: %v", federationContextId, federation.PartnerOP.FederationRenewalDate, federation.PartnerOP.FederationExpiryDate)
 
 	response := dto.FederationRenewalResponseData{

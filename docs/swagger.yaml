@@ -7,6 +7,33 @@ definitions:
       clientSecret:
         type: string
     type: object
+  dto.AppInstanceNodeMigrateRequest:
+    properties:
+      kduId:
+        type: string
+      node:
+        type: string
+      nsId:
+        type: string
+      vnfId:
+        type: string
+    type: object
+  dto.DisableAppInstanceKDURequest:
+    properties:
+      kduId:
+        type: string
+      nsId:
+        type: string
+    type: object
+  dto.EnableAppInstanceKDURequest:
+    properties:
+      kduId:
+        type: string
+      node:
+        type: string
+      nsId:
+        type: string
+    type: object
   dto.GetArtefactResponse:
     properties:
       appProviderId:
@@ -28,11 +55,91 @@ definitions:
       objectRepoLocation:
         $ref: '#/definitions/models.ObjectRepoLocation'
     type: object
+  dto.Instance:
+    properties:
+      kdus:
+        additionalProperties:
+          type: string
+        type: object
+      ns_id:
+        type: string
+      vnf_id:
+        type: string
+    type: object
+  dto.InstantiateApplicationRequest:
+    properties:
+      appId:
+        type: string
+      appInstCallbackLink:
+        type: string
+      appProviderId:
+        type: string
+      appVersion:
+        type: string
+      config:
+        type: string
+      transactionId:
+        type: string
+      zoneInfo:
+        type: string
+    type: object
+  dto.OnboardApplicationRequest:
+    properties:
+      appId:
+        type: string
+      appName:
+        type: string
+      artefactId:
+        type: string
+    type: object
+  dto.OrchAppI:
+    properties:
+      app_pkg_id:
+        type: string
+      appi_id:
+        type: string
+      domain:
+        type: string
+      instances:
+        additionalProperties:
+          additionalProperties:
+            $ref: '#/definitions/dto.Instance'
+          type: object
+        type: object
+      ns_pkg_id:
+        type: string
+      vnf_pkg_id:
+        type: string
+    type: object
+  dto.OrchMehMetricsRequestData:
+    properties:
+      federation-meh-metrics:
+        additionalProperties: {}
+        type: object
+    type: object
   models.AccessToken:
     properties:
       accessToken:
         type: string
+      clientId:
+        type: string
       expiresAt:
+        type: string
+    type: object
+  models.Application:
+    properties:
+      appId:
+        type: string
+      appPkgId:
+        description: is empty if the app instance is running on a partner zone
+        type: string
+      artefactId:
+        type: string
+      description:
+        type: string
+      federationContextId:
+        type: string
+      name:
         type: string
     type: object
   models.ArtefactDescriptorType:
@@ -69,6 +176,47 @@ definitions:
     x-enum-varnames:
     - VM_TYPE
     - CONTAINER_TYPE
+  models.ComputeResourceInfo:
+    properties:
+      cpuArchType:
+        description: CPU Instruction Set Architecture (ISA) E.g., Intel, Arm etc.
+        type: string
+      cpuExclusivity:
+        description: Support for exclusive CPUs
+        type: boolean
+      diskStorage:
+        description: Amount of disk storage in Gbytes for a given ISA type
+        type: integer
+      fpga:
+        description: Number of FPGAs available for a given ISA type
+        type: integer
+      gpu:
+        items:
+          $ref: '#/definitions/models.GpuInfo'
+        type: array
+      hugepages:
+        items:
+          $ref: '#/definitions/models.HugePage'
+        type: array
+      memory:
+        description: Amount of RAM in Mbytes
+        type: integer
+      numCPU:
+        type: string
+      vpu:
+        description: Number of Intel VPUs available for a given ISA type
+        type: integer
+    type: object
+  models.CpuArchType:
+    enum:
+    - ISA_X86
+    - ISA_X86_64
+    - ISA_ARM_64
+    type: string
+    x-enum-varnames:
+    - X86
+    - X86_64
+    - ARM_64
   models.FederationHealthInfo:
     properties:
       federationStartTime:
@@ -195,6 +343,70 @@ definitions:
     - partnerOPCountryCode
     - platformCaps
     type: object
+  models.Flavour:
+    properties:
+      cpuArchType:
+        $ref: '#/definitions/models.CpuArchType'
+      cpuExclusivity:
+        description: Support for exclusive CPUs
+        type: boolean
+      flavourId:
+        type: string
+      fpga:
+        description: Number of FPGAs
+        type: integer
+      gpu:
+        items:
+          $ref: '#/definitions/models.GpuInfo'
+        type: array
+      hugepages:
+        items:
+          $ref: '#/definitions/models.HugePage'
+        type: array
+      memorySize:
+        description: Amount of RAM in Mbytes
+        type: integer
+      numCPU:
+        description: Number of available vCPUs
+        type: integer
+      storageSize:
+        description: Amount of disk storage in Gbytes
+        type: integer
+      supportedOSTypes:
+        description: A list of operating systems which this flavour configuration
+          can support e.g., RHEL Linux, Ubuntu 18.04 LTS, MS Windows 2012 R2.
+        items:
+          $ref: '#/definitions/models.OsType'
+        type: array
+      vpu:
+        description: Number of Intel VPUs available
+        type: integer
+    type: object
+  models.GpuInfo:
+    properties:
+      gpuMemory:
+        description: GPU memory in Mbytes
+        type: integer
+      gpuModeName:
+        description: Model name corresponding to vendorType may include info e.g.
+          for NVIDIA, model name could be “Tesla M60”, “Tesla V100” etc.
+        type: string
+      gpuVendorType:
+        description: GPU vendor name e.g. NVIDIA, AMD etc.
+        type: string
+      numGPU:
+        description: Number of GPUs
+        type: integer
+    type: object
+  models.HugePage:
+    properties:
+      number:
+        description: Total number of huge pages
+        type: integer
+      pageSize:
+        description: Size of hugepage
+        type: string
+    type: object
   models.InvalidParam:
     properties:
       param:
@@ -223,6 +435,17 @@ definitions:
         type: string
       userName:
         description: Username to access the repository
+        type: string
+    type: object
+  models.OsType:
+    properties:
+      architecture:
+        type: string
+      distribution:
+        type: string
+      license:
+        type: string
+      version:
         type: string
     type: object
   models.ProblemDetails:
@@ -272,8 +495,54 @@ definitions:
         type: string
       geolocation:
         type: string
+      vimId:
+        description: vim id
+        type: string
+      zoneId:
+        description: cluster id
+        type: string
+    type: object
+  models.ZoneRegisteredData:
+    properties:
+      computeResourceQuotaLimits:
+        description: Max quota on resources partner OP allows over reserved resources.
+        items:
+          $ref: '#/definitions/models.ComputeResourceInfo'
+        type: array
+      federationContextId:
+        type: string
+      flavoursSupported:
+        items:
+          $ref: '#/definitions/models.Flavour'
+        type: array
+      networkResources: {}
+      reservedComputeResources:
+        description: Resources exclusively reserved for the originator OP.
+        items:
+          $ref: '#/definitions/models.ComputeResourceInfo'
+        type: array
       zoneId:
         type: string
+      zoneServiceLevelObjsInfo:
+        description: It is a measure of the actual amount of data that is being sent
+          over a network per unit of time and indicates máximum supported value for
+          a zone
+    type: object
+  models.ZoneRegistrationRequestData:
+    properties:
+      acceptedAvailabilityZones:
+        items:
+          type: string
+        type: array
+      availZoneNotifLink:
+        type: string
+    type: object
+  models.ZoneRegistrationResponseData:
+    properties:
+      acceptedZoneResourceInfo:
+        items:
+          $ref: '#/definitions/models.ZoneRegisteredData'
+        type: array
     type: object
 host: localhost:8000
 info:
@@ -312,64 +581,446 @@ paths:
       summary: Issue Access Token
       tags:
       - Authentication
-  /ewbi/{federationContextId}/artefact:
+  /ewbi/{federationContextId}/app_instances:
     post:
       consumes:
-      - multipart/form-data
-      description: Receives an artefact from origin OP. Artefact is a zip file containing
-        scripts and/or packaging files
+      - application/json
+      description: Creates a new application instance in the specified zone and registers
+        it in the orchestrator
       parameters:
       - description: Federation Context ID
         in: path
         name: federationContextId
         required: true
         type: string
-      - description: Artefact file
+      - description: Application instantiation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.InstantiateApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 'appInstanceId: id, nsId: id, vnfId: id'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Create Application Instance
+      tags:
+      - EWBI - ApplicationInstanceLifecycleManagement
+  /ewbi/{federationContextId}/app_instances/{appInstanceId}:
+    delete:
+      consumes:
+      - application/json
+      description: Terminates and removes an application instance from the orchestrator
+        and database
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application Instance ID
+        in: path
+        name: appInstanceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'appInstanceId: id'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Delete Application Instance
+      tags:
+      - EWBI - ApplicationInstanceLifecycleManagement
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about an application instance from
+        the orchestrator
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application Instance ID
+        in: path
+        name: appInstanceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.OrchAppI'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get Application Instance Details
+      tags:
+      - EWBI - ApplicationInstanceLifecycleManagement
+  /ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/disable:
+    post:
+      consumes:
+      - application/json
+      description: Disables a Kubernetes Deployment Unit (KDU) within an application
+        instance
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application Instance ID
+        in: path
+        name: appInstanceId
+        required: true
+        type: string
+      - description: KDU disablement request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DisableAppInstanceKDURequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'appInstance: object, kduId: id, nsId: id'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Disable Application Instance KDU
+      tags:
+      - EWBI - ApplicationInstanceLifecycleManagement
+  /ewbi/{federationContextId}/app_instances/{appInstanceId}/kdu/enable:
+    post:
+      consumes:
+      - application/json
+      description: Enables a Kubernetes Deployment Unit (KDU) within an application
+        instance on the specified node
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application Instance ID
+        in: path
+        name: appInstanceId
+        required: true
+        type: string
+      - description: KDU enablement request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.EnableAppInstanceKDURequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'appInstance: object, kduId: id, nsId: id'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Enable Application Instance KDU
+      tags:
+      - EWBI - ApplicationInstanceLifecycleManagement
+  /ewbi/{federationContextId}/app_instances/{appInstanceId}/node/migrate:
+    post:
+      consumes:
+      - application/json
+      description: Migrates a Kubernetes Deployment Unit (KDU) within an application
+        instance to a different node
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application Instance ID
+        in: path
+        name: appInstanceId
+        required: true
+        type: string
+      - description: Node migration request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AppInstanceNodeMigrateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'appInstanceId: id'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Migrate Application Instance Node
+      tags:
+      - EWBI - ApplicationInstanceLifecycleManagement
+  /ewbi/{federationContextId}/applications:
+    post:
+      consumes:
+      - application/json
+      description: Onboards an application to the orchestrator and creates an application
+        object in the federation
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Onboard Application Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OnboardApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 'message: Application onboarded successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request or validation error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Onboard Application
+      tags:
+      - EWBI - ApplicationOnboarding
+  /ewbi/{federationContextId}/applications/{appId}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an application from the orchestrator and deletes the application
+        object from the federation
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application ID
+        in: path
+        name: appId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Application removed successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request or application has running instances
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Remove Application
+      tags:
+      - EWBI - ApplicationOnboarding
+    get:
+      consumes:
+      - application/json
+      description: Retrieves application details by application ID within a federation
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application ID
+        in: path
+        name: appId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Application'
+        "400":
+          description: Invalid request or application not found
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: View Application
+      tags:
+      - EWBI - ApplicationOnboarding
+    patch:
+      consumes:
+      - application/json
+      description: Updates an application object in the federation
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Application ID
+        in: path
+        name: appId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Application updated successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Update Application
+      tags:
+      - EWBI - ApplicationOnboarding
+  /ewbi/{federationContextId}/artefact:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Receives and onboards an artefact from the origin operator. The
+        artefact is a packaged file (zip/tar) containing application scripts and packaging
+        files. The artefact is validated and stored in the database.
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Artefact package file (zip/tar format)
         in: formData
         name: artefactFile
         required: true
         type: file
-      - description: Artefact ID
+      - description: Unique identifier for the artefact
         in: formData
         name: artefactId
         required: true
         type: string
-      - description: App Provider ID
+      - description: Application provider identifier
         in: formData
         name: appProviderId
         required: true
         type: string
-      - description: Artefact Name
+      - description: Human-readable name of the artefact
         in: formData
         name: artefactName
         required: true
         type: string
-      - description: Artefact Version Info
+      - description: Version information of the artefact
         in: formData
         name: artefactVersionInfo
         required: true
         type: string
-      - description: Artefact Description
+      - description: Detailed description of the artefact
         in: formData
         name: artefactDescription
         required: true
         type: string
-      - description: Artefact Virt Type
+      - description: Virtualization type (e.g., container, VM)
         in: formData
         name: artefactVirtType
         required: true
         type: string
-      - description: Artefact Descriptor Type
+      - description: Descriptor file type (e.g., TOSCA, Helm)
         in: formData
         name: artefactDescriptorType
         required: true
         type: string
-      - description: Artefact File Format
+      - description: File format of the artefact (e.g., zip, tar.gz)
         in: formData
         name: artefactFileFormat
         required: true
         type: string
-      - description: Artefact File Name
+      - description: Original filename of the artefact
         in: formData
         name: artefactFileName
         required: true
@@ -384,30 +1035,35 @@ paths:
               type: string
             type: object
         "400":
-          description: Bad Request
+          description: Invalid form data or validation errors
           schema:
             $ref: '#/definitions/models.ProblemDetails'
         "500":
-          description: Internal Server Error
+          description: File processing or database errors
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Onboard an artefact
+      summary: Onboard Artefact
       tags:
       - EWBI - ArtefactManagement
   /ewbi/{federationContextId}/artefact/{artefactId}:
     delete:
-      description: Delete an artefact by its id
+      consumes:
+      - application/json
+      description: Removes an artefact from the database. Artefacts that have been
+        onboarded to the orchestrator cannot be deleted until the onboarding is removed.
       parameters:
       - description: Federation Context ID
         in: path
         name: federationContextId
         required: true
         type: string
-      - description: Artefact ID
+      - description: Artefact identifier
         in: path
         name: artefactId
         required: true
         type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: 'status: Artefact deleted successfully'
@@ -415,45 +1071,54 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "403":
+          description: Artefact has been onboarded and cannot be deleted
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
         "404":
-          description: Not Found
+          description: Artefact not found
           schema:
             $ref: '#/definitions/models.ProblemDetails'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Delete an artefact
+      summary: Delete Artefact
       tags:
       - EWBI - ArtefactManagement
   /ewbi/{federationContextId}/artefacts/{artefactId}:
     get:
-      description: Get an artefact details by its id
+      consumes:
+      - application/json
+      description: Retrieves detailed information about a specific artefact by its
+        ID within a federation context
       parameters:
       - description: Federation Context ID
         in: path
         name: federationContextId
         required: true
         type: string
-      - description: Artefact ID
+      - description: Artefact identifier
         in: path
         name: artefactId
         required: true
         type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             $ref: '#/definitions/dto.GetArtefactResponse'
         "404":
-          description: Not Found
+          description: Artefact not found
           schema:
             $ref: '#/definitions/models.ProblemDetails'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             $ref: '#/definitions/models.ProblemDetails'
-      summary: Get an artefact
+      summary: Get Artefact Details
       tags:
       - EWBI - ArtefactManagement
   /ewbi/{federationContextId}/health:
@@ -485,6 +1150,44 @@ paths:
       summary: Get Local Federation Health Info
       tags:
       - EWBI - FederationManagement
+  /ewbi/{federationContextId}/metrics:
+    post:
+      consumes:
+      - application/json
+      description: Receives metrics data from the orchestrator's Multi-access Edge
+        Host and publishes to Kafka topic
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: MEH Metrics Request Data
+        in: body
+        name: metricsRequestData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OrchMehMetricsRequestData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'msgId: Kafka message ID'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Error posting metrics to Kafka
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Post MEH Metrics
+      tags:
+      - EWBI - ZonesInfoSync
   /ewbi/{federationContextId}/partner:
     delete:
       consumes:
@@ -610,6 +1313,132 @@ paths:
       summary: Renew Federation Relationship
       tags:
       - EWBI - FederationManagement
+  /ewbi/{federationContextId}/zones:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all availability zones offered by the partner
+        operator
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ZoneDetails'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get All Local Zones
+      tags:
+      - EWBI - ZonesInfoSync
+    post:
+      consumes:
+      - application/json
+      description: Registers the origin operator's intent to use one or more availability
+        zones from the partner operator
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Zone Registration Request Data
+        in: body
+        name: zoneRegistrationRequestData
+        required: true
+        schema:
+          $ref: '#/definitions/models.ZoneRegistrationRequestData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ZoneRegistrationResponseData'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Subscribe to Zone
+      tags:
+      - EWBI - ZonesInfoSync
+  /ewbi/{federationContextId}/zones/{zoneId}:
+    delete:
+      consumes:
+      - application/json
+      description: Unregisters the origin operator's subscription to a specific availability
+        zone from the partner operator
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Zone identifier
+        in: path
+        name: zoneId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Zone unregistered successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Unsubscribe from Zone
+      tags:
+      - EWBI - ZonesInfoSync
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about a specific availability zone
+        from the partner operator
+      parameters:
+      - description: Federation Context ID
+        in: path
+        name: federationContextId
+        required: true
+        type: string
+      - description: Zone identifier
+        in: path
+        name: zoneId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ZoneDetails'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ProblemDetails'
+      summary: Get Zone Details
+      tags:
+      - EWBI - ZonesInfoSync
   /ewbi/fed-context-id:
     get:
       consumes:

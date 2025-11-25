@@ -1,6 +1,6 @@
 # Variables
 DOCKER_IMAGE_NAME = mankings/federator
-DOCKER_TAG ?= 1.8
+DOCKER_TAG ?= 2.0.18
 DOCKERFILE_PATH = deployment/docker/Dockerfile
 
 tidy:
@@ -28,6 +28,10 @@ docker-build-push-latest:
 	docker tag $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) $(DOCKER_IMAGE_NAME):latest
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_TAG)
 	docker push $(DOCKER_IMAGE_NAME):latest
+
+docker-build-push-test:
+	docker build -t $(DOCKER_IMAGE_NAME):test -f $(DOCKERFILE_PATH) .
+	docker push $(DOCKER_IMAGE_NAME):test
 
 half-up:
 	docker compose \

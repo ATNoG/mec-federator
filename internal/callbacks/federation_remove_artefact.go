@@ -29,9 +29,15 @@ func NewFederationArtefactRemoveCallback(services *router.Services) *FederationA
 // receives info about an artefact to remove from a certain federation
 func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationArtefactRemoveCallback.HandleMessage", func() {
-		log.Printf("Received remove artefact message from topic %s, partition %d, offset %d", 
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-init-remove-artefact",
+			Message: "reset",
+			Value:   nil,
+		})
+
+		log.Printf("Received remove artefact message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
-		
+
 		// unmarshal the message
 		var msg map[string]interface{}
 		if err := json.Unmarshal(message.Value, &msg); err != nil {
@@ -43,6 +49,12 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 
 		msgId := msg["msg_id"].(string)
 		f.handleRemoveArtefact(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-done-remove-artefact",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 
@@ -109,7 +121,7 @@ func (f *FederationArtefactRemoveCallback) handleRemoveArtefact(msgId string, ms
 		"status":      "200",
 		"message":     "Artefact removed successfully",
 	}
-	
+
 	_, err = f.services.KafkaClientService.Produce("responses", response)
 	if err != nil {
 		log.Printf("Error sending response to kafka: %v", err)

@@ -17,6 +17,7 @@ type Services struct {
 	OrchestratorService *services.OrchestratorService
 	ZoneService         *services.ZoneService
 	ArtefactService     *services.ArtefactService
+	ApplicationService  *services.ApplicationService
 	AppInstanceService  *services.AppInstanceService
 
 	HttpClientService  *services.HttpClientService
@@ -70,5 +71,6 @@ func initRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {
 	initEwbiFederationManagementRoutes(router, svcs, mdws)
 	initEwbiZoneInfoSyncRoutes(router, svcs, mdws)
 	initEwbiArtefactManagementRoutes(router, svcs, mdws)
+	initEwbiApplicationOnboardingRoutes(router, svcs, mdws)
 	initEwbiApplicationInstanceLifecycleManagementRoutes(router, svcs, mdws)
 }

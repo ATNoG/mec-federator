@@ -1,8 +1,8 @@
-from kafka import KafkaConsumer
+from kafka import KafkaConsumer, KafkaProducer
 import sys, os
 
 # List your topics here
-topics = ['responses', 'federation_migrate_node', 'migrate_node', 'instantiate_app_pkg']
+topics = ['responses', 'federation_subscribe_zone', 'federation_unsubscribe_zone']
 
 # Kafka configuration
 bootstrap_servers = ['10.255.41.64:31999'] 

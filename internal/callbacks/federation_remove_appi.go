@@ -27,9 +27,15 @@ func NewFederationRemoveAppiCallback(services *router.Services) *FederationRemov
 
 func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationRemoveAppiCallback.HandleMessage", func() {
-		log.Printf("Received remove app instance message from topic %s, partition %d, offset %d", 
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-init-remove-appi",
+			Message: "reset",
+			Value:   nil,
+		})
+
+		log.Printf("Received remove app instance message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
-		
+
 		var msg map[string]interface{}
 		if err := json.Unmarshal(message.Value, &msg); err != nil {
 			log.Printf("Error unmarshaling message: %v", err)
@@ -40,6 +46,12 @@ func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMes
 
 		msgId := msg["msg_id"].(string)
 		f.handleRemoveAppInstance(msgId, msg)
+
+		utils.SendResultsMessage(utils.ResultsMessage{
+			Name:    "oo-done-remove-appi",
+			Message: "",
+			Value:   nil,
+		})
 	})
 }
 
@@ -131,7 +143,7 @@ func (f *FederationRemoveAppiCallback) sendDeleteRequestToPartner(federation *mo
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("partner returned error status %d", resp.StatusCode)
 	}
 

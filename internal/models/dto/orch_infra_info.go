@@ -58,3 +58,11 @@ func (km *InfrastructureInfo) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+
+// OrchResources represents the resources in a given zone
+type OrchResources struct {
+	Cluster      string `json:"cluster"`
+	Node         string `json:"node"`
+	AllocatedCPU string `json:"allocated-cpu"`
+	AllocatedMem string `json:"allocated-mem"`
+}
