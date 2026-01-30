@@ -12,13 +12,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/atnog/mec-federator/internal/config"
+	"github.com/atnog/mec-federator/internal/models"
+	"github.com/atnog/mec-federator/internal/models/dto"
+	"github.com/atnog/mec-federator/internal/services"
+	"github.com/atnog/mec-federator/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/mankings/mec-federator/internal/config"
-	"github.com/mankings/mec-federator/internal/models"
-	"github.com/mankings/mec-federator/internal/models/dto"
-	"github.com/mankings/mec-federator/internal/services"
-	"github.com/mankings/mec-federator/internal/utils"
 )
 
 type FederationManagementController struct {

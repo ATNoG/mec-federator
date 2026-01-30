@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mankings/mec-federator/internal/router"
+	"github.com/atnog/mec-federator/internal/router"
 )
 
 // Task represents a periodic task that needs to be executed

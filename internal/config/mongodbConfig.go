@@ -5,7 +5,7 @@ import (
 	"log"
 	"log/slog"
 
-	"github.com/mankings/mec-federator/internal/models"
+	"github.com/atnog/mec-federator/internal/models"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"

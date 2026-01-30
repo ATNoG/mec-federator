@@ -1,0 +1,59 @@
+# Default values for mec-federator
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Deployment configuration
+replicaCount: 1
+image:
+  repository: ghcr.io/atnog/federator
+  tag: latest
+  pullPolicy: Always
+
+# Service configuration
+service:
+  type: NodePort
+  port: 8440
+  targetPort: 8440
+  nodePort: 32440
+
+# Application configuration
+app:
+  name: mef
+  namespace: osm-mec
+  labels:
+    app: mef
+  operatorId: "IT_AVEIRO"  # Default for federator-oo, change to "PARTNER" for federator-po
+  apiPort: "8440"
+  baseUrl: "mef"
+
+# MongoDB configuration
+mongo:
+  host: "mongo"
+  port: "27017"
+  database: "federation"
+  orchestratorDatabase: "db"
+  username: "root"  # Will be base64 encoded
+  password: "pass"  # Will be base64 encoded
+
+# Kafka configuration
+kafka:
+  host: "kafka-controller-headless.osm.svc.cluster.local"
+  port: "9094"
+  username: "user1"  # Will be base64 encoded
+  password: "pass"  # Will be base64 encoded
+
+# OAuth2 configuration
+oauth2:
+  clientId: "operator-a"  # Will be base64 encoded
+  clientSecret: "pass"  # Will be base64 encoded
+  tokenEndpoint: "http://10.255.42.47:8080/realms/federation-realm/protocol/openid-connect/token"
+
+# Health check configuration
+healthcheck:
+  path: /healthcheck
+  liveness:
+    initialDelaySeconds: 60
+    periodSeconds: 120
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 10

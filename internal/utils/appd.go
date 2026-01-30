@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/mankings/mec-federator/internal/models/dto"
+	"github.com/atnog/mec-federator/internal/models/dto"
 	"gopkg.in/yaml.v2"
 )
 

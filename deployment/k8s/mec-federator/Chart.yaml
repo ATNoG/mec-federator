@@ -1,0 +1,5 @@
+apiVersion: v2
+name: mec-federator
+version: 0.1.0
+appVersion: "latest"
+description: Helm chart for MEC Federator deployment

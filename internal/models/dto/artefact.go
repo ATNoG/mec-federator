@@ -3,7 +3,7 @@ package dto
 import (
 	"errors"
 
-	"github.com/mankings/mec-federator/internal/models"
+	"github.com/atnog/mec-federator/internal/models"
 )
 
 type ArtefactOnboardRequest struct {

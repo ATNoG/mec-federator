@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
+	"github.com/atnog/mec-federator/internal/config"
 	"github.com/google/uuid"
-	"github.com/mankings/mec-federator/internal/config"
 )
 
 type consumerGroupHandler struct {

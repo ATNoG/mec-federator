@@ -1,8 +1,8 @@
 package router
 
 import (
+	"github.com/atnog/mec-federator/internal/controller/ewbi"
 	"github.com/gin-gonic/gin"
-	"github.com/mankings/mec-federator/internal/controller/ewbi"
 )
 
 func initEwbiFederationManagementRoutes(router *gin.Engine, svcs *Services, mdws *Middlewares) {

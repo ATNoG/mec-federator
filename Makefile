@@ -1,5 +1,5 @@
 # Variables
-DOCKER_IMAGE_NAME = mankings/federator
+DOCKER_IMAGE_NAME = ghcr.io/atnog/federator
 DOCKER_TAG ?= 2.0.18
 DOCKERFILE_PATH = deployment/docker/Dockerfile
 

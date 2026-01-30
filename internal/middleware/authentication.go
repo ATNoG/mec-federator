@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/atnog/mec-federator/internal/services"
+	"github.com/atnog/mec-federator/internal/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/mankings/mec-federator/internal/services"
-	"github.com/mankings/mec-federator/internal/utils"
 )
 
 // middleware to verify if the access token is valid

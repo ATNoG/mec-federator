@@ -5,9 +5,9 @@ import (
 	"sync"
 
 	"github.com/IBM/sarama"
-	"github.com/mankings/mec-federator/internal/models"
-	"github.com/mankings/mec-federator/internal/models/dto"
-	"github.com/mankings/mec-federator/internal/router"
+	"github.com/atnog/mec-federator/internal/models"
+	"github.com/atnog/mec-federator/internal/models/dto"
+	"github.com/atnog/mec-federator/internal/router"
 )
 
 // InfrastructureInfoCallback handles incoming infrastructure information messages from Kafka

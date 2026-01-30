@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    app: {{ .Values.app.labels.app }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.labels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.labels.app }}
+    spec:
+      containers:
+      - name: {{ .Values.app.name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.app.apiPort }}
+        env:
+        - name: OPERATOR_ID
+          value: {{ .Values.app.operatorId | quote }}
+        - name: API_PORT
+          value: {{ .Values.app.apiPort | quote }}
+        - name: BASE_URL
+          value: {{ .Values.app.baseUrl | quote }}
+        - name: MONGO_HOST
+          value: {{ .Values.mongo.host | quote }}
+        - name: MONGO_PORT
+          value: {{ .Values.mongo.port | quote }}
+        - name: MONGO_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "mec-federator.secretName" . }}
+              key: mongo-username
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "mec-federator.secretName" . }}
+              key: mongo-password
+        - name: MONGO_DATABASE
+          value: {{ .Values.mongo.database | quote }}
+        - name: MONGO_ORCHESTRATOR_DATABASE
+          value: {{ .Values.mongo.orchestratorDatabase | quote }}
+        - name: KAFKA_HOST
+          value: {{ .Values.kafka.host | quote }}
+        - name: KAFKA_PORT
+          value: {{ .Values.kafka.port | quote }}
+        - name: KAFKA_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "mec-federator.secretName" . }}
+              key: kafka-username
+        - name: KAFKA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "mec-federator.secretName" . }}
+              key: kafka-password
+        - name: OAUTH2_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "mec-federator.secretName" . }}
+              key: oauth2-client-id
+        - name: OAUTH2_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "mec-federator.secretName" . }}
+              key: oauth2-client-secret
+        - name: OAUTH2_TOKEN_ENDPOINT
+          value: {{ .Values.oauth2.tokenEndpoint | quote }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.healthcheck.path }}
+            port: {{ .Values.app.apiPort }}
+          initialDelaySeconds: {{ .Values.healthcheck.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthcheck.liveness.periodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.healthcheck.path }}
+            port: {{ .Values.app.apiPort }}
+          initialDelaySeconds: {{ .Values.healthcheck.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthcheck.readiness.periodSeconds }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.app.name }}-external
+  namespace: {{ .Values.app.namespace }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ .Values.app.labels.app }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.targetPort }}
+    nodePort: {{ .Values.service.nodePort }}

@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	"github.com/mankings/mec-federator/internal/models"
-	"github.com/mankings/mec-federator/internal/models/dto"
-	"github.com/mankings/mec-federator/internal/router"
-	"github.com/mankings/mec-federator/internal/services"
-	"github.com/mankings/mec-federator/internal/utils"
+	"github.com/atnog/mec-federator/internal/models"
+	"github.com/atnog/mec-federator/internal/models/dto"
+	"github.com/atnog/mec-federator/internal/router"
+	"github.com/atnog/mec-federator/internal/services"
+	"github.com/atnog/mec-federator/internal/utils"
 )
 
 type FederationAppiNewCallback struct {

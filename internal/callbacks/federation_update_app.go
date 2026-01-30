@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/IBM/sarama"
-	"github.com/mankings/mec-federator/internal/router"
-	"github.com/mankings/mec-federator/internal/utils"
+	"github.com/atnog/mec-federator/internal/router"
+	"github.com/atnog/mec-federator/internal/utils"
 )
 
 type FederationUpdateAppCallback struct {

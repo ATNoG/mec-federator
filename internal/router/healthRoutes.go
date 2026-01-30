@@ -1,8 +1,8 @@
 package router
 
 import (
+	"github.com/atnog/mec-federator/internal/controller"
 	"github.com/gin-gonic/gin"
-	"github.com/mankings/mec-federator/internal/controller"
 )
 
 // HealthAPIManagement - Health check of the partner OP

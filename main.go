@@ -12,12 +12,12 @@ package main
 import (
 	"log"
 
-	"github.com/mankings/mec-federator/internal/callbacks"
-	"github.com/mankings/mec-federator/internal/config"
-	"github.com/mankings/mec-federator/internal/middleware"
-	"github.com/mankings/mec-federator/internal/router"
-	"github.com/mankings/mec-federator/internal/scheduler"
-	"github.com/mankings/mec-federator/internal/services"
+	"github.com/atnog/mec-federator/internal/callbacks"
+	"github.com/atnog/mec-federator/internal/config"
+	"github.com/atnog/mec-federator/internal/middleware"
+	"github.com/atnog/mec-federator/internal/router"
+	"github.com/atnog/mec-federator/internal/scheduler"
+	"github.com/atnog/mec-federator/internal/services"
 )
 
 var err error

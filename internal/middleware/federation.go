@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/atnog/mec-federator/internal/services"
+	"github.com/atnog/mec-federator/internal/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/mankings/mec-federator/internal/services"
-	"github.com/mankings/mec-federator/internal/utils"
 )
 
 // middleware to check if the federation exists

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/mankings/mec-federator/internal/models/dto"
+	"github.com/atnog/mec-federator/internal/models/dto"
 )
 
 // CreateTasks initializes all periodic tasks

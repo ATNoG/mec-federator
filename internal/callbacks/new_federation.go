@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	"github.com/mankings/mec-federator/internal/config"
-	"github.com/mankings/mec-federator/internal/models"
-	"github.com/mankings/mec-federator/internal/router"
-	"github.com/mankings/mec-federator/internal/services"
-	"github.com/mankings/mec-federator/internal/utils"
+	"github.com/atnog/mec-federator/internal/config"
+	"github.com/atnog/mec-federator/internal/models"
+	"github.com/atnog/mec-federator/internal/router"
+	"github.com/atnog/mec-federator/internal/services"
+	"github.com/atnog/mec-federator/internal/utils"
 )
 
 // NewFederationCallback handles incoming new federation messages from Kafka

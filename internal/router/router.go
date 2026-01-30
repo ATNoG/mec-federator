@@ -1,11 +1,11 @@
 package router
 
 import (
+	_ "github.com/atnog/mec-federator/docs"
+	"github.com/atnog/mec-federator/internal/config"
+	"github.com/atnog/mec-federator/internal/middleware"
+	"github.com/atnog/mec-federator/internal/services"
 	"github.com/gin-gonic/gin"
-	_ "github.com/mankings/mec-federator/docs"
-	"github.com/mankings/mec-federator/internal/config"
-	"github.com/mankings/mec-federator/internal/middleware"
-	"github.com/mankings/mec-federator/internal/services"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )

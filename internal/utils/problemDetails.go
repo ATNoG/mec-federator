@@ -3,8 +3,8 @@ package utils
 import (
 	"log"
 
+	"github.com/atnog/mec-federator/internal/models"
 	"github.com/gin-gonic/gin"
-	"github.com/mankings/mec-federator/internal/models"
 )
 
 func HandleProblem(c *gin.Context, code int, detail string) {

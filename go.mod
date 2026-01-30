@@ -1,4 +1,4 @@
-module github.com/mankings/mec-federator
+module github.com/atnog/mec-federator
 
 go 1.23.6
 

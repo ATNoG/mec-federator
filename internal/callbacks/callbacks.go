@@ -3,7 +3,7 @@ package callbacks
 import (
 	"context"
 
-	"github.com/mankings/mec-federator/internal/router"
+	"github.com/atnog/mec-federator/internal/router"
 )
 
 func StartCallbacks(services *router.Services) {

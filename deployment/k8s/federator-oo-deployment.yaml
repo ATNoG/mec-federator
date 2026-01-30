@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: mef
-        image: mankings/federator:latest
+        image: atnog/federator:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8440

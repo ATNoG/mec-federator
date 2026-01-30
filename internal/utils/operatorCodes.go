@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/mankings/mec-federator/internal/models"
+import "github.com/atnog/mec-federator/internal/models"
 
 func AddMobileCodes(target *models.MobileNetworkIds, toAdd *models.MobileNetworkIds) {
 	if target == nil || toAdd == nil {

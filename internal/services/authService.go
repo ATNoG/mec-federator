@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mankings/mec-federator/internal/config"
-	"github.com/mankings/mec-federator/internal/models"
-	"github.com/mankings/mec-federator/internal/models/dto"
+	"github.com/atnog/mec-federator/internal/config"
+	"github.com/atnog/mec-federator/internal/models"
+	"github.com/atnog/mec-federator/internal/models/dto"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
