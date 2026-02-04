@@ -120,7 +120,7 @@ func (nc *NewFederationCallback) handleNewFederation(msgId string, msg map[strin
 	log.Printf("Sending federation request to: %s", createFederationUrl)
 	authStrat := services.NewBearerTokenAuth(accessToken.AccessToken)
 	headers := map[string]string{"Content-Type": "application/json"}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), MediumHTTPTimeout)
 	defer cancel()
 	resp, err := nc.services.HttpClientService.DoRequest(
 		ctx,

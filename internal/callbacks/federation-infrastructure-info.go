@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/models"
@@ -78,7 +77,7 @@ func (cc *FederationInfrastructureInfoCallback) sendMetricsToPartner(federation 
 	}
 
 	// Create HTTP request with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), MediumHTTPTimeout)
 	defer cancel()
 
 	// Set headers and authentication

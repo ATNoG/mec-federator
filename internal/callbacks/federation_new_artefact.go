@@ -10,7 +10,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/models"
@@ -220,7 +219,7 @@ func (f *FederationArtefactNewCallback) sendArtefactToPartner(federation *models
 	writer.Close()
 
 	// create HTTP request
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), MediumHTTPTimeout)
 	defer cancel()
 
 	headers := map[string]string{

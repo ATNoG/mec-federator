@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/models"
@@ -138,7 +137,7 @@ func (f *FederationArtefactRemoveCallback) removeArtefactFromPartner(federation 
 	log.Printf("Sending delete request to partner endpoint: %s", partnerEndpoint)
 
 	// create HTTP request
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), MediumHTTPTimeout)
 	defer cancel()
 
 	headers := map[string]string{

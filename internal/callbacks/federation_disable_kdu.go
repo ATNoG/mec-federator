@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/models"
@@ -164,7 +163,7 @@ func (f *FederationKduDisableCallback) sendDisableKDURequestToPartner(federation
 	}
 
 	// Create HTTP request
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), MediumHTTPTimeout)
 	defer cancel()
 
 	headers := map[string]string{

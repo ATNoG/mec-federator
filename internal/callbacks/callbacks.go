@@ -2,8 +2,16 @@ package callbacks
 
 import (
 	"context"
+	"time"
 
 	"github.com/atnog/mec-federator/internal/router"
+)
+
+// Default timeout constants for callback HTTP operations
+const (
+	DefaultHTTPTimeout = 1 * time.Minute // Quick requests (federation info, status)
+	MediumHTTPTimeout  = 3 * time.Minute // Medium operations (artefacts, infrastructure)
+	LongHTTPTimeout    = 5 * time.Minute // Long operations (app onboarding, KDU, migrations)
 )
 
 func StartCallbacks(services *router.Services) {

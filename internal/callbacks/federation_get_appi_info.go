@@ -2,12 +2,10 @@ package callbacks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
-
-	"encoding/json"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/models"
@@ -88,7 +86,7 @@ func (g *GetAppiInfoCallback) handleGetAppiInfo(msgId string, msg map[string]int
 	// make info request
 	getAppiInfoUrl := fmt.Sprintf("%s/federation/v1/ewbi/%s/application/lcm/%s", federation.FederationEndpoint, federation.PartnerOP.FederationContextId, appInstanceId)
 	log.Printf("Sending get app instance info request to: %s", getAppiInfoUrl)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultHTTPTimeout)
 	defer cancel()
 	resp, err := g.services.HttpClientService.DoRequest(
 		ctx,

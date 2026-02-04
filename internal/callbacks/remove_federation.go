@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/router"
@@ -81,7 +80,7 @@ func (r *RemoveFederationCallback) handleRemoveFederation(msgId string, msg map[
 	// remove the federation
 	removeFederationUrl := fmt.Sprintf("%s/federation/v1/ewbi/%s/partner", federation.FederationEndpoint, federation.PartnerOP.FederationContextId)
 	log.Printf("Sending remove federation request to: %s", removeFederationUrl)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), MediumHTTPTimeout)
 	defer cancel()
 	resp, err := r.services.HttpClientService.DoRequest(
 		ctx,

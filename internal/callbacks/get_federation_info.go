@@ -2,12 +2,10 @@ package callbacks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
-
-	"encoding/json"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/models"
@@ -81,7 +79,7 @@ func (g *GetFederationInfoCallback) handleGetFederationInfo(msgId string, msg ma
 	// make info request
 	getFederationInfoUrl := fmt.Sprintf("%s/federation/v1/ewbi/%s/partner", federation.FederationEndpoint, federation.PartnerOP.FederationContextId)
 	log.Printf("Sending get federation info request to: %s", getFederationInfoUrl)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultHTTPTimeout)
 	defer cancel()
 	resp, err := g.services.HttpClientService.DoRequest(
 		ctx,

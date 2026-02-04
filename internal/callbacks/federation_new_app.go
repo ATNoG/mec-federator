@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/atnog/mec-federator/internal/models"
@@ -158,7 +157,7 @@ func (f *FederationNewAppCallback) onboardAppOnPartner(federation *models.Federa
 	}
 
 	// create the HTTP request
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), LongHTTPTimeout)
 	defer cancel()
 
 	headers := map[string]string{
