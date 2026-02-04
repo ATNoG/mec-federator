@@ -37,8 +37,17 @@ func GinLoggerWithSkipPaths(skipPaths []string) gin.HandlerFunc {
 }
 
 func Init(svcs *Services, mdws *Middlewares) *gin.Engine {
-	// start gin with default settings
-	router := gin.Default()
+	// start gin without default middleware
+	router := gin.New()
+
+	// attach recovery middleware
+	router.Use(gin.Recovery())
+
+	// attach custom logger that skips healthcheck
+	router.Use(GinLoggerWithSkipPaths([]string{"/healthcheck"}))
+
+	// timing middleware
+	router.Use(middleware.TimingMiddleware())
 
 	// init routes
 	initRoutes(router, svcs, mdws)
@@ -48,15 +57,6 @@ func Init(svcs *Services, mdws *Middlewares) *gin.Engine {
 
 	// run the server
 	router.Run(":" + config.AppConfig.ApiPort)
-
-	// attach custom logger
-	router.Use(GinLoggerWithSkipPaths([]string{"/healthcheck"}))
-
-	// timing middleware
-	router.Use(middleware.TimingMiddleware())
-
-	// attach custom logger
-	router.Use(GinLoggerWithSkipPaths([]string{"/healthcheck"}))
 
 	return router
 }
