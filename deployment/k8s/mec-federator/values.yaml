@@ -44,8 +44,6 @@ kafka:
 
 # OAuth2 configuration
 oauth2:
-  clientId: "operator-a"  # Will be base64 encoded
-  clientSecret: "pass"  # Will be base64 encoded
   tokenEndpoint: "http://10.255.42.47:8080/realms/federation-realm/protocol/openid-connect/token"
 
 # Health check configuration

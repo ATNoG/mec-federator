@@ -60,16 +60,6 @@ spec:
             secretKeyRef:
               name: federator-secrets
               key: kafka-password
-        - name: OAUTH2_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: federator-secrets
-              key: oauth2-client-id
-        - name: OAUTH2_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: federator-secrets
-              key: oauth2-client-secret
         - name: OAUTH2_TOKEN_ENDPOINT
           value: "http://10.255.42.47:8080/realms/federation-realm/protocol/openid-connect/token"
         livenessProbe:
