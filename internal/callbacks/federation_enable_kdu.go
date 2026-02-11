@@ -28,12 +28,6 @@ func NewEnableAppInstanceKDUCallback(services *router.Services) *FederationKduEn
 
 func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationKduEnableCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "federation-oo-enable-kdu-init",
-			Message: "",
-			Value:   nil,
-		})
-
 		log.Printf("Received enable KDU message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -47,12 +41,6 @@ func (f *FederationKduEnableCallback) HandleMessage(message *sarama.ConsumerMess
 
 		msgId := msg["msg_id"].(string)
 		f.handleEnableKDU(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "federation-oo-enable-kdu-done",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 

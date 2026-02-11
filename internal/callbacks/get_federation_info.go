@@ -26,12 +26,6 @@ func NewGetFederationInfoCallback(services *router.Services) *GetFederationInfoC
 
 func (g *GetFederationInfoCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("GetFederationInfoCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-get-federation-info",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received get federation info message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -45,12 +39,6 @@ func (g *GetFederationInfoCallback) HandleMessage(message *sarama.ConsumerMessag
 
 		msgId := msg["msg_id"].(string)
 		g.handleGetFederationInfo(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-get-federation-info",
-			Message: "",
-			Value:   nil,
-		})
 	})
 
 }

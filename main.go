@@ -38,11 +38,6 @@ func init() {
 		panic(err)
 	}
 
-	err = config.InitMecSystemInformation()
-	if err != nil {
-		panic(err)
-	}
-
 	log.Print("Initialized all configurations successfully.")
 }
 

@@ -32,12 +32,6 @@ func NewFederationArtefactNewCallback(services *router.Services) *FederationArte
 // receives info about an artefact to make available to a certain federation
 func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationArtefactNewCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-onboard-artefact",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received new artefact message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -52,12 +46,6 @@ func (f *FederationArtefactNewCallback) HandleMessage(message *sarama.ConsumerMe
 
 		msgId := msg["msg_id"].(string)
 		f.handleNewArtefact(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-onboard-artefact",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 

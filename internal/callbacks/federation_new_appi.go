@@ -28,12 +28,6 @@ func NewFederationAppiNewCallback(services *router.Services) *FederationAppiNewC
 
 func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationAppiNewCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-instantiate-appi",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received new app instance message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -47,12 +41,6 @@ func (f *FederationAppiNewCallback) HandleMessage(message *sarama.ConsumerMessag
 
 		msgId := msg["msg_id"].(string)
 		f.handleNewAppInstance(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-instantiate-appi",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 

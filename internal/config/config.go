@@ -13,8 +13,6 @@ type Config struct {
 	ApiPort    string
 	BaseUrl    string
 
-	OAuth2ClientId        string
-	OAuth2ClientSecret    string
 	KeycloakTokenEndpoint string
 
 	DbUsername           string
@@ -44,8 +42,6 @@ func InitAppConfig() error {
 		ApiPort:    os.Getenv("API_PORT"),
 		BaseUrl:    os.Getenv("BASE_URL"),
 
-		OAuth2ClientId:        os.Getenv("OAUTH2_CLIENT_ID"),
-		OAuth2ClientSecret:    os.Getenv("OAUTH2_CLIENT_SECRET"),
 		KeycloakTokenEndpoint: os.Getenv("OAUTH2_TOKEN_ENDPOINT"),
 
 		DbUsername:           os.Getenv("MONGO_USERNAME"),
@@ -65,8 +61,6 @@ func InitAppConfig() error {
 		"  OperatorId: " + AppConfig.OperatorId + "\n" +
 		"  ApiPort: " + AppConfig.ApiPort + "\n" +
 		"  BaseUrl: " + AppConfig.BaseUrl + "\n" +
-		"  OAuth2ClientId: " + AppConfig.OAuth2ClientId + "\n" +
-		"  OAuth2ClientSecret: " + AppConfig.OAuth2ClientSecret + "\n" +
 		"  KeycloakTokenEndpoint: " + AppConfig.KeycloakTokenEndpoint + "\n" +
 		"  DbUsername: " + AppConfig.DbUsername + "\n" +
 		"  DbPassword: " + AppConfig.DbPassword + "\n" +

@@ -49,12 +49,6 @@ func NewFederationManagementController(federationService *services.FederationSer
 // @Failure 500 {object} models.ProblemDetails
 // @Router /ewbi/partner [post]
 func (fmc *FederationManagementController) CreateFederationController(c *gin.Context) {
-	utils.SendResultsMessage(utils.ResultsMessage{
-		Name:    "po-init-create-federation",
-		Message: "",
-		Value:   nil,
-	})
-
 	log.Print("CreateFederationController - Starting federation creation process")
 
 	// Check if the request data is valid
@@ -123,12 +117,6 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 
 	log.Printf("CreateFederationController - Returning federation response for contextId: %s", federation.PartnerOP.FederationContextId)
 
-	utils.SendResultsMessage(utils.ResultsMessage{
-		Name:    "po-done-create-federation",
-		Message: "",
-		Value:   nil,
-	})
-
 	c.JSON(http.StatusOK, federation.PartnerOP)
 }
 
@@ -142,12 +130,6 @@ func (fmc *FederationManagementController) CreateFederationController(c *gin.Con
 // @Failure 500 {object} models.ProblemDetails "Internal Server Error"
 // @Router /ewbi/{federationContextId}/partner [delete]
 func (fmc *FederationManagementController) RemoveFederationController(c *gin.Context) {
-	utils.SendResultsMessage(utils.ResultsMessage{
-		Name:    "po-init-remove-federation",
-		Message: "",
-		Value:   nil,
-	})
-
 	// Get the federation context id
 	federationContextId := c.Param("federationContextId")
 	log.Printf("RemoveFederationController - Starting federation removal for contextId: %s", federationContextId)
@@ -196,12 +178,6 @@ func (fmc *FederationManagementController) RemoveFederationController(c *gin.Con
 	}
 
 	log.Printf("RemoveFederationController - Federation %s removed successfully", federationContextId)
-
-	utils.SendResultsMessage(utils.ResultsMessage{
-		Name:    "po-done-remove-federation",
-		Message: "",
-		Value:   nil,
-	})
 
 	c.JSON(http.StatusOK, gin.H{"status": "Federation removed successfully"})
 }

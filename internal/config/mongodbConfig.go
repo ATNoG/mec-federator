@@ -5,7 +5,6 @@ import (
 	"log"
 	"log/slog"
 
-	"github.com/atnog/mec-federator/internal/models"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -53,20 +52,4 @@ func GetMongoDatabase() *mongo.Database {
 // returns the Orchestrator MongoDB database
 func GetOrchestratorMongoDatabase() *mongo.Database {
 	return mongoClient.Database(AppConfig.OrchestratorDatabase)
-}
-
-// inits MecSystem information in the database
-func InitMecSystemInformation() error {
-	collection := mongoClient.Database(AppConfig.Database).Collection("systems")
-	orchestratorInfo := models.OrchestratorInfo{
-		OperatorId: AppConfig.OperatorId,
-		KafkaUrl:   AppConfig.KafkaHost + ":" + AppConfig.KafkaPort,
-	}
-
-	_, err := collection.InsertOne(ctx, orchestratorInfo)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

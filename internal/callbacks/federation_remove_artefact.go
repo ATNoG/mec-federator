@@ -28,12 +28,6 @@ func NewFederationArtefactRemoveCallback(services *router.Services) *FederationA
 // receives info about an artefact to remove from a certain federation
 func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationArtefactRemoveCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-remove-artefact",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received remove artefact message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -48,12 +42,6 @@ func (f *FederationArtefactRemoveCallback) HandleMessage(message *sarama.Consume
 
 		msgId := msg["msg_id"].(string)
 		f.handleRemoveArtefact(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-remove-artefact",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 

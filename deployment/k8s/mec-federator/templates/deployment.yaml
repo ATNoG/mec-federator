@@ -60,16 +60,6 @@ spec:
             secretKeyRef:
               name: {{ include "mec-federator.secretName" . }}
               key: kafka-password
-        - name: OAUTH2_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "mec-federator.secretName" . }}
-              key: oauth2-client-id
-        - name: OAUTH2_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "mec-federator.secretName" . }}
-              key: oauth2-client-secret
         - name: OAUTH2_TOKEN_ENDPOINT
           value: {{ .Values.oauth2.tokenEndpoint | quote }}
         livenessProbe:

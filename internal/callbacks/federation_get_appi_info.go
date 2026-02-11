@@ -26,12 +26,6 @@ func NewGetAppiInfoCallback(services *router.Services) *GetAppiInfoCallback {
 
 func (g *GetAppiInfoCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("GetAppiInfoCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-get-appi-info",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received get app instance info message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -45,12 +39,6 @@ func (g *GetAppiInfoCallback) HandleMessage(message *sarama.ConsumerMessage) {
 
 		msgId := msg["msg_id"].(string)
 		g.handleGetAppiInfo(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-get-appi-info",
-			Message: "",
-			Value:   nil,
-		})
 	})
 
 }

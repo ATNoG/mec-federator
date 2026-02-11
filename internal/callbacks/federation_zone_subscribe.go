@@ -28,12 +28,6 @@ func NewFederationZoneSubscribeCallback(services *router.Services) *FederationZo
 
 func (f *FederationZoneSubscribeCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationZoneSubscribeCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-subscribe-zone",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received subscribe zone message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -47,12 +41,6 @@ func (f *FederationZoneSubscribeCallback) HandleMessage(message *sarama.Consumer
 
 		msgId := msg["msg_id"].(string)
 		f.handleSubscribeZone(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-subscribe-zone",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 
