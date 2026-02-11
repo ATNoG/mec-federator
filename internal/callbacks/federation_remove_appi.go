@@ -26,12 +26,6 @@ func NewFederationRemoveAppiCallback(services *router.Services) *FederationRemov
 
 func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationRemoveAppiCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-remove-appi",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received remove app instance message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -45,12 +39,6 @@ func (f *FederationRemoveAppiCallback) HandleMessage(message *sarama.ConsumerMes
 
 		msgId := msg["msg_id"].(string)
 		f.handleRemoveAppInstance(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-remove-appi",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 

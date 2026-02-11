@@ -21,12 +21,6 @@ func NewFederationUpdateAppCallback(services *router.Services) *FederationUpdate
 
 func (f *FederationUpdateAppCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("FederationUpdateAppCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-update-app",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received update app message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -40,12 +34,6 @@ func (f *FederationUpdateAppCallback) HandleMessage(message *sarama.ConsumerMess
 
 		msgId := msg["msg_id"].(string)
 		f.handleUpdateApp(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-update-app",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 

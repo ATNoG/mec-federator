@@ -25,12 +25,6 @@ func NewRemoveFederationCallback(services *router.Services) *RemoveFederationCal
 
 func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage) {
 	utils.TimeCallback("RemoveFederationCallback.HandleMessage", func() {
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-init-remove-federation",
-			Message: "reset",
-			Value:   nil,
-		})
-
 		log.Printf("Received remove federation message from topic %s, partition %d, offset %d",
 			message.Topic, message.Partition, message.Offset)
 
@@ -45,12 +39,6 @@ func (r *RemoveFederationCallback) HandleMessage(message *sarama.ConsumerMessage
 
 		msgId := msg["msg_id"].(string)
 		r.handleRemoveFederation(msgId, msg)
-
-		utils.SendResultsMessage(utils.ResultsMessage{
-			Name:    "oo-done-remove-federation",
-			Message: "",
-			Value:   nil,
-		})
 	})
 }
 
